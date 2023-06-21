@@ -1,0 +1,51 @@
+2gbj: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: MQIFVKTLTGGGGGGGGGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG
+ ,reference CopyNumber is : 
+2gbm: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGGGGGGGGGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLR
+ ,reference CopyNumber is : 
+2znv: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GLRCVVLPEDLCHKFLQLAESNTVRGIATCGILCGKLTHNEFTITHVIVPKQSAGPDYCDMENVEELFNVQDQHDLLTLGWIHTHPTQTAFLSSVDLHTHCSYQLMLPEAIAIVCSPKHKDTGIFRLTNAGMLEVSACKKKGFHPHTKEPRLFSICKHVLVKDIKIIVLDLR
+ ,reference CopyNumber is : 
+4jio: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: FTEIYEKESIYSEEKAQLLRKEESVETADLEYTSFVEFTNLPKLINDLAAAYTTGGNNNDADPQLERDQIKSWAYAVQQNEFNDIERIINVISSKRKEILDILATLPAEEKENILKLKASLVEASQSDEKLFRLIKPYVAEIKLLCNDSSLWRKFDEFQSDIDDSKTELILSKLKAITQFAEDLRLLKEERARTGELKDYVNNNANKDKSDAELQSLFESELAKFEPLTTRIEATIFKQGSTINGVKIELDNIFGLTGIQDKTPEEQKAELERKLFFDKLEEATTKFTIFSSDIQKGLNFYNSLLKSKDLQNSVE
+ ,reference CopyNumber is : 
+5go7: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGG
+ ,reference CopyNumber is : 
+5go8: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGG
+ ,reference CopyNumber is : 
+5gob: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGG
+ ,reference CopyNumber is : 
+5goc: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGG
+ ,reference CopyNumber is : 
+5god: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGGGG
+ ,reference CopyNumber is : 
+5gog: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGG
+ ,reference CopyNumber is : 
+5goh: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGG
+ ,reference CopyNumber is : 
+5goi: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGGGG
+ ,reference CopyNumber is : 
+5goj: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGGGG
+ ,reference CopyNumber is : 
+5gok: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGGG
+ ,reference CopyNumber is : 
+5xdp: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: GGGG
+ ,reference CopyNumber is : 
+7myf: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: ANIAVQRIKREFKEVLKSEETSKNQIKVDLVDENFTELRGEIAGPPDTPYEGGRYQLEIKIPETYPFNPPKVRFITKIWHPNISSVTGAIKLDILRDQWAAAMTLRTVLLSLQALLAAAEPDDPQDAVVANQYKQNPEMFKQTARLWAHVYAGAPVSSPEYTKKIENLCAMGFDRNAVIVALSSKSWDVETATELL
+ ,reference CopyNumber is : 
+7owd: There werent any valid assemblies.
+ longestNonUbiqFromAsymetric: SHGLEVGSLAEVKPPFYGVIRWIGQPPGLNEVLAGLELEDECAGCTDGTFRGTRYFTCALKKALFVKLKSCRPDSRFASLQPVS
+ ,reference CopyNumber is : 
