@@ -379,17 +379,17 @@ def dividePSSM(chainDict):
     create len(chainLists) txt files. the i txt file contains the chains in chainLists[i]
     """
     filesList = [open("PSSM{}.txt".format(i), 'w') for i in range(5)]
-    pssmFile = open("PSSM.txt", 'r')
+    pssmFile = open("FullPssmContent", 'r')
     lines = pssmFile.readlines()
     fillIndex = -1  # fillIndex = i -> we now write to PSSMi.txt
     for line in lines:
         if line[0] == '>':  # header line
-            fillIndex = chainDict[line[1:5] + line[-2]]
+            fillIndex = chainDict[line[1:len(line)-1]]
         filesList[fillIndex].write(line)
     for i in range(5):
         filesList[i].close()
     pssmFile.close()
-
+1
 
 def calclulateIndexesOfScc(homologousLabels, sccNumber):
     indexes = np.where(homologousLabels == sccNumber)
@@ -450,15 +450,16 @@ print(clusterSizes)
 print(sublists)
 print(sublistsSum)
 
-chainLists = sublistsToChainLists(sublists, relatedChainsLists, namesList)
+chainLists = sublistsToChainLists(sublists, relatedChainsLists, fullNamesList)
 chainDict = chainListsToChainIndexDict(chainLists)
 print(chainLists)
 print(chainDict)
 
-print(calculateHomologousRatioForSCC(homologousLabels, matHomologous, 0))
+# print(calculateHomologousRatioForSCC(homologousLabels, matHomologous, 0))
 for i in range(5):
     print("avarage ratio of fold : ", i + 1)
     print(calculateRatioForFold(homologousLabels, matHomologous, sublists, i))
+dividePSSM(chainDict)
 # inCath,notInCath = DivideToStructuresInAndNotInCath(cath_df,structuresDicts)
 # print(len(inCath))
 # print([structuresDicts[fullPdbName]['pdbNamesWithChainsList'] for fullPdbName in inCath])
