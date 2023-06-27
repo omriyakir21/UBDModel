@@ -109,43 +109,45 @@ def calculate_weights(list_sequences,resolutions = [100,95,90,70],coverage=0.8, 
 
 #%%
 
-input_folder =  '2606_dataset/'
+if __name__ == '__main__':
 
-all_origins = []
-all_folds = []
-all_weights = []
-all_sequences = []
+    input_folder =  '2606_dataset/'
 
-for k in range(1,6):
-    dataset_file = os.path.join(input_folder,'labels_fold%s.txt'%k)
-    list_origins, list_sequences, list_resids, list_labels = read_labels(dataset_file)
-    all_origins += list(list_origins)
-    all_folds += ['Fold %s'%k] * len(list_origins)
-    all_sequences += list(list_sequences)
+    all_origins = []
+    all_folds = []
+    all_weights = []
+    all_sequences = []
 
-all_origins = np.array(all_origins)
-all_folds = np.array(all_folds)
-all_sequences = np.array(all_sequences)
+    for k in range(1,6):
+        dataset_file = os.path.join(input_folder,'labels_fold%s.txt'%k)
+        list_origins, list_sequences, list_resids, list_labels = read_labels(dataset_file)
+        all_origins += list(list_origins)
+        all_folds += ['Fold %s'%k] * len(list_origins)
+        all_sequences += list(list_sequences)
 
-all_weights_v0 = np.ones(len(all_sequences))
-all_weights_v1 = calculate_weights(all_sequences,resolutions=[100,95,90,70])
-all_weights_v2 = calculate_weights(all_sequences,resolutions=[95])
-all_weights_v3 = calculate_weights(all_sequences,resolutions=[70])
+    all_origins = np.array(all_origins)
+    all_folds = np.array(all_folds)
+    all_sequences = np.array(all_sequences)
 
-table = pd.DataFrame({
-    'PDB ID': all_origins,
-    'Length': [len(sequence) for sequence in all_sequences],
-    'Set': all_folds,
-    'Sample weight': all_weights_v1,
-    'Sample weight none': all_weights_v0,
-    'Sample weight flat95': all_weights_v2,
-    'Sample weight flat70': all_weights_v3,
-})
-table.to_csv(os.path.join(input_folder,'table.csv'))
+    all_weights_v0 = np.ones(len(all_sequences))
+    all_weights_v1 = calculate_weights(all_sequences,resolutions=[100,95,90,70])
+    all_weights_v2 = calculate_weights(all_sequences,resolutions=[95])
+    all_weights_v3 = calculate_weights(all_sequences,resolutions=[70])
 
-#%%
+    table = pd.DataFrame({
+        'PDB ID': all_origins,
+        'Length': [len(sequence) for sequence in all_sequences],
+        'Set': all_folds,
+        'Sample weight': all_weights_v1,
+        'Sample weight none': all_weights_v0,
+        'Sample weight flat95': all_weights_v2,
+        'Sample weight flat70': all_weights_v3,
+    })
+    table.to_csv(os.path.join(input_folder,'table.csv'))
 
-# dataset_file = 'FullPssmContent'
-# all_origins, all_sequences, all_resids, all_labels = read_labels(dataset_file)
+    #%%
+
+    # dataset_file = 'FullPssmContent'
+    # all_origins, all_sequences, all_resids, all_labels = read_labels(dataset_file)
 
 
