@@ -745,7 +745,7 @@ def getLabelsForAminoAcids(aminoAcids, ubiq_atoms, aminoAcidsLabelsList, diamete
     for i in range(len(aminoAcids)):
         if getLabelForAA(aminoAcids[i], ubiq_atoms, threshold, diameter):
             chainUbiqConnection = True
-            aminoAcidsLabelsList[i] = 2
+            aminoAcidsLabelsList[i] = '2'
     return chainUbiqConnection
 
 
@@ -817,6 +817,7 @@ def createAminoAcidLabels(model):
     # --------- for each amino acid in the non ubiquitin chain, fill label , type and id stored in  modelAttributesMatrix---------
     # --------- fill ubiqNeighbors matrix: ubiqNeigbors[i][j] == True <-> There is a connection between the i's non ubiquitin chain and the j's ubiquitin chain ---------
     for i in range(len(model.non_ubiq_chains)):  # iterare over the non ubiquitin chains
+    # for i in range(6,7):
         for j in range(len(model.ubiq_chains)):  # iterare over the ubiquitin chains
             if getLabelsForAminoAcids(nonUbiqChainsAminoAcidLists[i], ubiqChainsAtomsLists[j],
                                       modelLabelsMatrix[
@@ -915,7 +916,8 @@ def updateLabelsForChainsUtil(ImerAttributesMatrix, ImerAminoAcids, nonBindingAt
         if getLabelForAA(ImerAminoAcids[i], nonBindingAtoms, threshold, nonBindingDiameter):
             if ImerAttributesMatrix[i][3] == '0':  # doesn't bind ubiquitin
                 ImerAttributesMatrix[i][3] = '1'
-            else:  # bind ubiquitin
+            # else:
+            elif ImerAttributesMatrix[i][3] == '2':  # bind ubiquitin
                 ImerAttributesMatrix[i][3] = '3'
 
 
@@ -937,6 +939,8 @@ def updateImersLabels(modelAttributesMatrix, ithComponentIndexesConverted, model
     aminoAcidsLists = [aaOutOfChain(model.non_ubiq_chains[index]) for index in range(len(model.non_ubiq_chains))]
     atomsLists = [getAtomsOfAminoAcids(aminoAcids) for aminoAcids in aminoAcidsLists]
     for i in ithComponentIndexesConverted:
+        # if i!=6:
+        #     continue
         for j in range(len(model.non_ubiq_chains)):
             if j not in ithComponentIndexesConverted:  # one is binding non ubiquitin and one is a non-binding-non-ubiquitin
                 updateLabelsForChain(modelAttributesMatrix[i], modelAttributesMatrix[j]
@@ -980,7 +984,7 @@ def createReceptorSummaryUtil(model, ubIndex, nonUbIndex, boundResidueSet, nonUb
     # print("index: ", nonUbIndex)
     # print("diameter: ", nonUbiqDiameter)
     for i in range(len(ubAminoAcids)):
-        if getLabelForAA(ubAminoAcids[i], nonUbAtoms, threshold,nonUbiqDiameter):
+        if getLabelForAA(ubAminoAcids[i], nonUbAtoms, threshold, nonUbiqDiameter):
             # print(ubAminoAcids[i])
             boundResidueSet.add(i)
 
@@ -1030,11 +1034,11 @@ def createDataBase(tuple):
 
     chosenAssemblies, index = tuple[0], tuple[1]
     indexString = str(index)
-    # indexString = '0000'
+    indexString = '0000'
     assembliesNames = [chosenAssemblies[i].split("\\")[-2].lower() for i in range(len(chosenAssemblies))]
-    structures = [parser.get_structure(assembliesNames[i], chosenAssemblies[i]) for i in range(len(chosenAssemblies))]
-    # structures = [parser.get_structure(assembliesNames[i], chosenAssemblies[i]) for i in range(len(chosenAssemblies)) if
-                #   '3k9o' in assembliesNames[i]]
+    # structures = [parser.get_structure(assembliesNames[i], chosenAssemblies[i]) for i in range(len(chosenAssemblies))]
+    structures = [parser.get_structure(assembliesNames[i], chosenAssemblies[i]) for i in range(len(chosenAssemblies)) if
+                  '6oa9' in assembliesNames[i]]
     UBD_candidates = [UBD_candidate(structure) for structure in structures]
     dirName = "NewBatchNumber" + indexString
     print("\n\n\n creating dir")
@@ -1108,7 +1112,7 @@ items = [(chosenAssembliesListOfSublists[i], i) for i in range(40)]
 
 # createDataBase(items[37])
 # createDataBase(items[38])
-createDataBase(items[39])
+createDataBase((chosenAssemblies, 0000))
 # createDataBase(items[39])
 # print(ubiq_seq)
 # print(ubiq_amino_acids)
