@@ -378,7 +378,7 @@ def dividePSSM(chainDict):
     :param chainDict: chainDict[chainName] = index of chain cluster(i if chain in ChainLists[i])
     create len(chainLists) txt files. the i txt file contains the chains in chainLists[i]
     """
-    filesList = [open("PSSM{}.txt".format(i), 'w') for i in range(5)]
+    filesList = [open("PSSMFiles\\PSSM{}.txt".format(i), 'w') for i in range(5)]
     pssmFile = open("FullPssmContent", 'r')
     lines = pssmFile.readlines()
     fillIndex = -1  # fillIndex = i -> we now write to PSSMi.txt
@@ -389,7 +389,7 @@ def dividePSSM(chainDict):
     for i in range(5):
         filesList[i].close()
     pssmFile.close()
-1
+
 
 def calclulateIndexesOfScc(homologousLabels, sccNumber):
     indexes = np.where(homologousLabels == sccNumber)

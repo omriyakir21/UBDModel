@@ -1034,13 +1034,13 @@ def createDataBase(tuple):
 
     chosenAssemblies, index = tuple[0], tuple[1]
     indexString = str(index)
-    indexString = '0000'
+    # indexString = '0000'
     assembliesNames = [chosenAssemblies[i].split("\\")[-2].lower() for i in range(len(chosenAssemblies))]
-    # structures = [parser.get_structure(assembliesNames[i], chosenAssemblies[i]) for i in range(len(chosenAssemblies))]
-    structures = [parser.get_structure(assembliesNames[i], chosenAssemblies[i]) for i in range(len(chosenAssemblies)) if
-                  '6oa9' in assembliesNames[i]]
+    structures = [parser.get_structure(assembliesNames[i], chosenAssemblies[i]) for i in range(len(chosenAssemblies))]
+    # structures = [parser.get_structure(assembliesNames[i], chosenAssemblies[i]) for i in range(len(chosenAssemblies)) if
+    #               '6oa9' in assembliesNames[i]]
     UBD_candidates = [UBD_candidate(structure) for structure in structures]
-    dirName = "NewBatchNumber" + indexString
+    dirName = "Batch" + indexString
     print("\n\n\n creating dir")
     os.mkdir(dirName)
     filesList = createImerFiles(dirName)  # filesList[i] = file containing i-mers if created else None
@@ -1110,10 +1110,10 @@ items = [(chosenAssembliesListOfSublists[i], i) for i in range(40)]
 # for batch in batch7Items:
 #     print(len(batch[0]))
 
-# createDataBase(items[37])
-# createDataBase(items[38])
-createDataBase((chosenAssemblies, 0000))
-# createDataBase(items[39])
+createDataBase(items[38])
+
+# createDataBase((chosenAssemblies, 0000))
+# createDataBase(items[14])
 # print(ubiq_seq)
 # print(ubiq_amino_acids)
 # createDataBase((chosenAssemblies, 2000))

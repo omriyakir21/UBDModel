@@ -1,11 +1,10 @@
 import os
 
-
 def batchIntegrator(index):
-    dir = 'C:\\Users\\omriy\\pythonProject\\ubiq_project\\NewBatchNumber' + str(index)
+    dir = 'C:\\Users\\omriy\\UBDAndScanNet\\UBDModel\\Batch' + str(index)
     filesList = [open(dir + '\\' + file_path, 'r') for file_path in os.listdir(dir) if file_path != ('summaryLog.txt')]
     pssmfile = open(
-        'C:\\Users\\omriy\\pythonProject\\ubiq_project\\NewBatchNumber' + str(index) + '\\' + 'pssmFile' + str(index), 'w')
+       dir + '\\' + 'pssmFile' + str(index), 'w')
     allFilesContent = []
     for file in filesList:
         fileContent = file.read()
@@ -21,17 +20,17 @@ def batchIntegrator(index):
 #     batchIntegrator(i)
 # for i in range(8,13):
 #     batchIntegrator(i)
-# for i in range(40):
-    # batchIntegrator(i)
+for i in range(40):
+    batchIntegrator(i)
 
 
 def integrateDifferentBatches(i):
-    dir = 'C:\\Users\\omriy\\pythonProject\\ubiq_project'
-    pssmFiles = [open(dir + '\\NewBatchNumber' + str(index) + '\\' + 'pssmFile' + str(index)) for index in range(i)]
+    dir = 'C:\\Users\\omriy\\UBDAndScanNet\\UBDModel'
+    pssmFiles = [open(dir + '\\Batch' + str(index) + '\\' + 'pssmFile' + str(index)) for index in range(i)]
     pssmContents = [file.read() for file in pssmFiles]
     for file in pssmFiles:
         file.close()
-    summaryFiles = [open(dir + '\\NewBatchNumber' + str(index) + '\\' + 'summaryLog.txt') for index in range(i)]
+    summaryFiles = [open(dir + '\\Batch' + str(index) + '\\' + 'summaryLog.txt') for index in range(i)]
     summaryContents = [file.read() for file in summaryFiles]
     for file in summaryFiles:
         file.close()
