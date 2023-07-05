@@ -1,9 +1,0 @@
-open annotated_1fxt_0-A.pdb
-dssp
-hide atoms
-show cartoon
-show surface
-color gray transparency 10
-color by bfactor /A range 0.0,0.35  transparency 0
-hide surface
-lighting soft

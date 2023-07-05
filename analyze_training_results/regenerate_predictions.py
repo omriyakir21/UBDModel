@@ -90,7 +90,7 @@ for dataset, dataset_name, dataset_location in zip(list_datasets, list_dataset_n
         ncores=ncores
     )
 
-    inputs_noMSA, _, _ = pipeline_noMSA.build_processed_dataset(
+    inputs_noMSA, outputs_noMSA, _ = pipeline_noMSA.build_processed_dataset(
         '%s_%s' % (dataset_folders[mode], dataset),
         list_origins=list_origins,  # Mandatory
         list_resids=list_resids,  # Optional
@@ -102,6 +102,9 @@ for dataset, dataset_name, dataset_location in zip(list_datasets, list_dataset_n
         fresh=False,  # If fresh = False, attemps to load pickle files first.
         ncores=ncores
     )
+
+    # for output, output_noMSA in zip(outputs, outputs_noMSA):
+    #     assert (output == output_noMSA).min()
 
     weights = np.array(dataset_table['Sample weight'][dataset_table['Set'] == dataset_name])
     weights = np.array([weights[b] for b in range(len(weights)) if not b in failed_samples])
@@ -154,22 +157,57 @@ env = {
 pickle.dump(env,open(os.path.join(UBD_dir,'analyze_training_results/','training_results.pkl'),'wb'))
 
 
+#%%
+
+
+
+pkl_files = ['predictions/predictions_ubiquitin_ScanNet_PUI_retrained.pkl',
+        'predictions/predictions_ubiquitin_ScanNet_PUI_retrained_noMSA.pkl',
+        'predictions/predictions_ubiquitin_ScanNet_PUI_retrained_freeze.pkl',
+        'predictions/predictions_ubiquitin_ScanNet_PUI_retrained_noMSA_freeze.pkl'
+        ]
+
+list_models = ['PUI','PUI_noMSA','PUI_freeze','PUI_noMSA_freeze']
+
+env = {}
+env['all_list_predictions'] = {}
+for k,pkl_file in enumerate(pkl_files):
+    env.update(pickle.load(open(pkl_file,'rb')))
+    env['all_list_predictions'][list_models[k]]  = env['list_predictions']
+del env['list_predictions']
+
+from create_tables_and_weights import cluster_sequences
+cluster_indices, _ = cluster_sequences(env['list_sequences'], seqid= 0.95, coverage = 0.8, covmode = '0')
+similar_structures = {}
+for k, origin in enumerate(env['list_origins']):
+    similar_structures[origin] = list(np.array(env['list_origins'])[cluster_indices == cluster_indices[k]])
+env['similar_structures'] = similar_structures
+env['list_models'] = list_models
+pickle.dump(env,open(os.path.join(UBD_dir,'analyze_training_results/','training_results.pkl'),'wb'))
+
+#%%
+
 # visualize predictions
 from predict_bindingsites import write_predictions
 from utilities import chimera
 from preprocessing import PDBio
-k = 0
-j = 1
-origin = list_origins[k]
-resids = list_resids[k]
-resids = np.stack([np.zeros(len(resids),dtype=int).astype(str),resids[:,0], resids[:,1]] ,axis=1)
+env = pickle.load(open(os.path.join(UBD_dir,'analyze_training_results/','training_results.pkl'),'rb'))
+k = 32
+j = 0
+origin = env['list_origins'][k]
+resids = env['list_resids'][k]
+resids = np.stack([np.zeros(len(resids),dtype=int).astype(str),resids[:,-2], resids[:,-1]] ,axis=1)
 
-sequence = list_sequences[k]
-labels = list_labels[k]
-predictions = all_list_predictions[list_models[j]][k]
+sequence = env['list_sequences'][k]
+labels = env['list_labels'][k]
+predictions = env['all_list_predictions'][env['list_models'][j]][k]
 
 predictions_csv_file = os.path.join(UBD_dir,'analyze_training_results/','predictions_%s.csv'%origin)
 pdb_file,_ = PDBio.getPDB(origin)
 output_file = os.path.join(UBD_dir,'analyze_training_results/','annotated_%s.pdb'%origin)
 write_predictions(predictions_csv_file, resids, sequence, predictions)
-chimera.annotate_pdb_file(pdb_file,predictions_csv_file,output_file,output_script=True,mini=0.0,maxi=0.35,version='default', field = 'Binding site probability')
+chimera.annotate_pdb_file(pdb_file,predictions_csv_file,output_file,output_script=True,mini=0.0,maxi=0.5,version='default', field = 'Binding site probability')
+
+
+
+#%%

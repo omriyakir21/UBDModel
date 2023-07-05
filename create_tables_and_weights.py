@@ -29,8 +29,8 @@ def read_labels(input_file, nmax=np.inf, label_type='int'):
                 count += 1
             else:
                 line_splitted = line[:-1].split(' ')
-                resids.append(line_splitted[:2])
-                sequence += line_splitted[2]
+                resids.append(line_splitted[:-2])
+                sequence += line_splitted[-2]
                 if label_type == 'int':
                     labels.append(int(line_splitted[-1]))
                 else:
@@ -111,7 +111,7 @@ def calculate_weights(list_sequences,resolutions = [100,95,90,70],coverage=0.8, 
 
 if __name__ == '__main__':
 
-    input_folder =  '2606_dataset/'
+    input_folder =  '0307_dataset/'
 
     all_origins = []
     all_folds = []
