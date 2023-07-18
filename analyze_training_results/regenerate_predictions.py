@@ -210,4 +210,40 @@ chimera.annotate_pdb_file(pdb_file,predictions_csv_file,output_file,output_scrip
 
 
 
-#%%
+#%% Regenerate overfitted predictions...
+
+import pickle
+import os,sys
+ScanNet_dir = '/Users/jerometubiana/Documents/GitHub/ScanNet_Ub/'
+UBD_dir = '/Users/jerometubiana/Documents/GitHub/UBDModel/'
+sys.path.append(ScanNet_dir)
+sys.path.append(UBD_dir)
+os.chdir(ScanNet_dir)
+from preprocessing import pipelines
+from utilities import dataset_utils,paths,wrappers
+import pandas as pd
+import numpy as np
+import pickle
+import copy
+
+use_evolutionary = True
+aa_features = 'pwm' if use_evolutionary else 'sequence'
+model_paths = [os.path.join(ScanNet_dir,'models/',f'ScanNet_PUI_retrained_{fold}') for fold in range(5)]
+models = [wrappers.load_model(model_path,Lmax = 2353) for model_path in model_paths]
+
+pipeline_folder = os.path.join(ScanNet_dir, 'pipelines/')
+preprocessed_datasets = [os.path.join(pipeline_folder, f'UBS_fold{fold}_pipeline_ScanNet_aa-{aa_features}_atom-valency_frames-triplet_sidechain_Beff-500.data') for fold in range(1,6)]
+
+all_predictions = [[] for _ in range(5)]
+for preprocessed_dataset in preprocessed_datasets:
+    env = pickle.load(open(preprocessed_dataset,'rb'))
+    inputs,outputs,failed_samples = env['inputs'],env['outputs'],env['failed_samples']
+    for k in range(5):
+        all_predictions[k] += list(models[k].predict(inputs,batch_size=1))
+
+all_predictions = [np.stack([all_predictions[k][l] for k in range(5)],axis=1) for l in range(len( all_predictions[0] ))]
+
+
+env = pickle.load(open(os.path.join(UBD_dir,'analyze_training_results/','training_results.pkl'),'rb') )
+env['overfitted_predictions'] = all_predictions
+pickle.dump(env,open(os.path.join(UBD_dir,'analyze_training_results/','training_results_overfitted.pkl'),'wb') )
