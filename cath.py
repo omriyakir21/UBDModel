@@ -3,6 +3,7 @@ import pandas as pd
 from Bio import pairwise2
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import connected_components
+import pickle
 
 
 def calculate_identity(seqA, seqB):
@@ -454,9 +455,16 @@ chainLists = sublistsToChainLists(sublists, relatedChainsLists, fullNamesList)
 chainDict = chainListsToChainIndexDict(chainLists)
 print(chainLists)
 print(chainDict)
+pickleDirPath = 'C:\\Users\\omriy\\UBDAndScanNet\\UBDModel'
+with open(pickleDirPath + "\\receptorsFoldsDict.pkl" , "wb") as f:
+    # pickle the list to the file
+    pickle.dump(chainDict, f)
+
+
+
 
 # print(calculateHomologousRatioForSCC(homologousLabels, matHomologous, 0))
-for i in range(5):
-    print("avarage ratio of fold : ", i + 1)
-    print(calculateRatioForFold(homologousLabels, matHomologous, sublists, i))
-dividePSSM(chainDict)
+# for i in range(5):
+#     print("avarage ratio of fold : ", i + 1)
+#     print(calculateRatioForFold(homologousLabels, matHomologous, sublists, i))
+# dividePSSM(chainDict)
