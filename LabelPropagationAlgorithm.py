@@ -6,9 +6,14 @@ import sys
 import numpy as np
 import pandas as pd
 
-rootPath = 'C:\\Users\\omriy\\UBDAndScanNet\\'
-# rootPath = '/mnt/c/Users/omriy/UBDAndScanNet/'
-sys.path.append(rootPath + 'UBDAndScanNet')
+ubuntu = False
+
+if ubuntu:
+    rootPath = '/mnt/c/Users/omriy/UBDAndScanNet/'
+else:
+    rootPath = 'C:\\Users\\omriy\\UBDAndScanNet\\'
+
+sys.path.append(rootPath)
 sys.path.append(rootPath + 'ScanNet_Ub')
 
 from ScanNet_Ub.preprocessing.sequence_utils import load_FASTA, num2seq
@@ -31,32 +36,39 @@ def splitReceptorsIntoIndividualChains(PssmContentFilePath):
     chainsKeys = []
     chainsSequences = []
     chainsLabels = []
+    chainNames = []
     chainKey = lines[0][1:-1]
     chainsKeys.append(chainKey)
-    chainNumbers = []
     chainSeq = ''
     chainLabels = []
+    chainName = None
     for line in lines[1:]:
         if line[0] == '>':
             chainsSequences.append(chainSeq)
             chainsLabels.append(chainLabels)
-            chainNumbers = []
             chainSeq = ''
             chainLabels = []
             chainKey = line[1:-1]
             chainsKeys.append(chainKey)
             continue
+        elif chainsKeys[len(chainsKeys) - 1] + '$' + line.split(" ")[0] != chainName:
+            if len(chainSeq) > 0:
+                chainsSequences.append(chainSeq)
+                chainsLabels.append(chainLabels)
+                chainSeq = ''
+                chainLabels = []
+            chainName = chainsKeys[len(chainsKeys) - 1] + '$' + line.split(" ")[0]
+            chainNames.append(chainName)
 
         aminoAcidInfo = line.split(" ")
-        chainNumbers += aminoAcidInfo[1]
         chainSeq += (aminoAcidInfo[2])
         chainLabels.append(aminoAcidInfo[3][:-1])
 
     chainsSequences.append(chainSeq)
     chainsLabels.append(chainLabels)
-    assert (len(chainsKeys) == len(chainsSequences) == len(chainsLabels))
+    assert (len(chainNames) == len(chainsSequences) == len(chainsLabels))
     f.close()
-    return np.array(chainsKeys), np.array(chainsSequences), np.array(chainsLabels), lines
+    return np.array(chainsKeys), np.array(chainsSequences), np.array(chainsLabels), chainNames, lines
 
 
 def cluster_sequences(list_sequences, seqid=0.95, coverage=0.8, covmode='0'):
@@ -89,18 +101,22 @@ def cluster_sequences(list_sequences, seqid=0.95, coverage=0.8, covmode='0'):
     return np.array(cluster_indices), np.array(representative_indices)
 
 
-chainsKeys, chainsSequences, chainsLabels, lines = splitReceptorsIntoIndividualChains(
-    rootPath + '\\UBDModel\\FullPssmContent')
-# cluster_indices, representative_indices = cluster_sequences(chainsSequences)
+if ubuntu:
+    chainsKeys, chainsSequences, chainsLabels, chainNames, lines = splitReceptorsIntoIndividualChains(
+        rootPath + '/UBDModel/FullPssmContent')
+    cluster_indices, representative_indices = cluster_sequences(chainsSequences)
+    clusterIndexes = loadPickle(rootPath + 'UBDModel/mmseqs2/clusterIndices.pkl')
+else:
+    chainsKeys, chainsSequences, chainsLabels, chainNames, lines = splitReceptorsIntoIndividualChains(
+        rootPath + '\\UBDModel\\FullPssmContent')
+    clusterIndexes = loadPickle(rootPath + 'UBDModel\\mmseqs2\\clusterIndices.pkl')
 
 path2mafft = '/usr/bin/mafft'
-
-clusterIndexes = loadPickle(rootPath + 'UBDModel\\mmseqs2\\clusterIndices.pkl')
 
 
 def createClusterParticipantsIndexes(clusterIndexes):
     clustersParticipantsList = []
-    for i in range(np.max(clusterIndexes)+1):
+    for i in range(np.max(clusterIndexes) + 1):
         clustersParticipantsList.append(np.where(clusterIndexes == i)[0])
     return clustersParticipantsList
 
@@ -168,10 +184,12 @@ def applyMafftForAllClusters(chainsSequences, clustersParticipantsList):
     return clustersDict
 
 
-# clustersDict = applyMafftForAllClusters(chainsSequences, clustersParticipantsList)
-# saveAsPickle(clustersDict, '/mnt/c/Users/omriy/UBDAndScanNet/UBDModel/mafft/clustersDict')
-clustersDict = loadPickle(rootPath + 'UBDModel\\mafft\\clustersDict.pkl')
-print(1)
+if ubuntu:
+    clustersDict = applyMafftForAllClusters(chainsSequences, clustersParticipantsList)
+    saveAsPickle(clustersDict, '/mnt/c/Users/omriy/UBDAndScanNet/UBDModel/mafft/clustersDict')
+    clustersDict = loadPickle(rootPath + 'UBDModel/mafft/clustersDict.pkl')
+else:
+    clustersDict = loadPickle(rootPath + 'UBDModel\\mafft\\clustersDict.pkl')
 
 
 def createPropagatedLabelsForCluster(index, chainsLabels, clusterParticipantsList):
@@ -199,8 +217,8 @@ def createPropagatedLabelsForCluster(index, chainsLabels, clusterParticipantsLis
 # createPropagatedLabelsForCluster(clustersDict['indexes'][1], chainsLabels, clustersParticipantsList[1])
 
 
-def createPropagatedPssmFile( clustersDict, chainsLabels, clustersParticipantsList,
-                             chainsSequences, lines):
+def createPropagatedPssmFile(clustersDict, chainsLabels, clustersParticipantsList,
+                             chainsSequences,chainNames, lines):
     numOfClusters = len(clustersDict['indexes'])
     numOfChains = len(chainsSequences)
     newLabels = [None for i in range(numOfChains)]
@@ -210,18 +228,26 @@ def createPropagatedPssmFile( clustersDict, chainsLabels, clustersParticipantsLi
         for j in range(len(clustersParticipantsList[i])):
             newLabels[clustersParticipantsList[i][j]] = clusterNewLabels[j]
 
-    propagatedFile = open('propagatedFullPssmFile', 'w')
+    # propagatedFile = open('propagatedFullPssmFile', 'w')
     chainIndex = -1
+    chainName = None
     for line in lines:
         if line[0] == '>':
-            chainIndex += 1
-            aminoAcidNum = 0
+            chainsKey = line[1:-1]
         else:
+            if chainsKey + '$' + line.split(" ")[0] != chainName:
+                chainName = chainsKey + '$' + line.split(" ")[0]
+                chainIndex += 1
+                aminoAcidNum = 0
             splitedLine = line.split(" ")
             splitedLine[-1] = str(newLabels[chainIndex][aminoAcidNum]) + '\n'
             line = " ".join(splitedLine)
             aminoAcidNum += 1
-        propagatedFile.write(line)
-    propagatedFile.close()
+        # propagatedFile.write(line)
+    # propagatedFile.close()
+#
 
-# createPropagatedPssmFile(clustersDict,chainsLabels,clustersParticipantsList,chainsSequences,lines)
+
+
+
+createPropagatedPssmFile(clustersDict, chainsLabels, clustersParticipantsList, chainsSequences,chainNames, lines)
