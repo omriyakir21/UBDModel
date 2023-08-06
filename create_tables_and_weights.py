@@ -111,7 +111,7 @@ def calculate_weights(list_sequences,resolutions = [100,95,90,70],coverage=0.8, 
 
 if __name__ == '__main__':
 
-    input_folder =  '0307_dataset/'
+    input_folder =  '0608_dataset/'
 
     all_origins = []
     all_folds = []

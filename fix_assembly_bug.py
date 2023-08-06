@@ -10,8 +10,8 @@ import numpy as np
 import pickle
 import copy
 
-source_datasets = ['PSSMFiles/PSSM%s.txt'%k for k in range(5)]
-target_datasets = ['0307_dataset/labels_fold%s.txt'%k for k in range(1,6)]
+source_datasets = ['propagatedPssmFiles/PSSM%s.txt'%k for k in range(5)]
+target_datasets = ['0608_dataset/labels_fold%s.txt'%k for k in range(1,6)]
 Lmin = 10
 
 for i in range(5):
