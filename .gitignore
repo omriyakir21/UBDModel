@@ -1,5 +1,7 @@
 *.idea
 tmp/
 *.DS_store
-analyze_training_results/annotated*
-analyze_training_results/predictions*
+analyze_training_results/*annotated*
+analyze_training_results/*predictions*
+analyze_training_results/*labels*
+analyze_training_results/0608/
