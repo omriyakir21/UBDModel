@@ -30,23 +30,32 @@ def loadPickle(fileName):
         return object
 
 
-def splitReceptorsIntoIndividualChains(PssmContentFilePath):
+def splitReceptorsIntoIndividualChains(PssmContentFilePath, asaPssmContentFilePath):
     f = open(PssmContentFilePath, 'r')
+    fAsa = open(asaPssmContentFilePath, 'r')
     lines = f.readlines()
+    asaLines = fAsa.readlines()
     chainsKeys = []
     chainsSequences = []
     chainsLabels = []
+    chainsAsaValues = []
     chainNames = []
     chainKey = lines[0][1:-1]
     chainsKeys.append(chainKey)
     chainSeq = ''
     chainLabels = []
+    chainAsaValues = []
     chainName = None
-    for line in lines[1:]:
+    for i in range(1, len(lines)):
+        line = lines[i]
+        asaLine = asaLines[i]
         if line[0] == '>':
             chainsSequences.append(chainSeq)
+            chainsAsaValues.append(chainAsaValues)
             chainsLabels.append(chainLabels)
+            assert len(chainAsaValues) == len(chainLabels)
             chainSeq = ''
+            chainAsaValues = []
             chainLabels = []
             chainKey = line[1:-1]
             chainsKeys.append(chainKey)
@@ -55,20 +64,25 @@ def splitReceptorsIntoIndividualChains(PssmContentFilePath):
             if len(chainSeq) > 0:
                 chainsSequences.append(chainSeq)
                 chainsLabels.append(chainLabels)
+                chainsAsaValues.append(chainAsaValues)
                 chainSeq = ''
+                chainAsaValues = []
                 chainLabels = []
             chainName = chainsKeys[len(chainsKeys) - 1] + '$' + line.split(" ")[0]
             chainNames.append(chainName)
 
+        asaInfo = asaLine.split(" ")
         aminoAcidInfo = line.split(" ")
         chainSeq += (aminoAcidInfo[2])
         chainLabels.append(aminoAcidInfo[3][:-1])
+        chainAsaValues.append(float(asaInfo[3][:-1]))
 
     chainsSequences.append(chainSeq)
     chainsLabels.append(chainLabels)
-    assert (len(chainNames) == len(chainsSequences) == len(chainsLabels))
+    chainsAsaValues.append(chainAsaValues)
+    assert (len(chainNames) == len(chainsSequences) == len(chainsLabels) == len(chainsAsaValues))
     f.close()
-    return np.array(chainsKeys), np.array(chainsSequences), np.array(chainsLabels), chainNames, lines
+    return np.array(chainsKeys), np.array(chainsSequences), np.array(chainsLabels), chainNames, lines, chainsAsaValues
 
 
 def cluster_sequences(list_sequences, seqid=0.95, coverage=0.8, covmode='0'):
@@ -102,13 +116,13 @@ def cluster_sequences(list_sequences, seqid=0.95, coverage=0.8, covmode='0'):
 
 
 if ubuntu:
-    chainsKeys, chainsSequences, chainsLabels, chainNames, lines = splitReceptorsIntoIndividualChains(
-        rootPath + '/UBDModel/FullPssmContent')
+    chainsKeys, chainsSequences, chainsLabels, chainNames, lines, chainsAsaValues = splitReceptorsIntoIndividualChains(
+        rootPath + '/UBDModel/FullPssmContent.txt', rootPath + 'normalizedFullASAPssmContent')
     cluster_indices, representative_indices = cluster_sequences(chainsSequences)
     clusterIndexes = loadPickle(rootPath + 'UBDModel/mmseqs2/clusterIndices.pkl')
 else:
-    chainsKeys, chainsSequences, chainsLabels, chainNames, lines = splitReceptorsIntoIndividualChains(
-        rootPath + '\\UBDModel\\FullPssmContent')
+    chainsKeys, chainsSequences, chainsLabels, chainNames, lines, chainsAsaValues = splitReceptorsIntoIndividualChains(
+        rootPath + '\\UBDModel\\FullPssmContent.txt', rootPath + '\\UBDModel\\normalizedFullASAPssmContent')
     clusterIndexes = loadPickle(rootPath + 'UBDModel\\mmseqs2\\clusterIndices.pkl')
 
 path2mafft = '/usr/bin/mafft'
@@ -192,7 +206,7 @@ else:
     clustersDict = loadPickle(rootPath + 'UBDModel\\mafft\\clustersDict.pkl')
 
 
-def createPropagatedLabelsForCluster(index, chainsLabels, clusterParticipantsList):
+def createPropagatedLabelsForCluster(index, chainsLabels, clusterParticipantsList, chainsAsaValues):
     numberOfParticipants = index.shape[0]
     msaLength = index.shape[1]
     assert (numberOfParticipants == len(clusterParticipantsList))
@@ -207,28 +221,53 @@ def createPropagatedLabelsForCluster(index, chainsLabels, clusterParticipantsLis
 
     consensus = [max([labelsAfterAligment[i][j] for i in range(numberOfParticipants)]) for j in range(msaLength)]
     for i in range(numberOfParticipants):
+        chainIndex = clusterParticipantsList[i]
         indexsOfParcipitant = index[i]
+        threshold = min(0.2, 0.75 * max(chainsAsaValues[chainIndex]))
+        # print("i = ", i)
         for j in range(msaLength):
+            # print("j = ", j)
             if indexsOfParcipitant[j] != -1:  # not a gap
-                newLabels[i].append(consensus[j])
+                if chainsAsaValues[chainIndex][len(newLabels[i])] > threshold:
+                    newLabels[i].append(consensus[j])
+                else:
+                    newLabels[i].append(chainsLabels[chainIndex][len(newLabels[i])])
     return newLabels
 
 
 # createPropagatedLabelsForCluster(clustersDict['indexes'][1], chainsLabels, clustersParticipantsList[1])
 
+def findChainNamesForCluster(clustersParticipantsList, chainNames, i):
+    clusterChainsNames = [chainNames[j] for j in clustersParticipantsList[i]]
+    return clusterChainsNames
+
+
+def findChainNamesForClusters(clustersParticipantsList, chainNames):
+    print(chainNames)
+    clustersChainsNames = [findChainNamesForCluster(clustersParticipantsList, chainNames, i) for i in
+                           range(len(clustersParticipantsList))]
+    return clustersChainsNames
+
+
+# def findIndexesForCluster(clusterChainNames, chainNames):
+#     clusterIndexes = [chainNames.index(name) for name in clusterChainNames]
+#     return clusterIndexes
+
 
 def createPropagatedPssmFile(clustersDict, chainsLabels, clustersParticipantsList,
-                             chainsSequences,chainNames, lines):
+                             chainsSequences, chainNames, lines, chainsAsaValues):
     numOfClusters = len(clustersDict['indexes'])
     numOfChains = len(chainsSequences)
     newLabels = [None for i in range(numOfChains)]
+    clustersChainsNames = findChainNamesForClusters(clustersParticipantsList, chainNames)
+    # clustersIndexes = [findIndexesForCluster(clusterChainNames) for clusterChainNames in clustersChainsNames]
     for i in range(numOfClusters):
         clusterNewLabels = createPropagatedLabelsForCluster(clustersDict['indexes'][i], chainsLabels,
-                                                            clustersParticipantsList[i])
+                                                            clustersParticipantsList[i], chainsAsaValues)
         for j in range(len(clustersParticipantsList[i])):
             newLabels[clustersParticipantsList[i][j]] = clusterNewLabels[j]
 
-    # propagatedFile = open('propagatedFullPssmFile', 'w')
+    propagatedFile = open('propagatedPssmWithAsaFile0.2', 'w')
     chainIndex = -1
     chainName = None
     for line in lines:
@@ -243,11 +282,60 @@ def createPropagatedPssmFile(clustersDict, chainsLabels, clustersParticipantsLis
             splitedLine[-1] = str(newLabels[chainIndex][aminoAcidNum]) + '\n'
             line = " ".join(splitedLine)
             aminoAcidNum += 1
-        # propagatedFile.write(line)
-    # propagatedFile.close()
-#
+        propagatedFile.write(line)
+    propagatedFile.close()
 
 
+def createQuantileAsaDicts(lines):
+    aminoAcidAsaDict = dict()
+    for line in lines:
+        if line[0] != '>':
+            splittedLine = line.split(" ")
+            asaVal = splittedLine[3][:-1]
+            aminoAcidChar = splittedLine[2]
+            if aminoAcidChar not in aminoAcidAsaDict:
+                aminoAcidAsaDict[aminoAcidChar] = []
+            aminoAcidAsaDict[aminoAcidChar].append(float(asaVal))
+    quentileAsaAminoAcidDict = dict()
+
+    for aminoAcidChar in aminoAcidAsaDict.keys():
+        quantile5 = np.percentile(aminoAcidAsaDict[aminoAcidChar], 5)
+        quantile95 = np.percentile(aminoAcidAsaDict[aminoAcidChar], 95)
+        quentileAsaAminoAcidDict[aminoAcidChar] = (quantile5, quantile95)
+    return quentileAsaAminoAcidDict
 
 
-createPropagatedPssmFile(clustersDict, chainsLabels, clustersParticipantsList, chainsSequences,chainNames, lines)
+def normalizeValue(currentVal, quantile5, quantile95):
+    if currentVal <= quantile5:
+        return 0
+    if currentVal >= quantile95:
+        return 1
+    normalizeValue = (currentVal - quantile5) / (quantile95 - quantile5)
+    return normalizeValue
+
+
+def normalizeASAData(fullAsaPssmContent):
+    f = open(fullAsaPssmContent, 'r')
+    lines = f.readlines()
+    f.close()
+    quentileAsaAminoAcidDict = createQuantileAsaDicts(lines)
+    normalizeASAPssmContentFile = open('normalizedFullASAPssmContent', 'w')
+    for line in lines:
+        if line[0] == '>':
+            normalizeASAPssmContentFile.write(line)
+        else:
+            splittedLine = line.split(" ")
+            asaVal = float(splittedLine[3][:-1])
+            aminoAcidChar = splittedLine[2]
+            normalizedAsaValue = normalizeValue(asaVal, quentileAsaAminoAcidDict[aminoAcidChar][0],
+                                                quentileAsaAminoAcidDict[aminoAcidChar][1])
+            splittedLine[3] = str(normalizedAsaValue) + '\n'
+            newLine = " ".join(splittedLine)
+            normalizeASAPssmContentFile.write(newLine)
+    normalizeASAPssmContentFile.close()
+
+
+# normalizeASAData('FullAsaPssmContent')
+
+createPropagatedPssmFile(clustersDict, chainsLabels, clustersParticipantsList, chainsSequences, chainNames, lines,
+                         chainsAsaValues)
