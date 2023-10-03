@@ -41,10 +41,10 @@ def read_labels(input_file, nmax=np.inf, label_type='int'):
     list_labels.append(np.array(labels))
     list_resids.append(np.array(resids))
 
-    list_origins = np.array(list_origins)
-    list_sequences = np.array(list_sequences)
-    list_labels = np.array(list_labels)
-    list_resids = np.array(list_resids)
+    list_origins = np.array(list_origins,dtype=object)
+    list_sequences = np.array(list_sequences,dtype=object)
+    list_labels = np.array(list_labels,dtype=object)
+    list_resids = np.array(list_resids,dtype=object)
     return list_origins, list_sequences, list_resids, list_labels
 
 
@@ -111,7 +111,7 @@ def calculate_weights(list_sequences,resolutions = [100,95,90,70],coverage=0.8, 
 
 if __name__ == '__main__':
 
-    input_folder =  '0608_dataset/'
+    input_folder =  '0509_dataset/'
 
     all_origins = []
     all_folds = []
