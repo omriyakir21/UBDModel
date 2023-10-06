@@ -5,10 +5,14 @@ import pandas as pd
 from preprocessing import PDBio
 import numpy as np
 download_batch = 10
+import predict_bindingsites
+
 try:
     batch = int(sys.argv[1])
 except:
     batch = 0
+
+
 table = pd.read_csv('protein_classification/uniprotnamecsCSV.csv')
 all_examples = []
 for column in table.columns[:-1]:
