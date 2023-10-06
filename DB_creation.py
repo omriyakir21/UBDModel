@@ -3,9 +3,11 @@ import os
 import pickle
 
 import numpy as np
+
 from Bio import pairwise2
 from Bio.PDB import PDBList
 from Bio.PDB.MMCIFParser import MMCIFParser
+from Bio.PDB.SASA import ShrakeRupley
 from scipy.sparse.csgraph import connected_components
 
 
@@ -39,7 +41,7 @@ ubiq_list_path = "ubiquitin_containing_pdb_entries.txt"
 pdbs_path = 'C:/Users/omriy/pythonProject/ubiq_project/pdbs'
 assembliesPath = 'C:/Users/omriy/pythonProject/ubiq_project/assemblies'
 pdb1 = PDBList()
-
+#
 
 def downloadAssemblyFiles(PDB_names_list, pdbListObject, dirPath):
     """
@@ -265,12 +267,26 @@ class Model:
             return True
         return False
 
+    def calculateASAF(self):
+        sasa_calc = ShrakeRupley()
+
+        for i in range(len(self.non_ubiq_chains)):
+            aminoAcids = aaOutOfChain(self.non_ubiq_chains[i])
+            for aa in aminoAcids:
+                id = aa.get_segid
+                sasa_calc.compute(aa, level="R")
+                asa = aa.sasa
+                self.sasa_results_dict[id] = asa
+
     def __init__(self, model):
+        self.model = model
         self.chains = model.get_chains()
         self.id = model.id
         self.ubiq_chains = []
         self.non_ubiq_chains = []
+        self.sasa_results_dict = dict()
         self.classifyModelChains()
+        self.calculateASAF()
 
 
 class UBD_candidate:
@@ -682,7 +698,7 @@ def fromPickleToChooseAssemblies():
     return chosenAssemblies
 
 
-chosenAssemblies = fromPickleToChooseAssemblies()
+# chosenAssemblies = fromPickleToChooseAssemblies()
 
 
 def split_list(original_list, num_sublists):
@@ -701,7 +717,7 @@ def split_list(original_list, num_sublists):
     return result
 
 
-chosenAssembliesListOfSublists = split_list(chosenAssemblies, 40)
+# chosenAssembliesListOfSublists = split_list(chosenAssemblies, 40)
 
 
 def atomDist(atom1, atom2):
@@ -798,6 +814,15 @@ def checkConnectedAtoms(aminoAcidsA, aminoAcidsB, n, threshold):
     return False
 
 
+def createASAList(model):
+    asaDict = model.sasa_results_dict
+    nonUbiqChainsAminoAcidLists = [aaOutOfChain(model.non_ubiq_chains[i]) for i in
+                                   range(len(model.non_ubiq_chains))]
+    AsaList =[ [asaDict[nonUbiqChainsAminoAcidLists[i][j].get_segid] for j in range(len(nonUbiqChainsAminoAcidLists[i]))] for i in
+               range(len(model.non_ubiq_chains))]
+    return AsaList
+
+
 def createAminoAcidLabels(model):
     """
     :param model:
@@ -817,7 +842,7 @@ def createAminoAcidLabels(model):
     # --------- for each amino acid in the non ubiquitin chain, fill label , type and id stored in  modelAttributesMatrix---------
     # --------- fill ubiqNeighbors matrix: ubiqNeigbors[i][j] == True <-> There is a connection between the i's non ubiquitin chain and the j's ubiquitin chain ---------
     for i in range(len(model.non_ubiq_chains)):  # iterare over the non ubiquitin chains
-    # for i in range(6,7):
+        # for i in range(6,7):
         for j in range(len(model.ubiq_chains)):  # iterare over the ubiquitin chains
             if getLabelsForAminoAcids(nonUbiqChainsAminoAcidLists[i], ubiqChainsAtomsLists[j],
                                       modelLabelsMatrix[
@@ -886,10 +911,15 @@ def connectivityAlgorithm(B, A):
 
 def createImerFiles(dirName):
     """
-    :return: list of 10 files
+    :return: list of 24 files
     """
     dirName = dirName + '/'
     return [open(dirName + f"Checkchains_{i}_mer.txt", "w") for i in range(1, 25)]
+
+
+def createImerAsaFiles(asaDirName):
+    asaDirName = asaDirName + '/'
+    return [open(asaDirName + f"Checkchains__{i}_mer.txt", "w") for i in range(1, 25)]
 
 
 def writeImerToFile(file, modelAttributesMatrix, ithComponentIndexesConverted, candidate, model, index, receptorHeader):
@@ -908,6 +938,21 @@ def writeImerToFile(file, modelAttributesMatrix, ithComponentIndexesConverted, c
     logFile = open('logFiles/log' + str(index), "w")
     logFile.write("candidate = " + candidate.structure.get_id() + "\nin file:" + str(file.name))
     logFile.close()
+
+
+def writeASAToFile(file, modelAttributesMatrix, ithComponentIndexesConverted, candidate, model, index, receptorHeader,ASAList):
+    print(file.name)
+    lines = []
+    lines.append(">" + receptorHeader)
+    for i in ithComponentIndexesConverted:
+        for j in range(len(modelAttributesMatrix[i])):
+            modelAttributesMatrix[i][j][3] = str(ASAList[i][j])
+            lines.append(" ".join(modelAttributesMatrix[i][j]))
+    stringToFile = "\n".join(lines)
+    assert (file.write(stringToFile + "\n") > 0)
+    # logFile = open('logFiles/log' + str(index), "w")
+    # logFile.write("candidate = " + candidate.structure.get_id() + "\nin file:" + str(file.name))
+    # logFile.close()
 
 
 def updateLabelsForChainsUtil(ImerAttributesMatrix, ImerAminoAcids, nonBindingAtoms, nonBindingDiameter):
@@ -989,6 +1034,17 @@ def createReceptorSummaryUtil(model, ubIndex, nonUbIndex, boundResidueSet, nonUb
             boundResidueSet.add(i)
 
 
+def createReceptorHeader(candidate, model, ithComponentIndexesConverted):
+    """
+    :param candidate:
+    :param model :
+    :param ithComponentIndexesConverted: indexes of the Imer's non ubiq chains
+    """
+    receptorHeader = str(candidate.structure.get_id()).lower() + "_" + '+'.join(
+        [str(model.id) + "-" + model.non_ubiq_chains[i].get_id() for i in ithComponentIndexesConverted])
+    return receptorHeader
+
+
 def createReceptorSummary(candidate, model, ubiqNeighbors, ithComponentIndexesConverted, ubiqCorrespondingLists,
                           nonUbiqDiameters):
     """
@@ -1000,8 +1056,6 @@ def createReceptorSummary(candidate, model, ubiqNeighbors, ithComponentIndexesCo
     """
     boundResidueSets = [set() for _ in range(len(model.ubiq_chains))]
     numUb = 0
-    receptorHeader = str(candidate.structure.get_id()).lower() + "_" + '+'.join(
-        [str(model.id) + "-" + model.non_ubiq_chains[i].get_id() for i in ithComponentIndexesConverted])
 
     for j in range(len(model.ubiq_chains)):
         bind = False
@@ -1023,7 +1077,7 @@ def createReceptorSummary(candidate, model, ubiqNeighbors, ithComponentIndexesCo
     boundResidueStrings = ["+".join(convertedResidueLists[i]) for i in range(len(convertedResidueLists))]
     # print(boundResidueStrings)
     boundResidueStringsFiltered = [s for s in boundResidueStrings if s != ""]
-    return ("//".join(boundResidueStringsFiltered), numUb, receptorHeader)
+    return ("//".join(boundResidueStringsFiltered), numUb)
 
 
 def createDataBase(tuple):
@@ -1041,11 +1095,14 @@ def createDataBase(tuple):
     #               '6oa9' in assembliesNames[i]]
     UBD_candidates = [UBD_candidate(structure) for structure in structures]
     dirName = "Batch" + indexString
+    asaDirName = "asaBatch" + indexString
     print("\n\n\n creating dir")
-    os.mkdir(dirName)
-    filesList = createImerFiles(dirName)  # filesList[i] = file containing i-mers if created else None
-    summaryLines = []
-    summaryFile = open(dirName + '/' + "summaryLog.txt", "w")
+    # os.mkdir(dirName)
+    os.mkdir(asaDirName)
+    # filesList = createImerFiles(dirName)  # filesList[i] = file containing i-mers if created else None
+    asaFilesList = createImerAsaFiles(asaDirName)
+    # summaryLines = []
+    # summaryFile = open(dirName + '/' + "summaryLog.txt", "w")
     for candidate in UBD_candidates:
         # if candidate.structure.get_id().lower() != '3k9o':
         #     continue
@@ -1054,6 +1111,7 @@ def createDataBase(tuple):
             print(model)
             nonUbiqDiameters = [calculateDiameterFromChain(NonUbiqChain) for NonUbiqChain in model.non_ubiq_chains]
             # print(nonUbiqDiameters)
+            ASAList = createASAList(model)
             ubiqNeighbors, nonUbiqNeighbors, modelAttributesMatrix = createAminoAcidLabels(model)
             NpNonUbiqNeighbors = np.array(nonUbiqNeighbors)
             NpUbiquitinNeighbors = np.array(ubiqNeighbors)
@@ -1069,28 +1127,33 @@ def createDataBase(tuple):
                     x = connectionIndexList[val]
                     ithComponentIndexesConverted.append(x)
 
-                updateImersLabels(modelAttributesMatrix, ithComponentIndexesConverted, model, nonUbiqDiameters)
-
-                ubiquitinBindingPatch, numberOfBoundUbiq, receptorHeader = createReceptorSummary(candidate, model,
-                                                                                                 ubiqNeighbors,
-                                                                                                 ithComponentIndexesConverted,
-                                                                                                 ubiqCorrespondingLists,
-                                                                                                 nonUbiqDiameters)
+                # updateImersLabels(modelAttributesMatrix, ithComponentIndexesConverted, model, nonUbiqDiameters)
+                receptorHeader = createReceptorHeader(candidate, model, ithComponentIndexesConverted)
+                writeASAToFile(asaFilesList[len(ithComponentIndexesConverted) - 1],
+                               modelAttributesMatrix, ithComponentIndexesConverted, candidate, model, index,
+                               receptorHeader,ASAList)
+                # ubiquitinBindingPatch, numberOfBoundUbiq= createReceptorSummary(candidate, model,
+                #                                                                                  ubiqNeighbors,
+                #                                                                                  ithComponentIndexesConverted,
+                #                                                                                  ubiqCorrespondingLists,
+                #                                                                                  nonUbiqDiameters)
                 numberOfReceptors = len(ithComponentIndexesConverted)
-                summaryLines.append(
-                    '$'.join([receptorHeader, str(numberOfReceptors), str(numberOfBoundUbiq), ubiquitinBindingPatch]))
-                writeImerToFile(filesList[len(ithComponentIndexesConverted) - 1],
-                                modelAttributesMatrix, ithComponentIndexesConverted, candidate, model, index,
-                                receptorHeader)
+                # summaryLines.append(
+                #     '$'.join([receptorHeader, str(numberOfReceptors), str(numberOfBoundUbiq), ubiquitinBindingPatch]))
+                # writeImerToFile(filesList[len(ithComponentIndexesConverted) - 1],
+                #                 modelAttributesMatrix, ithComponentIndexesConverted, candidate, model, index,
+                #                 receptorHeader)
 
-    summaryString = "\n".join(summaryLines)
-    assert (summaryFile.write(summaryString) > 0)
-    summaryFile.close()
-    for file in filesList:
+    # summaryString = "\n".join(summaryLines)
+    # assert (summaryFile.write(summaryString) > 0)
+    # summaryFile.close()
+    # for file in filesList:
+    #     file.close()
+    for file in asaFilesList:
         file.close()
 
 
-items = [(chosenAssembliesListOfSublists[i], i) for i in range(40)]
+# items = [(chosenAssembliesListOfSublists[i], i) for i in range(40)]
 # items = (chosenAssemblies,9999)
 # items = (chosenAssembliesListOfSublists[0][:3], 99999)
 # # print(starmap(createDataBase, items))
@@ -1110,7 +1173,9 @@ items = [(chosenAssembliesListOfSublists[i], i) for i in range(40)]
 # for batch in batch7Items:
 #     print(len(batch[0]))
 
-createDataBase(items[38])
+# createDataBase(items[36])
+# createDataBase(items[39])
+# createDataBase(items[33])
 
 # createDataBase((chosenAssemblies, 0000))
 # createDataBase(items[14])

@@ -379,8 +379,10 @@ def dividePSSM(chainDict):
     :param chainDict: chainDict[chainName] = index of chain cluster(i if chain in ChainLists[i])
     create len(chainLists) txt files. the i txt file contains the chains in chainLists[i]
     """
-    filesList = [open("PSSMFiles\\PSSM{}.txt".format(i), 'w') for i in range(5)]
-    pssmFile = open("FullPssmContent", 'r')
+    dirPath = 'C:\\Users\\omriy\\UBDAndScanNet\\UBDModel\\PssmFiles_propagated_asa\PssmFiles_propagated_asa_0_15'
+    filesList = [open(dirPath + "\\PSSM{}.txt".format(i), 'w') for i in range(5)]
+    fullPssmFilePath = 'C:\\Users\\omriy\\UBDAndScanNet\\UBDModel\\FullPropagatedPssmWithAsa\\propagatedPssmWithAsaFile0_15.txt'
+    pssmFile = open(fullPssmFilePath, 'r')
     lines = pssmFile.readlines()
     fillIndex = -1  # fillIndex = i -> we now write to PSSMi.txt
     for line in lines:
@@ -417,7 +419,7 @@ def calculateRatioForFold(homologousLabels, matHomologous, sublists, foldNum):
 
 
 cath_df = make_cath_df_new("cath_b.20230204.txt", 4)
-namesList, sizesList, sequenceList, fullNamesList, pdbNamesWithChainsLists = listCreation("FullPssmContent")
+namesList, sizesList, sequenceList, fullNamesList, pdbNamesWithChainsLists = listCreation("propagatedFullPssmFile")
 structuresDicts = createDictionaries(namesList, sizesList, sequenceList, fullNamesList, pdbNamesWithChainsLists)
 inCath, notInCath, cnt = countInCath(cath_df, structuresDicts)
 
@@ -455,11 +457,11 @@ chainLists = sublistsToChainLists(sublists, relatedChainsLists, fullNamesList)
 chainDict = chainListsToChainIndexDict(chainLists)
 print(chainLists)
 print(chainDict)
-pickleDirPath = 'C:\\Users\\omriy\\UBDAndScanNet\\UBDModel'
-with open(pickleDirPath + "\\receptorsFoldsDict.pkl" , "wb") as f:
-    # pickle the list to the file
-    pickle.dump(chainDict, f)
-
+# pickleDirPath = 'C:\\Users\\omriy\\UBDAndScanNet\\UBDModel'
+# with open(pickleDirPath + "\\receptorsFoldsDict.pkl" , "wb") as f:
+#     # pickle the list to the file
+#     pickle.dump(chainDict, f)
+#
 
 
 
@@ -467,4 +469,4 @@ with open(pickleDirPath + "\\receptorsFoldsDict.pkl" , "wb") as f:
 # for i in range(5):
 #     print("avarage ratio of fold : ", i + 1)
 #     print(calculateRatioForFold(homologousLabels, matHomologous, sublists, i))
-# dividePSSM(chainDict)
+dividePSSM(chainDict)
