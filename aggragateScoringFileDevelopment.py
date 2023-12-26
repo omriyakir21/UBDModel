@@ -271,11 +271,12 @@ def updateFunction(probabilities, priorUb, trainingUbRatio):
     probabilities[0] = 1 - updatedProbability
 
 
-listOfComponentsTuplesLists = [loadPickle(
-    r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\proteinConnectedComponents\proteinConnectedComponents' + str(
-        i) + '.pkl') for i in range(46)]
+# listOfComponentsTuplesLists = [loadPickle(
+#     r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\proteinConnectedComponents\proteinConnectedComponents' + str(
+#         i) + '.pkl') for i in range(46)]
+# saveAsPickle(listOfComponentsTuplesLists, 'listOfComponentsTuplesLists')
 common_values = repeatingUniprotsToFilter()
-allComponents = list(chain.from_iterable(listOfComponentsTuplesLists))
+allComponents = loadPickle('allComponents.pkl')
 allComponentsFiltered = [component for component in allComponents if component[1] not in common_values]
 allTuplesLists = [component[2] for component in allComponentsFiltered]
 concatenated_tuples = list(chain.from_iterable(allTuplesLists))
@@ -314,8 +315,8 @@ def readDataFromUni(fileName):
         return data_dict
 
 
-data_dict = readDataFromUni(
-    r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO\idmapping_2023_12_26.tsv\idmapping_2023_12_26.tsv')
+# data_dict = readDataFromUni(
+#     r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO\idmapping_2023_12_26.tsv\idmapping_2023_12_26.tsv')
 
 
 def createInfoCsv(data_dict, predBayes10, predBayes50, KValues):
@@ -350,5 +351,4 @@ def getNBiggestFP(labels, predictions, allComponentsFiltered, N):
                   range(N)]
     return NBiggestFP
 
-
-NBiggestFP = getNBiggestFP(labels, finalOutputsFifty, allComponentsFiltered, 10)
+# NBiggestFP = getNBiggestFP(labels, finalOutputsFifty, allComponentsFiltered, 10)
