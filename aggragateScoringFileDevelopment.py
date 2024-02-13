@@ -22,10 +22,11 @@ class SizeDifferentiationException(Exception):
 class Protein:
     def __init__(self, uniprotName):
         self.uniprotName = uniprotName
-        self.predictions = allPredictions['dict_predictions'][uniprotName]
-        self.residues = allPredictions['dict_resids'][uniprotName]
-        self.source = self.getSource(allPredictions['dict_sources'][uniprotName])
-        self.structure = self.getStructure()
+        self.ubiqPredictions = allPredictionsUbiq['dict_predictions'][uniprotName]
+        self.nonUbiqPredictions = allPredictionsNonUbiq['dict_predictions'][uniprotName]
+        self.residues = allPredictionsUbiq['dict_resids'][uniprotName]
+        self.source = self.getSource(allPredictionsUbiq['dict_sources'][uniprotName])
+        self.size = None
         self.graph = nx.Graph()
         self.createGraph()
         self.connectedComponentsTuples = self.creatConnectedComponentsTuples()
@@ -48,11 +49,11 @@ class Protein:
 
     def createNodesForGraph(self, residues):
         nodes = []
-        if len(residues) != len(self.predictions):  # need to skip this protein
+        if len(residues) != len(self.ubiqPredictions):  # need to skip this protein
             raise SizeDifferentiationException(self.uniprotName)
         for i in range(len(residues)):
             plddtVal = residues[i].child_list[0].bfactor
-            if plddtVal > 0.85 and self.predictions[i] > percentile_90:
+            if plddtVal > 0.85 and self.ubiqPredictions[i] > percentile_90:
                 nodes.append(i)
         return nodes
 
@@ -66,10 +67,12 @@ class Protein:
         return edges
 
     def createGraph(self):
-        model = self.structure.child_list[0]
+        structure = self.getStructure()
+        model = structure.child_list[0]
         assert (len(model) == 1)
         for chain in model:
             residues = aaOutOfChain(chain)
+            self.size = len(residues)
             nodes = self.createNodesForGraph(residues)
             validResidues = [residues[i] for i in nodes]
             edges = self.createEdgesForGraph(validResidues, nodes)
@@ -80,16 +83,19 @@ class Protein:
         tuples = []
         connected_components = list(nx.connected_components(self.graph))
         for componentSet in connected_components:
-            average = self.calculateAveragePredictionsForComponent(componentSet)
+            averageUbiq, averageNonUbiq = self.calculateAveragePredictionsForComponent(componentSet)
             length = len(componentSet)
-            tuples.append((length, average))
+            tuples.append((length, averageUbiq, averageNonUbiq))
         return tuples
 
     def calculateAveragePredictionsForComponent(self, indexSet):
         indexes = list(indexSet)
-        predictions = [self.predictions[index] for index in indexes]
-        average = sum(predictions) / len(predictions)
-        return average
+        ubiqPredictions = [self.ubiqPredictions[index] for index in indexes]
+        nonUbiqPredictions = [self.nonUbiqPredictions[index] for index in indexes]
+        assert (len(ubiqPredictions) == len(nonUbiqPredictions))
+        averageUbiq = sum(ubiqPredictions) / len(ubiqPredictions)
+        averageNonUbiq = sum(nonUbiqPredictions) / len(nonUbiqPredictions)
+        return averageUbiq, averageNonUbiq
 
 
 threeLetterToSinglelDict = {'GLY': 'G', 'ALA': 'A', 'VAL': 'V', 'LEU': 'L', 'ILE': 'I', 'THR': 'T', 'SER': 'S',
@@ -130,11 +136,14 @@ def CAlphaDistance(atom1, atom2):
     return distance
 
 
-# allPredictions = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\all_predictions_0310.pkl')
-# allPredictionsFlatten = [value for values_list in allPredictions['dict_predictions'].values() for value in values_list]
-# percentile_90 = np.percentile(allPredictionsFlatten, 90)
+# allPredictionsUbiq = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\all_predictions_0310.pkl')
+# allPredictionsNonUbiq = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\all_predictions_3101.pkl')
+# allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq['dict_predictions'].values() for value in values_list]
+# percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
 # distanceThreshold = 10
 # parser = MMCIFParser()
+
+
 def patchesList(allPredictions, i):
     allKeys = list(allPredictions['dict_resids'].keys())[indexes[i]:indexes[i + 1]]
     proteinObjects = []
@@ -142,7 +151,6 @@ def patchesList(allPredictions, i):
     for key in allKeys:
         print("i= ", i, " cnt = ", cnt, " key = ", key)
         cnt += 1
-
         try:
             proteinObjects.append(Protein(key))
         except SizeDifferentiationException as e:
@@ -152,13 +160,13 @@ def patchesList(allPredictions, i):
             raise (e)
     saveAsPickle(proteinObjects,
                  os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel',
-                              'listOfProteinObjectsForAggregateFunc' + str(i)))
+                              'newListOfProteinObjectsForAggregateFunc' + str(i)))
 
 
 indexes = list(range(0, 67660 + 1, 1500)) + [67660]
 
+# patchesList(allPredictionsUbiq, int(sys.argv[1]))
 
-# patchesList(allPredictions, int(sys.argv[1]))
 
 def pklComponentsAndSource():
     i = sys.argv[1]
@@ -172,7 +180,6 @@ def pklComponentsAndSource():
 
 
 # pklComponentsAndSource()
-
 def repeatingUniprotsToFilter():
     # Read the CSV file into a DataFrame
     df = pd.read_csv(
@@ -214,8 +221,6 @@ def trainLogisticRegressionModel(X, Y, class_weights=None):
     model.fit(X, Y)
     return model
 
-
-#
 
 def testLogisticRegressionModel(model, X, Y):
     predictions = model.predict(X)
@@ -279,26 +284,28 @@ common_values = repeatingUniprotsToFilter()
 allComponents = loadPickle('allComponents.pkl')
 allComponentsFiltered = [component for component in allComponents if component[1] not in common_values]
 allTuplesLists = [component[2] for component in allComponentsFiltered]
+saveAsPickle(allTuplesLists, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'allTuplesListsOfLen2'))
 concatenated_tuples = list(chain.from_iterable(allTuplesLists))
 n_bins_parameter = 30  # it will actualli be 30^(number of parameter which is 2 because of len(size,average)
-
 labels = createLabelsForComponents(allComponentsFiltered)
-print(sum(labels))
-kBinModel = trainKBinDescretizierModel(concatenated_tuples, n_bins_parameter)
-vectorizedData = createVectorizedData(kBinModel, allTuplesLists, n_bins_parameter)
-logisticRegressionModel = trainLogisticRegressionModel(vectorizedData, labels)
-logisticRegressionModelBalanced = trainLogisticRegressionModel(vectorizedData, labels, 'balanced')
-testLogisticRegressionModel(logisticRegressionModel, vectorizedData, labels)
-testLogisticRegressionModel(logisticRegressionModelBalanced, vectorizedData, labels)
-# plt.matshow(logisticRegressionModel.coef_.reshape([30,30]),vmin=-1.,vmax=1,cmap='jet'); plt.colorbar(); plt.show()
-trainingRatio = sum(labels) / len(allTuplesLists)
-ubProbabillits = np.array([row[1] for row in logisticRegressionModel.predict_proba(vectorizedData)])
-finalOutputsTen = [predictionFunctionUsingBayesFactorComputation(proba, 0.1, trainingRatio) for proba in ubProbabillits]
-finalOutputsFifty = [predictionFunctionUsingBayesFactorComputation(proba, 0.5, trainingRatio) for proba in
-                     ubProbabillits]
-KValues = [KComputation(proba, trainingRatio) for proba in ubProbabillits]
-import csv
+saveAsPickle(labels, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'labels'))
 
+
+# print(sum(labels))
+# kBinModel = trainKBinDescretizierModel(concatenated_tuples, n_bins_parameter)
+# vectorizedData = createVectorizedData(kBinModel, allTuplesLists, n_bins_parameter)
+# logisticRegressionModel = trainLogisticRegressionModel(vectorizedData, labels)
+# logisticRegressionModelBalanced = trainLogisticRegressionModel(vectorizedData, labels, 'balanced')
+# testLogisticRegressionModel(logisticRegressionModel, vectorizedData, labels)
+# testLogisticRegressionModel(logisticRegressionModelBalanced, vectorizedData, labels)
+# # plt.matshow(logisticRegressionModel.coef_.reshape([30,30]),vmin=-1.,vmax=1,cmap='jet'); plt.colorbar(); plt.show()
+# trainingRatio = sum(labels) / len(allTuplesLists)
+# ubProbabillits = np.array([row[1] for row in logisticRegressionModel.predict_proba(vectorizedData)])
+# finalOutputsTen = [predictionFunctionUsingBayesFactorComputation(proba, 0.1, trainingRatio) for proba in ubProbabillits]
+# finalOutputsFifty = [predictionFunctionUsingBayesFactorComputation(proba, 0.5, trainingRatio) for proba in
+#                      ubProbabillits]
+# KValues = [KComputation(proba, trainingRatio) for proba in ubProbabillits]
+# import csv
 
 def readDataFromUni(fileName):
     data_dict = {}
@@ -317,7 +324,6 @@ def readDataFromUni(fileName):
 
 # data_dict = readDataFromUni(
 #     r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO\idmapping_2023_12_26.tsv\idmapping_2023_12_26.tsv')
-
 
 def createInfoCsv(data_dict, predBayes10, predBayes50, KValues):
     myList = []
@@ -342,7 +348,6 @@ def createInfoCsv(data_dict, predBayes10, predBayes50, KValues):
 
 
 # createInfoCsv(data_dict, finalOutputsTen, finalOutputsFifty, KValues)
-
 
 def getNBiggestFP(labels, predictions, allComponentsFiltered, N):
     negativeIndexes = [i for i in range(len(labels)) if labels[i] == 0]
