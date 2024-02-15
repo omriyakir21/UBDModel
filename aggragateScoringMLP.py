@@ -1,4 +1,6 @@
 # for array computations and loading data
+import os
+import path
 import numpy as np
 
 # for building linear regression models and preparing data
@@ -284,18 +286,25 @@ def experiment2D():
 
 # experiment2D()
 
-labels = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\labels.pkl')
-tuplesLen2 = loadPickle(
-    r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\allTuplesListsOfLen2.pkl')
-# labels = labels[:100]
-# tuplesLen2 = tuplesLen2[:100]
-tuplesLen2 = [np.array(tuple) for tuple in tuplesLen2]
-sortPatches(tuplesLen2)
-x_train, x_test, labels_train, labels_test = train_test_split(tuplesLen2, labels, test_size=0.1, random_state=1)
+# labels = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\labels.pkl')
+# tuplesLen2 = loadPickle(
+#     r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\allTuplesListsOfLen2.pkl')
+# # labels = labels[:100]
+# # tuplesLen2 = tuplesLen2[:100]
+# tuplesLen2 = [np.array(tuple) for tuple in tuplesLen2]
+# sortPatches(tuplesLen2)
+# x_train, x_test, labels_train, labels_test = train_test_split(tuplesLen2, labels, test_size=0.1, random_state=1)
 maxNumberOfPatches = 10
-x_train_scaled, x_cv_scaled, x_test_scaled = scaleXValues2D(x_train, [], x_test)
-x_scaled_padded_train, _, x_scaled_padded_test = padXValues(x_train_scaled, [], x_test_scaled,
-                                                            maxNumberOfPatches)
+# x_train_scaled, x_cv_scaled, x_test_scaled = scaleXValues2D(x_train, [], x_test)
+# x_scaled_padded_train, _, x_scaled_padded_test = padXValues(x_train_scaled, [], x_test_scaled,
+#                                                             maxNumberOfPatches)
+
+
+aggregateFunctionMLPDir = os.path.join(path.mainProjectDir, 'aggregateFunctionMLP')
+x_scaled_padded_train_2d = loadPickle(os.path.join(aggregateFunctionMLPDir, 'x_scaled_padded_train_2d.pkl'))
+x_scaled_padded_test_2d = loadPickle(os.path.join(aggregateFunctionMLPDir, 'x_scaled_padded_test_2d.pkl'))
+labels_train = loadPickle(os.path.join(aggregateFunctionMLPDir, 'labels_train.pkl'))
+labels_test = loadPickle(os.path.join(aggregateFunctionMLPDir, 'labels_test.pkl'))
 
 model_2 = Sequential(
     [
@@ -314,17 +323,17 @@ model_2.compile(
     metrics=['accuracy']
 )
 model_2.fit(
-    x_scaled_padded_train, labels_train,
+    x_scaled_padded_train_2d, labels_train,
     epochs=5,
     verbose=0,
     callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy', patience=3)],
     batch_size=128
 
 )
-yhat_train = model_2.predict(x_scaled_padded_train)
+yhat_train = model_2.predict(x_scaled_padded_train_2d)
 predictions_train = np.where(yhat_train >= 0.5, 1, 0)
 print(classification_report(labels_train, predictions_train))
 
-yhat = model_2.predict(x_scaled_padded_test)
+yhat = model_2.predict(x_scaled_padded_test_2d)
 predictions_test = np.where(yhat >= 0.5, 1, 0)
 print(classification_report(labels_test, predictions_test))
