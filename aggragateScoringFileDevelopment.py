@@ -170,7 +170,7 @@ def patchesList(allPredictions, i):
 indexes = list(range(0, 67660 + 1, 1500)) + [67660]
 
 
-# patchesList(allPredictionsUbiq, int(sys.argv[1]))
+patchesList(allPredictionsUbiq, int(sys.argv[1]))
 
 
 def pklComponentsAndSource():
