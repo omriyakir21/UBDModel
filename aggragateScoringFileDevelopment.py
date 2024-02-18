@@ -228,7 +228,6 @@ def trainLogisticRegressionModel(X, Y, class_weights=None):
 def testLogisticRegressionModel(model, X, Y):
     predictions = model.predict(X)
     accuracy = accuracy_score(Y, predictions)
-    print(f"Accuracy: {accuracy:.2f}")
     print(classification_report(Y, predictions))
 
 
