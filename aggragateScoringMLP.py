@@ -1,5 +1,8 @@
 # for array computations and loading data
 import os
+
+from sklearn.utils import compute_class_weight
+
 import path
 import numpy as np
 
@@ -12,7 +15,7 @@ import pickle
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, GlobalAveragePooling1D, Reshape, Masking
-
+from keras import backend
 # custom functions
 # import utils
 
@@ -23,6 +26,19 @@ np.set_printoptions(precision=2)
 tf.get_logger().setLevel('ERROR')
 tf.autograph.set_verbosity(0)
 
+
+class GlobalSumPooling(GlobalAveragePooling1D):
+    def call(self, inputs, mask=None):
+        steps_axis = 1 if self.data_format == "channels_last" else 2
+        if mask is not None:
+            mask = tf.cast(mask, inputs[0].dtype)
+            mask = tf.expand_dims(
+                mask, 2 if self.data_format == "channels_last" else 1
+            )
+            inputs *= mask
+            return backend.sum(
+                inputs, axis=steps_axis, keepdims=self.keepdims
+            )
 
 def createRandomDataSet(size):
     # Set the number of matrices (m) in the list
@@ -268,13 +284,14 @@ def experiment2D():
     )
     model_2.compile(
         loss=tf.keras.losses.BinaryCrossentropy(),
-        optimizer=tf.keras.optimizers.Adam(learning_rate=0.1),
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
     )
     model_2.fit(
         x_scaled_padded_train, labels_train,
         epochs=300,
         verbose=0
     )
+
     yhat_train = model_2.predict(x_scaled_padded_train)
     predictions_train = np.where(yhat_train >= 0.5, 1, 0)
     print(classification_report(labels_train, predictions_train))
@@ -312,7 +329,7 @@ model_2 = Sequential(
         Masking(mask_value=0.0),
         Dense(25, activation='relu'),
         Dense(16, activation='relu'),
-        GlobalAveragePooling1D(data_format='channels_last'),
+        GlobalSumPooling(data_format='channels_last'),
         Dense(1, activation='sigmoid')
     ],
     name='model_2'
@@ -322,12 +339,17 @@ model_2.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=0.01),
     metrics=['accuracy']
 )
+
+class_weights = compute_class_weight('balanced', classes=np.unique(labels_train), y=labels_train)
+# Convert class weights to a dictionary
+class_weight = {i: class_weights[i] for i in range(len(class_weights))}
 model_2.fit(
     x_scaled_padded_train_2d, labels_train,
-    epochs=5,
-    verbose=0,
-    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy', patience=3)],
-    batch_size=128
+    epochs=300,
+    verbose=1,
+    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy', patience=6)],
+    batch_size=128,
+    class_weight=class_weight
 
 )
 yhat_train = model_2.predict(x_scaled_padded_train_2d)

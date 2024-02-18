@@ -12,6 +12,9 @@ from matplotlib import pyplot as plt
 import pandas as pd
 
 from Bio.PDB import MMCIFParser
+import path
+
+ubdPath = path.mainProjectDir
 
 
 class SizeDifferentiationException(Exception):
@@ -22,10 +25,10 @@ class SizeDifferentiationException(Exception):
 class Protein:
     def __init__(self, uniprotName):
         self.uniprotName = uniprotName
-        self.ubiqPredictions = allPredictionsUbiq['dict_predictions'][uniprotName]
-        self.nonUbiqPredictions = allPredictionsNonUbiq['dict_predictions'][uniprotName]
-        self.residues = allPredictionsUbiq['dict_resids'][uniprotName]
-        self.source = self.getSource(allPredictionsUbiq['dict_sources'][uniprotName])
+        self.ubiqPredictions = allPredictions['dict_predictions_ubiquitin'][uniprotName]
+        self.nonUbiqPredictions = allPredictions['dict_predictions_interface'][uniprotName]
+        self.residues = allPredictions['dict_resids'][uniprotName]
+        self.source = self.getSource(allPredictions['dict_sources'][uniprotName])
         self.size = None
         self.graph = nx.Graph()
         self.createGraph()
@@ -136,12 +139,13 @@ def CAlphaDistance(atom1, atom2):
     return distance
 
 
-# allPredictionsUbiq = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\all_predictions_0310.pkl')
-# allPredictionsNonUbiq = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\all_predictions_3101.pkl')
-# allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq['dict_predictions'].values() for value in values_list]
-# percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
-# distanceThreshold = 10
-# parser = MMCIFParser()
+allPredictions = loadPickle(os.path.join(ubdPath, r'Predictions\all_predictions_0402.pkl'))
+allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
+# allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
+allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
+percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
+distanceThreshold = 10
+parser = MMCIFParser()
 
 
 def patchesList(allPredictions, i):
@@ -159,31 +163,30 @@ def patchesList(allPredictions, i):
         except Exception as e:
             raise (e)
     saveAsPickle(proteinObjects,
-                 os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel',
-                              'newListOfProteinObjectsForAggregateFunc' + str(i)))
+                 os.path.join(ubdPath,
+                              r'newListOfProteinObjects/newListOfProteinObjectsForAggregateFunc' + str(i)))
 
 
 indexes = list(range(0, 67660 + 1, 1500)) + [67660]
+
 
 # patchesList(allPredictionsUbiq, int(sys.argv[1]))
 
 
 def pklComponentsAndSource():
     i = sys.argv[1]
-    objs = loadPickle(
-        r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\listOfProteinObjects\listOfProteinObjectsForAggregateFunc' + str(
-            i) + '.pkl')
+    objs = loadPickle(os.path.join(ubdPath, r'newListOfProteinObjects\newlistOfProteinObjectsForAggregateFunc' + str(
+        i) + '.pkl'))
     tuples = [(obj.source, obj.uniprotName, obj.connectedComponentsTuples) for obj in objs]
-    saveAsPickle(tuples,
-                 r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\proteinConnectedComponents\proteinConnectedComponents' + str(
-                     i))
+    saveAsPickle(tuples, os.path.join(ubdPath, r'newProteinConnectedComponents\newProteinConnectedComponents' + str(
+        i)))
 
 
 # pklComponentsAndSource()
 def repeatingUniprotsToFilter():
     # Read the CSV file into a DataFrame
-    df = pd.read_csv(
-        r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\protein_classification\uniprotnamecsCSV.csv')  # Replace 'your_file.csv' with the actual file path
+    df = pd.read_csv(os.path.join(ubdPath, r'protein_classification\uniprotnamecsCSV.csv'))
+    # Replace 'your_file.csv' with the actual file path
     # Get unique values from 'proteome' column
     unique_proteome_values = df['proteome'].unique()
     # Find values from 'proteome' that appear in at least one more column
@@ -280,15 +283,15 @@ def updateFunction(probabilities, priorUb, trainingUbRatio):
 #     r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\proteinConnectedComponents\proteinConnectedComponents' + str(
 #         i) + '.pkl') for i in range(46)]
 # saveAsPickle(listOfComponentsTuplesLists, 'listOfComponentsTuplesLists')
-common_values = repeatingUniprotsToFilter()
-allComponents = loadPickle('allComponents.pkl')
-allComponentsFiltered = [component for component in allComponents if component[1] not in common_values]
-allTuplesLists = [component[2] for component in allComponentsFiltered]
-saveAsPickle(allTuplesLists, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'allTuplesListsOfLen2'))
-concatenated_tuples = list(chain.from_iterable(allTuplesLists))
-n_bins_parameter = 30  # it will actualli be 30^(number of parameter which is 2 because of len(size,average)
-labels = createLabelsForComponents(allComponentsFiltered)
-saveAsPickle(labels, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'labels'))
+# common_values = repeatingUniprotsToFilter()
+# allComponents = loadPickle('allComponents.pkl')
+# allComponentsFiltered = [component for component in allComponents if component[1] not in common_values]
+# allTuplesLists = [component[2] for component in allComponentsFiltered]
+# saveAsPickle(allTuplesLists, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'allTuplesListsOfLen2'))
+# concatenated_tuples = list(chain.from_iterable(allTuplesLists))
+# n_bins_parameter = 30  # it will actualli be 30^(number of parameter which is 2 because of len(size,average)
+# labels = createLabelsForComponents(allComponentsFiltered)
+# saveAsPickle(labels, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'labels'))
 
 
 # print(sum(labels))
