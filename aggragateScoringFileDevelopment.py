@@ -139,7 +139,7 @@ def CAlphaDistance(atom1, atom2):
     return distance
 
 
-allPredictions = loadPickle(os.path.join(ubdPath, r'Predictions\all_predictions_0402.pkl'))
+allPredictions = loadPickle(os.path.join(ubdPath, os.path.join('Predictions', 'all_predictions_0402.pkl')))
 allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
 # allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
 allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
@@ -164,28 +164,28 @@ def patchesList(allPredictions, i):
             raise (e)
     saveAsPickle(proteinObjects,
                  os.path.join(ubdPath,
-                              r'newListOfProteinObjects/newListOfProteinObjectsForAggregateFunc' + str(i)))
+                              os.path.join('Predictions', 'newListOfProteinObjectsForAggregateFunc' + str(i))))
 
 
-indexes = list(range(0, 67660 + 1, 1500)) + [67660]
-
+indexes = list(range(0, 70311 + 1, 1500)) + [70311]
 
 patchesList(allPredictionsUbiq, int(sys.argv[1]))
 
 
 def pklComponentsAndSource():
     i = sys.argv[1]
-    objs = loadPickle(os.path.join(ubdPath, r'newListOfProteinObjects\newlistOfProteinObjectsForAggregateFunc' + str(
-        i) + '.pkl'))
+    objs = loadPickle(
+        os.path.join(ubdPath, os.path.join('newListOfProteinObjects', 'newlistOfProteinObjectsForAggregateFunc' + str(
+            i) + '.pkl')))
     tuples = [(obj.source, obj.uniprotName, obj.connectedComponentsTuples) for obj in objs]
-    saveAsPickle(tuples, os.path.join(ubdPath, r'newProteinConnectedComponents\newProteinConnectedComponents' + str(
-        i)))
+    saveAsPickle(tuples, os.path.join(ubdPath, os.path.join('newProteinConnectedComponents','newProteinConnectedComponents' + str(
+        i))))
 
 
 # pklComponentsAndSource()
 def repeatingUniprotsToFilter():
     # Read the CSV file into a DataFrame
-    df = pd.read_csv(os.path.join(ubdPath, r'protein_classification\uniprotnamecsCSV.csv'))
+    df = pd.read_csv(os.path.join(ubdPath, os.path.join('protein_classification','uniprotnamecsCSV.csv')))
     # Replace 'your_file.csv' with the actual file path
     # Get unique values from 'proteome' column
     unique_proteome_values = df['proteome'].unique()
