@@ -139,13 +139,13 @@ def CAlphaDistance(atom1, atom2):
     return distance
 
 
-allPredictions = loadPickle(os.path.join(ubdPath, os.path.join('Predictions', 'all_predictions_0402.pkl')))
-allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
-# allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
-allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
-percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
-distanceThreshold = 10
-parser = MMCIFParser()
+# allPredictions = loadPickle(os.path.join(ubdPath, os.path.join('Predictions', 'all_predictions_0402_same_keys.pkl')))
+# allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
+# # allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
+# allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
+# percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
+# distanceThreshold = 10
+# parser = MMCIFParser()
 
 
 def patchesList(allPredictions, i):
@@ -164,12 +164,21 @@ def patchesList(allPredictions, i):
             raise (e)
     saveAsPickle(proteinObjects,
                  os.path.join(ubdPath,
-                              os.path.join('Predictions', 'newListOfProteinObjectsForAggregateFunc' + str(i))))
+                              os.path.join('newListOfProteinObjects',
+                                           'newListOfProteinObjectsForAggregateFunc' + str(i))))
 
 
-indexes = list(range(0, 70311 + 1, 1500)) + [70311]
+indexes = list(range(0, 67470 + 1, 1500)) + [67470]
 
-patchesList(allPredictions, int(sys.argv[1]))
+
+# a = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\newListOfProteinObjects\newListOfProteinObjectsForAggregateFunc0.pkl')
+# patchesList(allPredictions, int(sys.argv[1]))
+def makeDictWithIntegrationKeys(allPredictions):
+    allPredictions2d = loadPickle(os.path.join(ubdPath, os.path.join('Predictions', 'all_predictions_0310.pkl')))
+    keys = allPredictions2d['dict_sources'].keys()
+    for dictKey in allPredictions.keys():
+        allPredictions[dictKey] = {key: allPredictions[dictKey][key] for key in allPredictions[dictKey].keys() if
+                                   key in keys}
 
 
 def pklComponentsAndSource():
@@ -178,14 +187,15 @@ def pklComponentsAndSource():
         os.path.join(ubdPath, os.path.join('newListOfProteinObjects', 'newlistOfProteinObjectsForAggregateFunc' + str(
             i) + '.pkl')))
     tuples = [(obj.source, obj.uniprotName, obj.connectedComponentsTuples) for obj in objs]
-    saveAsPickle(tuples, os.path.join(ubdPath, os.path.join('newProteinConnectedComponents','newProteinConnectedComponents' + str(
-        i))))
+    saveAsPickle(tuples, os.path.join(ubdPath, os.path.join('newProteinConnectedComponents',
+                                                            'newProteinConnectedComponents' + str(
+                                                                i))))
 
 
 # pklComponentsAndSource()
 def repeatingUniprotsToFilter():
     # Read the CSV file into a DataFrame
-    df = pd.read_csv(os.path.join(ubdPath, os.path.join('protein_classification','uniprotnamecsCSV.csv')))
+    df = pd.read_csv(os.path.join(ubdPath, os.path.join('protein_classification', 'uniprotnamecsCSV.csv')))
     # Replace 'your_file.csv' with the actual file path
     # Get unique values from 'proteome' column
     unique_proteome_values = df['proteome'].unique()
@@ -277,20 +287,25 @@ def updateFunction(probabilities, priorUb, trainingUbRatio):
     probabilities[1] = updatedProbability
     probabilities[0] = 1 - updatedProbability
 
-
-# listOfComponentsTuplesLists = [loadPickle(
-#     r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\proteinConnectedComponents\proteinConnectedComponents' + str(
-#         i) + '.pkl') for i in range(46)]
-# saveAsPickle(listOfComponentsTuplesLists, 'listOfComponentsTuplesLists')
+#
+# newListOfProteinLists = [loadPickle(
+#     os.path.join(ubdPath, os.path.join('newListOfProteinObjects', 'newlistOfProteinObjectsForAggregateFunc' + str(
+#         i) + '.pkl'))) for i in range(45)]
+# concatenatedListOfProteins = [protein for sublist in newListOfProteinLists for protein in sublist]
 # common_values = repeatingUniprotsToFilter()
-# allComponents = loadPickle('allComponents.pkl')
-# allComponentsFiltered = [component for component in allComponents if component[1] not in common_values]
-# allTuplesLists = [component[2] for component in allComponentsFiltered]
-# saveAsPickle(allTuplesLists, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'allTuplesListsOfLen2'))
-# concatenated_tuples = list(chain.from_iterable(allTuplesLists))
-# n_bins_parameter = 30  # it will actualli be 30^(number of parameter which is 2 because of len(size,average)
-# labels = createLabelsForComponents(allComponentsFiltered)
-# saveAsPickle(labels, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'labels'))
+# allComponents3d = [(protein.source, protein.uniprotName, protein.connectedComponentsTuples, protein.size,
+#                     len(protein.connectedComponentsTuples)) for protein in concatenatedListOfProteins]
+# allComponents3dFiltered = [component for component in allComponents3d if component[1] not in common_values]
+#
+# saveAsPickle(allComponents3dFiltered,
+#              os.path.join(ubdPath, os.path.join('aggregateFunctionMLP', 'allTuplesListsOfLen3')))
+#
+#
+# # n_bins_parameter = 30  # it will actualli be 30^(number of parameter which is 2 because of len(size,average)
+# allComponents3dFiltered = loadPickle(
+#     os.path.join(ubdPath, os.path.join('aggregateFunctionMLP', 'allTuplesListsOfLen3.pkl')))
+# labels = createLabelsForComponents(allComponents3dFiltered)
+saveAsPickle(labels, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'labels3d'))
 
 
 # print(sum(labels))
