@@ -16,15 +16,17 @@ def loadPickle(fileName):
 
 
 
-allInfoDict = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining1902\allInfoDict.pkl')
-allProteinsDict = dict()
-allProteinsDict['x'] = allInfoDict['x_train']+allInfoDict['x_cv']+allInfoDict['x_test']
-allProteinsDict['y'] = np.concatenate((allInfoDict['y_train'],allInfoDict['y_cv'],allInfoDict['y_test']))
+# allInfoDict = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining1902\allInfoDict.pkl')
+# allProteinsDict = dict()
+# allProteinsDict['x'] = allInfoDict['x_train']+allInfoDict['x_cv']+allInfoDict['x_test']
+# allProteinsDict['y'] = np.concatenate((allInfoDict['y_train'],allInfoDict['y_cv'],allInfoDict['y_test']))
+allProteinsDict = loadPickle('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/allProteinInfo.pkl')
+sequences = loadPickle('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/allProteinSequences.pkl')[:100]
 
 
-def cluster_sequences(list_sequences, seqid=0.95, coverage=0.8, covmode='0'):
-    path2mmseqs = '/home/omriyakir21/MMseqs2/build/bin//mmseqs'
-    path2mmseqstmp = '/mnt/c/Users/omriy/UBDAndScanNet/UBDModel/mmseqs2'
+def cluster_sequences(list_sequences, seqid=0.7, coverage=0.8, covmode='0'):
+    path2mmseqs = '/home/iscb/wolfson/omriyakir/anaconda3/envs/ubinet/bin/mmseqs'
+    path2mmseqstmp = '/home/iscb/wolfson/omriyakir/UBDModel/mmseqs2'
 
     rng = np.random.randint(0, high=int(1e6))
     tmp_input = os.path.join(path2mmseqstmp, 'tmp_input_file_%s.fasta' % rng)
@@ -51,16 +53,7 @@ def cluster_sequences(list_sequences, seqid=0.95, coverage=0.8, covmode='0'):
     saveAsPickle(cluster_indices, path2mmseqstmp + '/clusterIndices')
     return np.array(cluster_indices), np.array(representative_indices)
 
-
-# if ubuntu:
-#     chainsKeys, chainsSequences, chainsLabels, chainNames, lines, chainsAsaValues = splitReceptorsIntoIndividualChains(
-#         rootPath + '/UBDModel/FullPssmContent.txt', rootPath + 'normalizedFullASAPssmContent')
-#     cluster_indices, representative_indices = cluster_sequences(chainsSequences)
-#     clusterIndexes = loadPickle(rootPath + 'UBDModel/mmseqs2/clusterIndices.pkl')
-# else:
-#     chainsKeys, chainsSequences, chainsLabels, chainNames, lines, chainsAsaValues = splitReceptorsIntoIndividualChains(
-#         rootPath + '\\UBDModel\\FullPssmContent.txt', rootPath + '\\UBDModel\\normalizedFullASAPssmContent')
-#     clusterIndexes = loadPickle(rootPath + 'UBDModel\\mmseqs2\\clusterIndices.pkl')
+cluster_indices, representative_indices = cluster_sequences(sequences)
 
 path2mafft = '/usr/bin/mafft'
 
@@ -71,5 +64,7 @@ def createClusterParticipantsIndexes(clusterIndexes):
         clustersParticipantsList.append(np.where(clusterIndexes == i)[0])
     return clustersParticipantsList
 
-
-# clustersParticipantsList = createClusterParticipantsIndexes(clusterIndexes)
+clustersParticipantsList = createClusterParticipantsIndexes(cluster_indices)
+saveAsPickle(cluster_indices, '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/' + 'clusterIndices')
+saveAsPickle(representative_indices, '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/' + 'representative_indices')
+saveAsPickle(clustersParticipantsList, '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/' + 'clustersParticipantsList')
