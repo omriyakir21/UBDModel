@@ -10,13 +10,14 @@ import numpy as np
 # for building linear regression models and preparing data
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, classification_report
+from sklearn.metrics import mean_squared_error, classification_report, roc_auc_score, roc_curve, precision_recall_curve
 import pickle
 # for building and training neural networks
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, GlobalAveragePooling1D, Reshape, Masking
 from keras import backend
+from matplotlib import pyplot as plt
 
 # custom functions
 # import utils
@@ -42,6 +43,32 @@ class GlobalSumPooling(GlobalAveragePooling1D):
             return backend.sum(
                 inputs, axis=steps_axis, keepdims=self.keepdims
             )
+
+
+def plotROC(y_probs, labels):
+    fpr, tpr, thresholds = roc_curve(labels, y_probs)
+    auc = roc_auc_score(labels, y_probs)
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, label='ROC Curve (AUC = {:.2f})'.format(auc))
+    plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Random')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def plotPrecisionRecall(y_probs, labels):
+    precision, recall, thresholds = precision_recall_curve(labels, y_probs)
+    plt.figure(figsize=(8, 6))
+    plt.plot(recall, precision, label='Precision-Recall Curve')
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curve')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 
 def createRandomDataSet(size):
@@ -230,6 +257,32 @@ def hotOneEncodeNPatches(n_patches_array):
     return encoded
 
 
+def plotROC(y_probs, labels):
+    fpr, tpr, thresholds = roc_curve(labels, y_probs)
+    auc = roc_auc_score(labels, y_probs)
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, label='ROC Curve (AUC = {:.2f})'.format(auc))
+    plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Random')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+def plotPrecisionRecall(y_probs, labels):
+    precision, recall, thresholds = precision_recall_curve(labels, y_probs)
+    plt.figure(figsize=(8, 6))
+    plt.plot(recall, precision, label='Precision-Recall Curve')
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curve')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
 def createDataForTraining():
     labels = loadPickle(os.path.join(path.mainProjectDir, os.path.join('aggregateFunctionMLP', 'labels3d.pkl')))
     tuplesLen3 = loadPickle(
@@ -269,6 +322,43 @@ def createDataForTraining():
                  os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining1902', 'dictForTraining')))
 
 
+def simpleModelTraining():
+    model = Sequential(
+        [
+            tf.keras.Input(shape=(maxNumberOfPatches, 3)),
+            Masking(mask_value=0.0),
+            Dense(36, activation='relu'),
+            Dense(25, activation='relu'),
+            Dense(16, activation='relu'),
+            GlobalSumPooling(data_format='channels_last'),
+            Dense(1, activation='sigmoid')
+        ],
+        name='model_2'
+    )
+    model.compile(
+        loss=tf.keras.losses.BinaryCrossentropy(),
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+        metrics=['accuracy']
+    )
+    class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
+    # Convert class weights to a dictionary
+    class_weight = {i: class_weights[i] for i in range(len(class_weights))}
+
+    model.fit(
+        x_train_components_scaled_padded, y_train,
+        epochs=300,
+        verbose=1,
+        callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy', patience=6)],
+        batch_size=1024,
+        class_weight=class_weight
+
+    )
+
+    yhat_train = model.predict(x_train_components_scaled_padded)
+    predictions_train = np.where(yhat_train >= 0.5, 1, 0)
+    print(classification_report(y_train, predictions_train))
+
+
 # createDataForTraining()
 dictForTraining = loadPickle(
     os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining1902', 'dictForTraining.pkl')))
@@ -288,71 +378,19 @@ class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y
 # Convert class weights to a dictionary
 class_weight = {i: class_weights[i] for i in range(len(class_weights))}
 
-model = Sequential(
-    [
-        tf.keras.Input(shape=(maxNumberOfPatches, 3)),
-        Masking(mask_value=0.0),
-        Dense(36,activation='relu'),
-        Dense(25, activation='relu'),
-        Dense(16, activation='relu'),
-        GlobalSumPooling(data_format='channels_last'),
-        Dense(1, activation='sigmoid')
-    ],
-    name='model_2'
-)
-model.compile(
-    loss=tf.keras.losses.BinaryCrossentropy(),
-    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-    metrics=['accuracy']
-)
-class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
-# Convert class weights to a dictionary
-class_weight = {i: class_weights[i] for i in range(len(class_weights))}
-
-model.fit(
-    x_train_components_scaled_padded, y_train,
-    epochs=300,
-    verbose=1,
-    callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy', patience=6)],
-    batch_size=1024,
-    class_weight=class_weight
-
-)
-
-yhat_train = model.predict(x_train_components_scaled_padded)
-predictions_train = np.where(yhat_train >= 0.5, 1, 0)
-print(classification_report(y_train, predictions_train))
-
-
 # Define the input shape
-input_shape = (10, 3)
-
-# Define the input layers
+input_shape = (maxNumberOfPatches, 3)
 input_data = tf.keras.Input(shape=input_shape, name='sensor_input')
 extra_value = tf.keras.Input(shape=(1,), name='extra_value_input')
-hot_encoded_value = tf.keras.Input(shape=(11,), name='hot_encoded_value_input')
-
-# Masking layer to handle sequences with a padding value of 0.0
+hot_encoded_value = tf.keras.Input(shape=(maxNumberOfPatches + 1,), name='hot_encoded_value_input')
 masked_input = tf.keras.layers.Masking(mask_value=0.0)(input_data)
-
-# Pass through dense layers with ReLU activation
 dense_output = tf.keras.layers.Dense(64, activation='relu')(masked_input)
 dense_output = tf.keras.layers.Dense(32, activation='relu')(dense_output)
-
-# Global Average Pooling
 global_pooling_output = GlobalSumPooling(data_format='channels_last')(dense_output)
-
-# Concatenate the global pooling output with extra value and hot encoded value
 concatenated_output = tf.keras.layers.Concatenate()([global_pooling_output, extra_value, hot_encoded_value])
-
-# Pass through dense layers with ReLU activation
 dense_output = tf.keras.layers.Dense(64, activation='relu')(concatenated_output)
 dense_output = tf.keras.layers.Dense(32, activation='relu')(dense_output)
-
-# Output layer with sigmoid activation for binary classification
 output = tf.keras.layers.Dense(1, activation='sigmoid')(dense_output)
-
-# Define the model
 model = tf.keras.Model(inputs=[input_data, extra_value, hot_encoded_value], outputs=output)
 
 # Compile the model
@@ -364,7 +402,6 @@ x_test_sizes_scaled = dictForTraining['x_test_sizes_scaled']
 x_train_n_patches_encoded = dictForTraining['x_train_n_patches_encoded']
 
 # Print the summary of the model
-model.summary()
 model.fit(
     [x_train_components_scaled_padded, x_train_sizes_scaled, x_train_n_patches_encoded], y_train,
     epochs=300,
@@ -379,59 +416,59 @@ yhat_train = model.predict([x_train_components_scaled_padded, x_train_sizes_scal
 predictions_train = np.where(yhat_train >= 0.5, 1, 0)
 print(classification_report(y_train, predictions_train))
 
+yhat_cv = model.predict([x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded])
+predictions_cv = np.where(yhat_cv >= 0.5, 1, 0)
+print(classification_report(y_cv, predictions_cv))
 
-# nn_train_accuracies = []
-# nn_cv_accuracies = []
+plotPrecisionRecall(yhat_cv, y_cv)
 
+tf.keras.backend.clear_session()
 
-# Build the models
-# nn_models = build_models()
+x_train_components_scaled_padded2d = x_train_components_scaled_padded[:, :, 2]
+x_cv_components_scaled_padded2d = x_cv_components_scaled_padded[:, :, :2]
 
-
-# # Loop over the the models
-# for model in nn_models:
-#     # Setup the loss and optimizer
-#     model.compile(
-#         loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
-#         optimizer=tf.keras.optimizers.Adam(learning_rate=0.1),
-#     )
+# input_shape = (maxNumberOfPatches, 2)
+# input_data = tf.keras.Input(shape=input_shape, name='sensor_input')
+# extra_value = tf.keras.Input(shape=(1,), name='extra_value_input')
+# hot_encoded_value = tf.keras.Input(shape=(maxNumberOfPatches + 1,), name='hot_encoded_value_input')
+# masked_input = tf.keras.layers.Masking(mask_value=0.0)(input_data)
+# dense_output = tf.keras.layers.Dense(64, activation='relu')(masked_input)
+# dense_output = tf.keras.layers.Dense(32, activation='relu')(dense_output)
+# global_pooling_output = GlobalSumPooling(data_format='channels_last')(dense_output)
+# concatenated_output = tf.keras.layers.Concatenate()([global_pooling_output, extra_value, hot_encoded_value])
+# dense_output = tf.keras.layers.Dense(64, activation='relu')(concatenated_output)
+# dense_output = tf.keras.layers.Dense(32, activation='relu')(dense_output)
+# output = tf.keras.layers.Dense(1, activation='sigmoid')(dense_output)
+# model2d = tf.keras.Model(inputs=[input_data, extra_value, hot_encoded_value], outputs=output)
 #
-#     print(f"Training {model.name}...")
+# # Compile the model
+# model2d.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 #
-#     # Train the model
-#     model.fit(
-#         x_train_scaled, y_train,
-#         epochs=300,
-#         verbose=0
-#     )
+# x_train_sizes_scaled = dictForTraining['x_train_sizes_scaled']
+# x_cv_sizes_scaled = dictForTraining['x_cv_sizes_scaled']
+# x_test_sizes_scaled = dictForTraining['x_test_sizes_scaled']
+# x_train_n_patches_encoded = dictForTraining['x_train_n_patches_encoded']
 #
-#     print("Done!\n")
+# # Print the summary of the model
+# model2d.fit(
+#     [x_train_components_scaled_padded2d, x_train_sizes_scaled, x_train_n_patches_encoded], y_train,
+#     epochs=300,
+#     verbose=1,
+#     callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy', patience=6)],
+#     batch_size=1024,
+#     class_weight=class_weight
+#
+# )
+# yhat_cv2d = model2d.predict([x_cv_components_scaled_padded2d, x_cv_sizes_scaled, x_cv_n_patches_encoded])
+# predictions_cv2d = np.where(yhat_cv2d >= 0.5, 1, 0)
+# print(classification_report(y_cv, predictions_cv2d))
+#
+# plotPrecisionRecall(yhat_cv2d, y_cv)
 
-# Record the Accuracy
-# logits = model.predict(x_train_scaled)
-# yhat = tf.nn.sigmoid(logits).numpy()
-# predictions = np.where(yhat >= 0.5, 1, 0)
-# accuracyBool = predictions != y_train
-# accuracy_train = np.mean(accuracyBool)
-# nn_train_accuracies.append(accuracy_train)
-#
-# logits = model.predict(x_cv_scaled)
-# yhat = tf.nn.sigmoid(logits).numpy()
-# predictions = np.where(yhat >= 0.5, 1, 0)
-# accuracyBool = predictions != y_cv
-# accuracy_cv = np.mean(accuracyBool)
-# nn_cv_accuracies.append(accuracy_cv)
 
-# # print results
-# print("RESULTS:")
-# for model_num in range(len(nn_train_accuracies)):
-#     print(
-#         f"Model {model_num + 1}: Training accuracy: {nn_train_accuracies[model_num]:.2f}, " +
-#         f"CV MSE: {nn_cv_accuracies[model_num]:.2f}"
-#     )
+
 
 def experiment2D():
-    labels = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\labels.pkl')
     tuplesLen2 = loadPickle(
         r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\allTuplesListsOfLen2.pkl')
     # labels = labels[:100]
@@ -439,94 +476,54 @@ def experiment2D():
     tuplesLen2 = [np.array(tuple) for tuple in tuplesLen2]
     sortPatches(tuplesLen2)
     x_train, x_test, labels_train, labels_test = train_test_split(tuplesLen2, labels, test_size=0.1, random_state=1)
-    maxNumberOfPatches = 10
+
     x_train_scaled, x_cv_scaled, x_test_scaled = scaleXValues2D(x_train, [], x_test)
     x_scaled_padded_train, _, x_scaled_padded_test = padXValues(x_train_scaled, [], x_test_scaled,
                                                                 maxNumberOfPatches)
+
+    aggregateFunctionMLPDir = os.path.join(path.mainProjectDir, 'aggregateFunctionMLP')
+    x_scaled_padded_train_2d = loadPickle(os.path.join(aggregateFunctionMLPDir, 'x_scaled_padded_train_2d.pkl'))
+    x_scaled_padded_test_2d = loadPickle(os.path.join(aggregateFunctionMLPDir, 'x_scaled_padded_test_2d.pkl'))
+    labels_train = loadPickle(os.path.join(aggregateFunctionMLPDir, 'labels_train.pkl'))
+    labels_test = loadPickle(os.path.join(aggregateFunctionMLPDir, 'labels_test.pkl'))
+
     model_2 = Sequential(
         [
             tf.keras.Input(shape=(maxNumberOfPatches, 2)),
             Masking(mask_value=0.0),
             Dense(25, activation='relu'),
             Dense(16, activation='relu'),
-            GlobalAveragePooling1D(data_format='channels_last'),
+            GlobalSumPooling(data_format='channels_last'),
             Dense(1, activation='sigmoid')
         ],
         name='model_2'
     )
     model_2.compile(
         loss=tf.keras.losses.BinaryCrossentropy(),
-        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-    )
-    model_2.fit(
-        x_scaled_padded_train, labels_train,
-        epochs=300,
-        verbose=0
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.01),
+        metrics=['accuracy']
     )
 
-    yhat_train = model_2.predict(x_scaled_padded_train)
+    class_weights = compute_class_weight('balanced', classes=np.unique(labels_train), y=labels_train)
+    # Convert class weights to a dictionary
+    class_weight = {i: class_weights[i] for i in range(len(class_weights))}
+    model_2.fit(
+        x_scaled_padded_train_2d, labels_train,
+        epochs=300,
+        verbose=1,
+        callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy', patience=6)],
+        batch_size=128,
+        class_weight=class_weight
+
+    )
+    yhat_train = model_2.predict(x_scaled_padded_train_2d)
     predictions_train = np.where(yhat_train >= 0.5, 1, 0)
     print(classification_report(labels_train, predictions_train))
 
-    yhat = model_2.predict(x_scaled_padded_test)
+    yhat = model_2.predict(x_scaled_padded_test_2d)
     predictions_test = np.where(yhat >= 0.5, 1, 0)
     print(classification_report(labels_test, predictions_test))
 
 # experiment2D()
 
 
-# tuplesLen2 = loadPickle(
-#     r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\allTuplesListsOfLen2.pkl')
-# # labels = labels[:100]
-# # tuplesLen2 = tuplesLen2[:100]
-# tuplesLen2 = [np.array(tuple) for tuple in tuplesLen2]
-# sortPatches(tuplesLen2)
-# x_train, x_test, labels_train, labels_test = train_test_split(tuplesLen2, labels, test_size=0.1, random_state=1)
-#
-# x_train_scaled, x_cv_scaled, x_test_scaled = scaleXValues2D(x_train, [], x_test)
-# x_scaled_padded_train, _, x_scaled_padded_test = padXValues(x_train_scaled, [], x_test_scaled,
-#                                                             maxNumberOfPatches)
-
-
-# aggregateFunctionMLPDir = os.path.join(path.mainProjectDir, 'aggregateFunctionMLP')
-# x_scaled_padded_train_2d = loadPickle(os.path.join(aggregateFunctionMLPDir, 'x_scaled_padded_train_2d.pkl'))
-# x_scaled_padded_test_2d = loadPickle(os.path.join(aggregateFunctionMLPDir, 'x_scaled_padded_test_2d.pkl'))
-# labels_train = loadPickle(os.path.join(aggregateFunctionMLPDir, 'labels_train.pkl'))
-# labels_test = loadPickle(os.path.join(aggregateFunctionMLPDir, 'labels_test.pkl'))
-#
-# model_2 = Sequential(
-#     [
-#         tf.keras.Input(shape=(maxNumberOfPatches, 2)),
-#         Masking(mask_value=0.0),
-#         Dense(25, activation='relu'),
-#         Dense(16, activation='relu'),
-#         GlobalSumPooling(data_format='channels_last'),
-#         Dense(1, activation='sigmoid')
-#     ],
-#     name='model_2'
-# )
-# model_2.compile(
-#     loss=tf.keras.losses.BinaryCrossentropy(),
-#     optimizer=tf.keras.optimizers.Adam(learning_rate=0.01),
-#     metrics=['accuracy']
-# )
-#
-# class_weights = compute_class_weight('balanced', classes=np.unique(labels_train), y=labels_train)
-# # Convert class weights to a dictionary
-# class_weight = {i: class_weights[i] for i in range(len(class_weights))}
-# model_2.fit(
-#     x_scaled_padded_train_2d, labels_train,
-#     epochs=300,
-#     verbose=1,
-#     callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy', patience=6)],
-#     batch_size=128,
-#     class_weight=class_weight
-#
-# )
-# yhat_train = model_2.predict(x_scaled_padded_train_2d)
-# predictions_train = np.where(yhat_train >= 0.5, 1, 0)
-# print(classification_report(labels_train, predictions_train))
-#
-# yhat = model_2.predict(x_scaled_padded_test_2d)
-# predictions_test = np.where(yhat >= 0.5, 1, 0)
-# print(classification_report(labels_test, predictions_test))
