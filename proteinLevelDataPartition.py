@@ -21,7 +21,7 @@ def loadPickle(fileName):
 # allProteinsDict['x'] = allInfoDict['x_train']+allInfoDict['x_cv']+allInfoDict['x_test']
 # allProteinsDict['y'] = np.concatenate((allInfoDict['y_train'],allInfoDict['y_cv'],allInfoDict['y_test']))
 allProteinsDict = loadPickle('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/allProteinInfo.pkl')
-sequences = loadPickle('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/allProteinSequences.pkl')[:100]
+sequences = loadPickle('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/allProteinSequences.pkl')
 
 
 def cluster_sequences(list_sequences, seqid=0.7, coverage=0.8, covmode='0'):
