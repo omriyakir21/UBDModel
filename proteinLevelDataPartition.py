@@ -24,7 +24,7 @@ allProteinsDict = loadPickle('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFun
 sequences = loadPickle('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/allProteinSequences.pkl')
 
 
-def cluster_sequences(list_sequences, seqid=0.7, coverage=0.8, covmode='0'):
+def cluster_sequences(list_sequences, seqid=0.5, coverage=0.4, covmode='0'):
     path2mmseqs = '/home/iscb/wolfson/omriyakir/anaconda3/envs/ubinet/bin/mmseqs'
     path2mmseqstmp = '/home/iscb/wolfson/omriyakir/UBDModel/mmseqs2'
 
