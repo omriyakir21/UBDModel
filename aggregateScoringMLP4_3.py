@@ -3,7 +3,7 @@ import sys
 
 import numpy as np
 from sklearn.metrics import auc
-from UBDModel import path
+import path
 import aggregateScoringMLPUtils as utils
 import tensorflow as tf
 
