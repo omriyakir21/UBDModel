@@ -5,7 +5,7 @@ import csv
 from PIL.ImageOps import pad
 from sklearn.utils import compute_class_weight
 
-from UBDModel import path
+import path
 import numpy as np
 from matplotlib import pyplot as plt
 
