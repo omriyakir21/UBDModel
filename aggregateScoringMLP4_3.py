@@ -90,6 +90,6 @@ for m_b in m_values:
 directory_name = os.path.join(path.aggregateFunctionMLPDir, 'gridSearch4_3')
 utils.saveAsPickle(allArchitecturesAucs, os.path.join(path.aggregateFunctionMLPDir,
                                                       os.path.join('gridSearch4_3',
-                                                                   'allArchitecturesAucs' + n_layers + " " + m_a)))
+                                                                   'allArchitecturesAucs' + str(n_layers) + " " + str(m_a))))
 utils.saveAsPickle(totalAucs, os.path.join(path.aggregateFunctionMLPDir,
-                                           os.path.join('gridSearch', 'totalAucs' + n_layers + " " + m_a)))
+                                           os.path.join('gridSearch', 'totalAucs' + str(n_layers) + " " + str(m_a))))
