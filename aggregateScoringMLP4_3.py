@@ -71,7 +71,8 @@ for m_b in m_values:
                 [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded])
             precision, recall, thresholds = utils.precision_recall_curve(y_cv, yhat_cv)
             pr_auc = auc(recall, precision)
-            architectureAucs.append((i, pr_auc))
+            architectureAucs.append(((m_a, m_b, m_c, n_layers,
+                                      n_early_stopping_epochs, batch_size, i), pr_auc))
             all_predictions.extend(yhat_cv)
             all_labels.extend(y_cv)
             yhat_groups.append(yhat_cv.reshape(-1))
@@ -89,7 +90,8 @@ for m_b in m_values:
 
 directory_name = os.path.join(path.aggregateFunctionMLPDir, 'gridSearch4_3')
 utils.saveAsPickle(allArchitecturesAucs, os.path.join(path.aggregateFunctionMLPDir,
-                                                      os.path.join('gridSearch4_3',
-                                                                   'allArchitecturesAucs' + str(n_layers) + " " + str(m_a))))
+                                                      os.path.join('gridSearch6_3',
+                                                                   'allArchitecturesAucs' + str(n_layers) + " " + str(
+                                                                       m_a))))
 utils.saveAsPickle(totalAucs, os.path.join(path.aggregateFunctionMLPDir,
-                                           os.path.join('gridSearch', 'totalAucs' + str(n_layers) + " " + str(m_a))))
+                                           os.path.join('gridSearch6_3', 'totalAucs' + str(n_layers) + " " + str(m_a))))
