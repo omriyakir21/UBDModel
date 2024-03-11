@@ -424,15 +424,15 @@ def updateCSVWithEvidence(input_file, output_file):
 # evidence_dict['DUB'] = getEvidenceUtil(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO\DUB_new.txt')
 # saveAsPickle(uniprotNamesDict, r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO\uniprotNamesDictNew')
 # saveAsPickle(evidence_dict, r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO\evidence_dict')
-evidence_dict = loadPickle(os.path.join(path.GoPath, 'evidence_dict.pkl'))
-uniprotNamesDict = loadPickle(os.path.join(path.GoPath, 'uniprotNamesDictNew.pkl'))
-uniprotNames_evidences_list = createUniprotId_EvidenceTuplesForExistingExamples(uniprotNamesDict, evidence_dict)
-# saveAsPickle(uniprotNames_evidences_list,
-#              r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO\uniprotNames_evidences_list')
-uniprots = getAllUniprotsForTraining(
-    os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining2902', 'allInfoDicts.pkl')))
-
-uniprotEvidenceDict = uniprotsEvidencesListTodict(uniprotNames_evidences_list)
+# evidence_dict = loadPickle(os.path.join(path.GoPath, 'evidence_dict.pkl'))
+# uniprotNamesDict = loadPickle(os.path.join(path.GoPath, 'uniprotNamesDictNew.pkl'))
+# uniprotNames_evidences_list = createUniprotId_EvidenceTuplesForExistingExamples(uniprotNamesDict, evidence_dict)
+# # saveAsPickle(uniprotNames_evidences_list,
+# #              r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO\uniprotNames_evidences_list')
+# uniprots = getAllUniprotsForTraining(
+#     os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining2902', 'allInfoDicts.pkl')))
+#
+# uniprotEvidenceDict = uniprotsEvidencesListTodict(uniprotNames_evidences_list)
 
 # fetchAFModels(uniprotNamesDict,'E2')
 
