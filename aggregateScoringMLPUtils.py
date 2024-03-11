@@ -470,7 +470,7 @@ def buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers):
     currentOutput = masked_input
     for i in range(n_layers):
         dense_output = tf.keras.layers.Dense(m_a, activation='linear')(currentOutput)
-        batchNorm = tf.keras.layers.BatchNormalization()(dense_output)
+        batchNorm = tf.keras.layers.BatchNormalization(momentum=0.75)(dense_output)
         activation = tf.keras.layers.ReLU()(batchNorm)
         currentOutput = activation
 
@@ -480,7 +480,7 @@ def buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers):
         [size_value, n_patches_hot_encoded_value])
     for i in range(n_layers):
         dense_output = tf.keras.layers.Dense(m_b, activation='linear')(currentOutput)
-        batchNorm = tf.keras.layers.BatchNormalization()(dense_output)
+        batchNorm = tf.keras.layers.BatchNormalization(momentum=0.75)(dense_output)
         activation = tf.keras.layers.ReLU()(batchNorm)
         currentOutput = activation
     size_and_n_patches_output = currentOutput
@@ -492,7 +492,7 @@ def buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers):
     currentOutput = concatenated_output
     for i in range(n_layers):
         dense_output = tf.keras.layers.Dense(m_c, activation='linear')(currentOutput)
-        batchNorm = tf.keras.layers.BatchNormalization()(dense_output)
+        batchNorm = tf.keras.layers.BatchNormalization(momentum=0.75)(dense_output)
         activation = tf.keras.layers.ReLU()(batchNorm)
         currentOutput = activation
 

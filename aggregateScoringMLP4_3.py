@@ -29,7 +29,9 @@ for m_b in m_values:
     for m_c in m_values:
         model = utils.buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers)
         # Compile the model
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3, beta_1=0.75, beta_2=0.75),
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
         architectureAucs = []
         for i in range(len(dictsForTraining)):
             print(m_a, m_b, m_c, n_layers,
@@ -88,10 +90,10 @@ for m_b in m_values:
                 n_early_stopping_epochs, batch_size),
                pr_auc))
 
-directory_name = os.path.join(path.aggregateFunctionMLPDir, 'gridSearch4_3')
+# directory_name = os.path.join(path.aggregateFunctionMLPDir, 'gridSearch4_3')
 utils.saveAsPickle(allArchitecturesAucs, os.path.join(path.aggregateFunctionMLPDir,
-                                                      os.path.join('gridSearch6_3',
+                                                      os.path.join('gridSearch11_3',
                                                                    'allArchitecturesAucs' + str(n_layers) + " " + str(
                                                                        m_a))))
 utils.saveAsPickle(totalAucs, os.path.join(path.aggregateFunctionMLPDir,
-                                           os.path.join('gridSearch6_3', 'totalAucs' + str(n_layers) + " " + str(m_a))))
+                                           os.path.join('gridSearch11_3', 'totalAucs' + str(n_layers) + " " + str(m_a))))
