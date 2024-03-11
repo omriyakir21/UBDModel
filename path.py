@@ -1,4 +1,4 @@
-linux = False
+linux = True
 if linux:
     mainProjectDir = '/home/iscb/wolfson/omriyakir/UBDModel/'
     aggregateFunctionMLPDir = '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP'
