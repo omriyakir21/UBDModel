@@ -585,11 +585,25 @@ threeLetterToSinglelDict = {'GLY': 'G', 'ALA': 'A', 'VAL': 'V', 'LEU': 'L', 'ILE
 # write_dict_to_csv(os.path.join(r'C:\Users\omriy\UBDAndScanNet\UBDModel\GO', "uniprotnamecsCSV.csv."), uniprotsDict)
 
 
-proteomeUniprots = GetAllValidUniprotIdsOfType('proteome', True)
-proteomeEvidences = [getEvidenceOfUniprotId(uniprotId) for uniprotId in proteomeUniprots]
-proteome_uniprotNames_evidences_list = [(proteomeUniprots[i], proteomeEvidences[i]) for i in
-                                        range(len(proteomeUniprots))]
-assert len(proteomeUniprots) == len(proteomeEvidences)
+# proteomeUniprots = GetAllValidUniprotIdsOfType('proteome', True)
+# proteomeEvidences = [getEvidenceOfUniprotId(uniprotId) for uniprotId in proteomeUniprots]
+# proteome_uniprotNames_evidences_list = [(proteomeUniprots[i], proteomeEvidences[i]) for i in
+#                                         range(len(proteomeUniprots))]
+# assert len(proteomeUniprots) == len(proteomeEvidences)
+# proteomeUniprotEvidenceDict = uniprotsEvidencesListTodict(proteome_uniprotNames_evidences_list)
+# saveAsPickle(proteomeUniprotEvidenceDict,
+#              os.path.join(path.GoPath, os.path.join('proteome', 'proteomeUniprotEvidenceDict')))
+
+
+nonProteomeUniprots = loadPickle(
+    os.path.join(path.aggregateFunctionMLPDir, os.path.join('gridSearch11_3', 'allUniprotsExceptProteome.pkl')))
+nonProteomeUniprotsSplitted = (
+nonProteomeUniprots[:len(nonProteomeUniprots) // 2], nonProteomeUniprots[len(nonProteomeUniprots) // 2:])
+nonProteomeUniprots = nonProteomeUniprotsSplitted[int(sys.argv[1])]
+nonProteomeEvidences = [getEvidenceOfUniprotId(uniprotId) for uniprotId in nonProteomeUniprots]
+proteome_uniprotNames_evidences_list = [(nonProteomeUniprots[i], nonProteomeEvidences[i]) for i in
+                                        range(len(nonProteomeUniprots))]
+assert len(nonProteomeUniprots) == len(nonProteomeEvidences)
 proteomeUniprotEvidenceDict = uniprotsEvidencesListTodict(proteome_uniprotNames_evidences_list)
 saveAsPickle(proteomeUniprotEvidenceDict,
-             os.path.join(path.GoPath, os.path.join('proteome', 'proteomeUniprotEvidenceDict')))
+             os.path.join(path.GoPath, 'nonProteomeUniprotEvidenceDict' + sys.argv[1]))
