@@ -8,9 +8,9 @@ import aggregateScoringMLPUtils as utils
 import tensorflow as tf
 
 allInfoDicts = utils.loadPickle(
-    os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining2902', 'allInfoDicts.pkl')))
+    os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining23_3', 'allInfoDicts.pkl')))
 dictsForTraining = utils.loadPickle(
-    os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining2902', 'dictsForTraining.pkl')))
+    os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining23_3', 'dictsForTraining.pkl')))
 
 allArchitecturesAucs = []
 totalAucs = []
@@ -19,9 +19,12 @@ all_labels = []
 yhat_groups = []
 label_groups = []
 y_train_groups = []
-n_layers = int(sys.argv[1])
-m_a = int(sys.argv[2])
-m_values = [4, 8, 16, 32, 64, 128, 256]
+# n_layers = int(sys.argv[1])
+n_layers = 4
+# m_a = int(sys.argv[2])
+m_a = 256
+m_values = [256]
+# m_values = [4, 8, 16, 32, 64, 128, 256]
 batch_size = 1024
 n_early_stopping_epochs = 5
 
@@ -29,7 +32,7 @@ for m_b in m_values:
     for m_c in m_values:
         model = utils.buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers)
         # Compile the model
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3, beta_1=0.75, beta_2=0.75),
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                       loss='binary_crossentropy',
                       metrics=['accuracy'])
         architectureAucs = []
@@ -90,10 +93,61 @@ for m_b in m_values:
                 n_early_stopping_epochs, batch_size),
                pr_auc))
 
+
+
+# dictForTraining = dictsForTraining
+# for m_b in m_values:
+#     for m_c in m_values:
+#         model = utils.buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers)
+#         # Compile the model
+#         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+#                       loss='binary_crossentropy',
+#                       metrics=['accuracy'])
+#         architectureAucs = []
+#         x_train_components_scaled_padded = dictForTraining['x_train_components_scaled_padded']
+#         x_cv_components_scaled_padded = dictForTraining['x_cv_components_scaled_padded']
+#         x_test_components_scaled_padded = dictForTraining['x_test_components_scaled_padded']
+#         x_train_sizes_scaled = dictForTraining['x_train_sizes_scaled']
+#         x_cv_sizes_scaled = dictForTraining['x_cv_sizes_scaled']
+#         x_test_sizes_scaled = dictForTraining['x_test_sizes_scaled']
+#         x_train_n_patches_encoded = dictForTraining['x_train_n_patches_encoded']
+#         x_cv_n_patches_encoded = dictForTraining['x_cv_n_patches_encoded']
+#         x_test_n_patches_encoded = dictForTraining['x_test_n_patches_encoded']
+#         y_train = np.array(dictForTraining['y_train'])
+#         y_cv = np.array(dictForTraining['y_cv'])
+#         y_test = np.array(dictForTraining['y_test'])
+#         class_weights = utils.compute_class_weight('balanced', classes=np.unique(y_train),
+#                                                    y=y_train)
+#         # Convert class weights to a dictionary
+#         class_weight = {i: class_weights[i] for i in range(len(class_weights))}
+#
+#         # Print the summary of the model
+#         model.fit(
+#             [x_train_components_scaled_padded, x_train_sizes_scaled, x_train_n_patches_encoded],
+#             y_train,
+#             epochs=300,
+#             verbose=1,
+#             validation_data=(
+#                 [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded], y_cv),
+#             callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy',
+#                                                         patience=n_early_stopping_epochs)],
+#             batch_size=batch_size,
+#             class_weight=class_weight
+#
+#         )
+#
+#         yhat_cv = model.predict(
+#             [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded])
+#         precision, recall, thresholds = utils.precision_recall_curve(y_cv, yhat_cv)
+#         pr_auc = auc(recall, precision)
+#         print(pr_auc)
+
+
+
 # directory_name = os.path.join(path.aggregateFunctionMLPDir, 'gridSearch4_3')
-utils.saveAsPickle(allArchitecturesAucs, os.path.join(path.aggregateFunctionMLPDir,
-                                                      os.path.join('gridSearch11_3',
-                                                                   'allArchitecturesAucs' + str(n_layers) + " " + str(
-                                                                       m_a))))
-utils.saveAsPickle(totalAucs, os.path.join(path.aggregateFunctionMLPDir,
-                                           os.path.join('gridSearch11_3', 'totalAucs' + str(n_layers) + " " + str(m_a))))
+# utils.saveAsPickle(allArchitecturesAucs, os.path.join(path.aggregateFunctionMLPDir,
+#                                                       os.path.join('gridSearch11_3',
+#                                                                    'allArchitecturesAucs' + str(n_layers) + " " + str(
+#                                                                        m_a))))
+# utils.saveAsPickle(totalAucs, os.path.join(path.aggregateFunctionMLPDir,
+#                                            os.path.join('gridSearch11_3', 'totalAucs' + str(n_layers) + " " + str(m_a))))
