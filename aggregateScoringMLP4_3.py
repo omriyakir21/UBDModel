@@ -11,6 +11,8 @@ allInfoDicts = utils.loadPickle(
     os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining23_3', 'allInfoDicts.pkl')))
 dictsForTraining = utils.loadPickle(
     os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining23_3', 'dictsForTraining.pkl')))
+directory_name = os.path.join(path.aggregateFunctionMLPDir, 'gridSearch31_3WithEvolutionTrainingAccuracyStopping')
+os.mkdir(directory_name)
 
 allArchitecturesAucs = []
 totalAucs = []
@@ -19,11 +21,11 @@ all_labels = []
 yhat_groups = []
 label_groups = []
 y_train_groups = []
-# n_layers = int(sys.argv[1])
-n_layers = 4
-# m_a = int(sys.argv[2])
-m_a = 256
-m_values = [256]
+n_layers = int(sys.argv[1])
+# n_layers = 4
+m_a = int(sys.argv[2])
+# m_a = 256
+m_values = [128, 256]
 # m_values = [4, 8, 16, 32, 64, 128, 256]
 batch_size = 1024
 n_early_stopping_epochs = 5
@@ -93,7 +95,8 @@ for m_b in m_values:
                 n_early_stopping_epochs, batch_size),
                pr_auc))
 
-
+utils.saveAsPickle(allArchitecturesAucs, os.path.join(directory_name, 'allArchitecturesAucs' + str(n_layers) + " " + str(m_a)))
+utils.saveAsPickle(totalAucs, os.path.join(directory_name, 'totalAucs' + str(n_layers) + " " + str(m_a)))
 
 # dictForTraining = dictsForTraining
 # for m_b in m_values:
@@ -143,11 +146,3 @@ for m_b in m_values:
 #         print(pr_auc)
 
 
-
-# directory_name = os.path.join(path.aggregateFunctionMLPDir, 'gridSearch4_3')
-# utils.saveAsPickle(allArchitecturesAucs, os.path.join(path.aggregateFunctionMLPDir,
-#                                                       os.path.join('gridSearch11_3',
-#                                                                    'allArchitecturesAucs' + str(n_layers) + " " + str(
-#                                                                        m_a))))
-# utils.saveAsPickle(totalAucs, os.path.join(path.aggregateFunctionMLPDir,
-#                                            os.path.join('gridSearch11_3', 'totalAucs' + str(n_layers) + " " + str(m_a))))
