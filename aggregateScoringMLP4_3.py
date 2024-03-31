@@ -11,8 +11,8 @@ allInfoDicts = utils.loadPickle(
     os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining23_3', 'allInfoDicts.pkl')))
 dictsForTraining = utils.loadPickle(
     os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining23_3', 'dictsForTraining.pkl')))
-directory_name = os.path.join(path.aggregateFunctionMLPDir, 'gridSearch31_3WithEvolutionTrainingAccuracyStopping')
-os.mkdir(directory_name)
+directory_name = sys.argv[3]
+
 
 allArchitecturesAucs = []
 totalAucs = []
