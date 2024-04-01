@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import os
 
+from Bio.PDB import MMCIFParser
+
 
 def saveAsPickle(object, fileName):
     with open(fileName + '.pkl', 'wb') as file:
@@ -15,23 +17,23 @@ def loadPickle(fileName):
         object = pickle.load(file)
         return object
 
-
+allPredictions = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\all_predictions_22_3.pkl')
 # allInfoDict = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining1902\allInfoDict.pkl')
-# allInfoDict = loadPickle(
-#     r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining23_3\allInfoDict.pkl')
-# allProteinsDict = dict()
-# allProteinsDict['x'] = allInfoDict['x_train'] + allInfoDict['x_cv'] + allInfoDict['x_test']
-# allProteinsDict['y'] = np.concatenate((allInfoDict['y_train'], allInfoDict['y_cv'], allInfoDict['y_test']))
-# sequences = [info[1] for info in allProteinsDict['x']]
-# saveAsPickle(sequences,r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining23_3\allProteinSequences')
+allInfoDict = loadPickle(
+    r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining23_3\allInfoDict.pkl')
+allProteinsDict = dict()
+allProteinsDict['x'] = allInfoDict['x_train'] + allInfoDict['x_cv'] + allInfoDict['x_test']
+allProteinsDict['y'] = np.concatenate((allInfoDict['y_train'], allInfoDict['y_cv'], allInfoDict['y_test']))
+# uniprots = [info[1] for info in allProteinsDict['x']]
+
+
 # allProteinsDict = loadPickle('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/allProteinInfo.pkl')
-sequences = loadPickle(
-    '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/dataForTraining23_3/allProteinSequences.pkl')
+# sequences = [allPredictions['dict_sequences'][uniprot] for uniprot in uniprots]
+# saveAsPickle(sequences,r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining23_3\allProteinSequences')
 
-
-# cluster_indices = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\clusterIndices.pkl')
-# clustersParticipantsList = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\clustersParticipantsList.pkl')
-# representative_indices = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\representative_indices.pkl')
+cluster_indices = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining23_3\clusterIndices.pkl')
+clustersParticipantsList = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining23_3\clustersParticipantsList.pkl')
+representative_indices = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining23_3\representative_indices.pkl')
 
 def cluster_sequences(list_sequences, seqid=0.5, coverage=0.4, covmode='0'):
     path2mmseqs = '/home/iscb/wolfson/omriyakir/anaconda3/envs/ubinet/bin/mmseqs'
@@ -63,7 +65,7 @@ def cluster_sequences(list_sequences, seqid=0.5, coverage=0.4, covmode='0'):
     return np.array(cluster_indices), np.array(representative_indices)
 
 
-cluster_indices, representative_indices = cluster_sequences(sequences)
+# cluster_indices, representative_indices = cluster_sequences(sequences)
 
 path2mafft = '/usr/bin/mafft'
 
@@ -75,10 +77,10 @@ def createClusterParticipantsIndexes(clusterIndexes):
     return clustersParticipantsList
 
 
-clustersParticipantsList = createClusterParticipantsIndexes(cluster_indices)
-saveAsPickle(cluster_indices, '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/dataForTraining23_3/' + 'clusterIndices')
-saveAsPickle(representative_indices, '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/dataForTraining23_3/' + 'representative_indices')
-saveAsPickle(clustersParticipantsList, '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/dataForTraining23_3/' + 'clustersParticipantsList')
+# clustersParticipantsList = createClusterParticipantsIndexes(cluster_indices)
+# saveAsPickle(cluster_indices, '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/dataForTraining23_3/' + 'clusterIndices')
+# saveAsPickle(representative_indices, '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/dataForTraining23_3/' + 'representative_indices')
+# saveAsPickle(clustersParticipantsList, '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/dataForTraining23_3/' + 'clustersParticipantsList')
 
 def divideClusters(clusterSizes):
     """
@@ -95,22 +97,22 @@ def divideClusters(clusterSizes):
         sublists[min_cluster_index].append(tup[0])
     return sublists, sublistsSum
 
-# clusterSizes = [l.size for l in clustersParticipantsList]
-# clusterSizesAndInedxes = [(i,clusterSizes[i]) for i in range (len(clusterSizes))]
-# sublists, sublistsSum = divideClusters(clusterSizesAndInedxes)
-#
-# groupsIndexes = []
-# for l in sublists:
-#     groupsIndexes.append(np.concatenate([clustersParticipantsList[index] for index in l]))
+clusterSizes = [l.size for l in clustersParticipantsList]
+clusterSizesAndInedxes = [(i,clusterSizes[i]) for i in range (len(clusterSizes))]
+sublists, sublistsSum = divideClusters(clusterSizesAndInedxes)
 
-# allProteins = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\allProteinInfo.pkl')
-# y_groups = []
-# x_groups = []
-# for indexGroup in groupsIndexes:
-#     x = [allProteins['x'][index] for index in indexGroup]
-#     y = allProteins['y'][indexGroup]
-#     x_groups.append(x)
-#     y_groups.append(y)
+groupsIndexes = []
+for l in sublists:
+    groupsIndexes.append(np.concatenate([clustersParticipantsList[index] for index in l]))
 
-# saveAsPickle(x_groups,r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\x_groups')
-# saveAsPickle(y_groups,r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\y_groups')
+allProteins = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\allProteinInfo.pkl')
+y_groups = []
+x_groups = []
+for indexGroup in groupsIndexes:
+    x = [allProteins['x'][index] for index in indexGroup]
+    y = allProteins['y'][indexGroup]
+    x_groups.append(x)
+    y_groups.append(y)
+
+saveAsPickle(x_groups,r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining23_3\x_groups')
+saveAsPickle(y_groups,r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining23_3\y_groups')

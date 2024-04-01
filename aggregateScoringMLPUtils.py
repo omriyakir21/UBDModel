@@ -274,10 +274,9 @@ def plotPrecisionRecall(y_probs, labels, header):
     plt.show()
 
 
-def createDataForTraining():
-    labels = loadPickle(os.path.join(path.mainProjectDir, os.path.join('aggregateFunctionMLP', 'labels3d.pkl')))
-    tuplesLen3 = loadPickle(
-        os.path.join(path.mainProjectDir, os.path.join('aggregateFunctionMLP', 'allTuplesListsOfLen3.pkl')))
+def createDataForTraining(componentsPath,labelsPath,outputDirPath):
+    labels = loadPickle(labelsPath)
+    tuplesLen3 = loadPickle(componentsPath)
     x_train, x_cv, x_test, y_train, y_cv, y_test = divideTrainValidationTest(tuplesLen3, labels)
     x_train_components, x_train_sizes, x_train_n_patches = divideXData(x_train)
     x_cv_components, x_cv_sizes, x_cv_n_patches = divideXData(x_cv)
@@ -307,10 +306,8 @@ def createDataForTraining():
                        'y_test': y_test
                        }
 
-    saveAsPickle(allInfoDict,
-                 os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining1902', 'allInfoDict')))
-    saveAsPickle(dictForTraining,
-                 os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining1902', 'dictForTraining')))
+    saveAsPickle(allInfoDict,os.path.join(outputDirPath, 'allInfoDict'))
+    saveAsPickle(dictForTraining,os.path.join(outputDirPath, 'dictForTraining'))
 
 
 def simpleModelTraining():

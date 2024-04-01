@@ -1,3 +1,4 @@
+import csv
 import pickle
 import sys
 from itertools import chain
@@ -10,10 +11,10 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 from matplotlib import pyplot as plt
 import pandas as pd
-
+import aggregateScoringMLPUtils as utils
 from Bio.PDB import MMCIFParser
 import path
-
+parser = MMCIFParser()
 ubdPath = path.mainProjectDir
 
 
@@ -29,6 +30,7 @@ class Protein:
         self.nonUbiqPredictions = allPredictions['dict_predictions_interface'][uniprotName]
         self.residues = allPredictions['dict_resids'][uniprotName]
         self.source = self.getSource(allPredictions['dict_sources'][uniprotName])
+        self.plddtValues = self.getPlddtValues()
         self.size = None
         self.graph = nx.Graph()
         self.createGraph()
@@ -50,13 +52,21 @@ class Protein:
         structure = parser.get_structure(self.uniprotName, structurePath)
         return structure
 
+    def getPlddtValues(self):
+        structure = self.getStructure()
+        model = structure.child_list[0]
+        assert (len(model) == 1)
+        for chain in model:
+            residues = aaOutOfChain(chain)
+            return np.array([residues[i].child_list[0].bfactor for i in range(len(residues))])
+
     def createNodesForGraph(self, residues):
         nodes = []
         if len(residues) != len(self.ubiqPredictions):  # need to skip this protein
             raise SizeDifferentiationException(self.uniprotName)
         for i in range(len(residues)):
             plddtVal = residues[i].child_list[0].bfactor
-            if plddtVal > 0.85 and self.ubiqPredictions[i] > percentile_90:
+            if plddtVal > 85 and self.ubiqPredictions[i] > percentile_90:
                 nodes.append(i)
         return nodes
 
@@ -86,19 +96,21 @@ class Protein:
         tuples = []
         connected_components = list(nx.connected_components(self.graph))
         for componentSet in connected_components:
-            averageUbiq, averageNonUbiq = self.calculateAveragePredictionsForComponent(componentSet)
+            averageUbiq, averageNonUbiq, averagePlddt = self.calculateAveragePredictionsForComponent(componentSet)
             length = len(componentSet)
-            tuples.append((length, averageUbiq, averageNonUbiq))
+            tuples.append((length, averageUbiq, averageNonUbiq, averagePlddt))
         return tuples
 
     def calculateAveragePredictionsForComponent(self, indexSet):
         indexes = list(indexSet)
         ubiqPredictions = [self.ubiqPredictions[index] for index in indexes]
         nonUbiqPredictions = [self.nonUbiqPredictions[index] for index in indexes]
-        assert (len(ubiqPredictions) == len(nonUbiqPredictions))
+        plddtValues = [self.plddtValues[index] for index in indexes]
+        assert (len(ubiqPredictions) == len(nonUbiqPredictions) == len(plddtValues))
         averageUbiq = sum(ubiqPredictions) / len(ubiqPredictions)
         averageNonUbiq = sum(nonUbiqPredictions) / len(nonUbiqPredictions)
-        return averageUbiq, averageNonUbiq
+        averagePlddt = sum(plddtValues) / len(plddtValues)
+        return averageUbiq, averageNonUbiq, averagePlddt
 
 
 threeLetterToSinglelDict = {'GLY': 'G', 'ALA': 'A', 'VAL': 'V', 'LEU': 'L', 'ILE': 'I', 'THR': 'T', 'SER': 'S',
@@ -139,13 +151,26 @@ def CAlphaDistance(atom1, atom2):
     return distance
 
 
-# allPredictions = loadPickle(os.path.join(ubdPath, os.path.join('Predictions', 'all_predictions_0402_same_keys.pkl')))
-# allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
-# # allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
-# allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
-# percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
-# distanceThreshold = 10
-# parser = MMCIFParser()
+allPredictions = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\all_predictions_22_3.pkl')
+allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
+allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
+allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
+# # common_keys = set(allPredictionsUbiq.keys()) & set(allPredictionsNonUbiq.keys())
+percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
+
+
+distanceThreshold = 10
+
+
+# # allPredictionsUbiq = {key: allPredictionsUbiq[key] for key in common_keys}
+# # dict_resids = {key: allPredictions['dict_resids'][key] for key in common_keys}
+# # dict_sequences = {key: allPredictions['dict_sequences'][key] for key in common_keys}
+# # dict_sources = {key: allPredictions['dict_sources'][key] for key in common_keys}
+# # allPredictions['dict_resids'] = dict_resids
+# # allPredictions['dict_sequences'] = dict_sequences
+# # allPredictions['dict_sources'] = dict_sources
+# # allPredictions['dict_predictions_ubiquitin'] = allPredictionsUbiq
+# # saveAsPickle(allPredictions,r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\all_predictions_22_3')
 
 
 def patchesList(allPredictions, i):
@@ -161,18 +186,21 @@ def patchesList(allPredictions, i):
             print(e)
             continue
         except Exception as e:
-            raise (e)
+            print(e)
+            continue
     saveAsPickle(proteinObjects,
                  os.path.join(ubdPath,
-                              os.path.join('newListOfProteinObjects',
-                                           'newListOfProteinObjectsForAggregateFunc' + str(i))))
+                              os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\proteinObjectsWithEvoluion85Precentile1_4',
+                                           'proteinObjectsWithEvoluion' + str(i))))
 
 
-indexes = list(range(0, 67470 + 1, 1500)) + [67470]
+indexes = list(range(0, 69578 + 1, 1500)) + [69578]
 
 
 # a = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\newListOfProteinObjects\newListOfProteinObjectsForAggregateFunc0.pkl')
-# patchesList(allPredictions, int(sys.argv[1]))
+patchesList(allPredictions, int(sys.argv[1]))
+
+
 def makeDictWithIntegrationKeys(allPredictions):
     allPredictions2d = loadPickle(os.path.join(ubdPath, os.path.join('Predictions', 'all_predictions_0310.pkl')))
     keys = allPredictions2d['dict_sources'].keys()
@@ -287,25 +315,40 @@ def updateFunction(probabilities, priorUb, trainingUbRatio):
     probabilities[1] = updatedProbability
     probabilities[0] = 1 - updatedProbability
 
-#
+
+# #
 # newListOfProteinLists = [loadPickle(
-#     os.path.join(ubdPath, os.path.join('newListOfProteinObjects', 'newlistOfProteinObjectsForAggregateFunc' + str(
+#     os.path.join(ubdPath, os.path.join('proteinObjectsWithEvoluion22_3', 'proteinObjectsWithEvoluion' + str(
 #         i) + '.pkl'))) for i in range(45)]
 # concatenatedListOfProteins = [protein for sublist in newListOfProteinLists for protein in sublist]
 # common_values = repeatingUniprotsToFilter()
+# # existingUniprotNames = [obj.uniprotName for obj in concatenatedListOfProteins]
+# for p in concatenatedListOfProteins:
+#     if p.uniprotName in common_values:
+#         p.source = 'proteome'
+#
+#
+# # missingUniprotsNames = [key for key in allPredictionsUbiq.keys() if key not in uniprotNames]
+#
 # allComponents3d = [(protein.source, protein.uniprotName, protein.connectedComponentsTuples, protein.size,
 #                     len(protein.connectedComponentsTuples)) for protein in concatenatedListOfProteins]
-# allComponents3dFiltered = [component for component in allComponents3d if component[1] not in common_values]
+# # allComponents3dFiltered = [component for component in allComponents3d if component[1] not in common_values]
 #
-# saveAsPickle(allComponents3dFiltered,
-#              os.path.join(ubdPath, os.path.join('aggregateFunctionMLP', 'allTuplesListsOfLen3')))
-#
-#
+# saveAsPickle(allComponents3d,
+#              os.path.join(ubdPath, os.path.join('aggregateFunctionMLP', 'allTuplesListsOfLen3_23_3')))
+
+# allComponents3d = loadPickle(
+#     os.path.join(ubdPath, os.path.join('aggregateFunctionMLP', 'allTuplesListsOfLen3_23_3.pkl')))
+# labels = loadPickle(
+#     os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'labels3d_23_3.pkl'))
+
+
+# KBINS
 # # n_bins_parameter = 30  # it will actualli be 30^(number of parameter which is 2 because of len(size,average)
 # allComponents3dFiltered = loadPickle(
 #     os.path.join(ubdPath, os.path.join('aggregateFunctionMLP', 'allTuplesListsOfLen3.pkl')))
 # labels = createLabelsForComponents(allComponents3dFiltered)
-saveAsPickle(labels, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'labels3d'))
+# saveAsPickle(labels, os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'labels3d'))
 
 
 # print(sum(labels))
