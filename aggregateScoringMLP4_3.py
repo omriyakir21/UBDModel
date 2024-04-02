@@ -11,8 +11,7 @@ allInfoDicts = utils.loadPickle(
     os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining23_3', 'allInfoDicts.pkl')))
 dictsForTraining = utils.loadPickle(
     os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining23_3', 'dictsForTraining.pkl')))
-# directory_name = sys.argv[3]
-
+directory_name = '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/MLP_evolution_trainingAccuracyStoppage/'
 
 allArchitecturesAucs = []
 totalAucs = []
@@ -89,6 +88,7 @@ for m_b in m_values:
         allArchitecturesAucs.append(architectureAucs)
         precision, recall, thresholds = utils.precision_recall_curve(all_labels, all_predictions)
         utils.plotPrecisionRecall(all_predictions, all_labels, 'allPredictions')
+        utils.saveAsPickle([all_predictions, all_labels], os.path.join(directory_name, 'predictionsAndLabels'))
         pr_auc = auc(recall, precision)
         totalAucs.append(((m_a, m_b, m_c, n_layers,
                            n_early_stopping_epochs, batch_size),
