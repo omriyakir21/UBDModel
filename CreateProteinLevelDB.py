@@ -607,3 +607,18 @@ assert len(nonProteomeUniprots) == len(nonProteomeEvidences)
 proteomeUniprotEvidenceDict = uniprotsEvidencesListTodict(proteome_uniprotNames_evidences_list)
 saveAsPickle(proteomeUniprotEvidenceDict,
              os.path.join(path.GoPath, 'nonProteomeUniprotEvidenceDict' + sys.argv[1]))
+
+
+# nonProteomeUniprots = loadPickle(
+#     os.path.join(path.aggregateFunctionMLPDir, os.path.join('gridSearch11_3', 'allUniprotsExceptProteome.pkl')))
+# nonProteomeUniprotsSplitted = (
+# nonProteomeUniprots[:len(nonProteomeUniprots) // 2], nonProteomeUniprots[len(nonProteomeUniprots) // 2:])
+# nonProteomeUniprots = nonProteomeUniprotsSplitted[int(sys.argv[1])]
+# nonProteomeEvidences = [getEvidenceOfUniprotId(uniprotId) for uniprotId in nonProteomeUniprots]
+# proteome_uniprotNames_evidences_list = [(nonProteomeUniprots[i], nonProteomeEvidences[i]) for i in
+#                                         range(len(nonProteomeUniprots))]
+# assert len(nonProteomeUniprots) == len(nonProteomeEvidences)
+# proteomeUniprotEvidenceDict = uniprotsEvidencesListTodict(proteome_uniprotNames_evidences_list)
+# saveAsPickle(proteomeUniprotEvidenceDict,
+#              os.path.join(path.GoPath, 'nonProteomeUniprotEvidenceDict' + sys.argv[1]))
+

@@ -11,7 +11,7 @@ allInfoDicts = utils.loadPickle(
     os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining23_3', 'allInfoDicts.pkl')))
 dictsForTraining = utils.loadPickle(
     os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining23_3', 'dictsForTraining.pkl')))
-directory_name = sys.argv[3]
+# directory_name = sys.argv[3]
 
 
 allArchitecturesAucs = []
@@ -21,11 +21,11 @@ all_labels = []
 yhat_groups = []
 label_groups = []
 y_train_groups = []
-n_layers = int(sys.argv[1])
-# n_layers = 4
-m_a = int(sys.argv[2])
-# m_a = 256
-m_values = [128, 256]
+# n_layers = int(sys.argv[1])
+n_layers = 4
+# m_a = int(sys.argv[2])
+m_a = 256
+m_values = [256]
 # m_values = [4, 8, 16, 32, 64, 128, 256]
 batch_size = 1024
 n_early_stopping_epochs = 5
@@ -39,8 +39,8 @@ for m_b in m_values:
                       metrics=['accuracy'])
         architectureAucs = []
         for i in range(len(dictsForTraining)):
-            print(m_a, m_b, m_c, n_layers,
-                  n_early_stopping_epochs, batch_size, i)
+            # print(m_a, m_b, m_c, n_layers,
+            #       n_early_stopping_epochs, batch_size, i)
             dictForTraining = dictsForTraining[i]
             x_train_components_scaled_padded = dictForTraining['x_train_components_scaled_padded']
             x_cv_components_scaled_padded = dictForTraining['x_cv_components_scaled_padded']
@@ -67,7 +67,7 @@ for m_b in m_values:
                 verbose=1,
                 validation_data=(
                     [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded], y_cv),
-                callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_accuracy',
+                callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy',
                                                             patience=n_early_stopping_epochs)],
                 batch_size=batch_size,
                 class_weight=class_weight
@@ -80,6 +80,7 @@ for m_b in m_values:
             pr_auc = auc(recall, precision)
             architectureAucs.append(((m_a, m_b, m_c, n_layers,
                                       n_early_stopping_epochs, batch_size, i), pr_auc))
+            utils.plotPrecisionRecall(yhat_cv, y_cv, str(i))
             all_predictions.extend(yhat_cv)
             all_labels.extend(y_cv)
             yhat_groups.append(yhat_cv.reshape(-1))
@@ -87,6 +88,7 @@ for m_b in m_values:
 
         allArchitecturesAucs.append(architectureAucs)
         precision, recall, thresholds = utils.precision_recall_curve(all_labels, all_predictions)
+        utils.plotPrecisionRecall(all_predictions, all_labels, 'allPredictions')
         pr_auc = auc(recall, precision)
         totalAucs.append(((m_a, m_b, m_c, n_layers,
                            n_early_stopping_epochs, batch_size),
@@ -95,8 +97,8 @@ for m_b in m_values:
                 n_early_stopping_epochs, batch_size),
                pr_auc))
 
-utils.saveAsPickle(allArchitecturesAucs, os.path.join(directory_name, 'allArchitecturesAucs' + str(n_layers) + " " + str(m_a)))
-utils.saveAsPickle(totalAucs, os.path.join(directory_name, 'totalAucs' + str(n_layers) + " " + str(m_a)))
+# utils.saveAsPickle(allArchitecturesAucs, os.path.join(directory_name, 'allArchitecturesAucs' + str(n_layers) + " " + str(m_a)))
+# utils.saveAsPickle(totalAucs, os.path.join(directory_name, 'totalAucs' + str(n_layers) + " " + str(m_a)))
 
 # dictForTraining = dictsForTraining
 # for m_b in m_values:
@@ -144,5 +146,3 @@ utils.saveAsPickle(totalAucs, os.path.join(directory_name, 'totalAucs' + str(n_l
 #         precision, recall, thresholds = utils.precision_recall_curve(y_cv, yhat_cv)
 #         pr_auc = auc(recall, precision)
 #         print(pr_auc)
-
-
