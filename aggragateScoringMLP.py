@@ -648,12 +648,12 @@ all_labels = []
 yhat_groups = []
 label_groups = []
 y_train_groups = []
-for n_layers_component in range(1, 5):
+for n_layers_component in range(4, 5):
     for n_layers_size in range(0, 3):
         for n_layers_n_patches in range(0, 3):
             for n_layers_final in range(0, 4):
-                for n_early_stopping_epochs in range(3, 8):
-                    for batch_size in [pow(2, 7 + i) for i in range(5)]:
+                for n_early_stopping_epochs in range(6, 7):
+                    for batch_size in [pow(2, 10 + i) for i in range(2)]:
                         model = buildModel(n_layers_component, n_layers_size, n_layers_n_patches, n_layers_final)
                         # Compile the model
                         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])

@@ -594,7 +594,7 @@ threeLetterToSinglelDict = {'GLY': 'G', 'ALA': 'A', 'VAL': 'V', 'LEU': 'L', 'ILE
 # saveAsPickle(proteomeUniprotEvidenceDict,
 #              os.path.join(path.GoPath, os.path.join('proteome', 'proteomeUniprotEvidenceDict')))
 
-
+print(sys.argv[0])
 nonProteomeUniprots = loadPickle(
     os.path.join(path.aggregateFunctionMLPDir, os.path.join('gridSearch11_3', 'allUniprotsExceptProteome.pkl')))
 nonProteomeUniprotsSplitted = (
