@@ -14,6 +14,7 @@ import pandas as pd
 import aggregateScoringMLPUtils as utils
 from Bio.PDB import MMCIFParser
 import path
+
 parser = MMCIFParser()
 ubdPath = path.mainProjectDir
 
@@ -24,7 +25,7 @@ class SizeDifferentiationException(Exception):
 
 
 class Protein:
-    def __init__(self, uniprotName):
+    def __init__(self, uniprotName, plddtThreshold):
         self.uniprotName = uniprotName
         self.ubiqPredictions = allPredictions['dict_predictions_ubiquitin'][uniprotName]
         self.nonUbiqPredictions = allPredictions['dict_predictions_interface'][uniprotName]
@@ -33,7 +34,7 @@ class Protein:
         self.plddtValues = self.getPlddtValues()
         self.size = None
         self.graph = nx.Graph()
-        self.createGraph()
+        self.createGraph(plddtThreshold)
         self.connectedComponentsTuples = self.creatConnectedComponentsTuples()
 
     def getSource(self, source):
@@ -60,7 +61,7 @@ class Protein:
             residues = aaOutOfChain(chain)
             return np.array([residues[i].child_list[0].bfactor for i in range(len(residues))])
 
-    def createNodesForGraph(self, residues):
+    def createNodesForGraph(self, residues, plddtThreshold):
         nodes = []
         if len(residues) != len(self.ubiqPredictions):  # need to skip this protein
             raise SizeDifferentiationException(self.uniprotName)
@@ -79,14 +80,14 @@ class Protein:
                     edges.append((nodes[i], nodes[j]))
         return edges
 
-    def createGraph(self):
+    def createGraph(self, plddtThreshold):
         structure = self.getStructure()
         model = structure.child_list[0]
         assert (len(model) == 1)
         for chain in model:
             residues = aaOutOfChain(chain)
             self.size = len(residues)
-            nodes = self.createNodesForGraph(residues)
+            nodes = self.createNodesForGraph(residues, plddtThreshold)
             validResidues = [residues[i] for i in nodes]
             edges = self.createEdgesForGraph(validResidues, nodes)
             self.graph.add_nodes_from(nodes)
@@ -151,15 +152,16 @@ def CAlphaDistance(atom1, atom2):
     return distance
 
 
-allPredictions = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\all_predictions_22_3.pkl')
+allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_22_3.pkl'))
 allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
 allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
 allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
-# # common_keys = set(allPredictionsUbiq.keys()) & set(allPredictionsNonUbiq.keys())
 percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
-
-
 distanceThreshold = 10
+plddtThreshold = sys.argv[2]
+dirName = sys.argv[3]
+dirPath = os.path.join(path.predictionsToDataSetDir, dirName)
+indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
 
 
 # # allPredictionsUbiq = {key: allPredictionsUbiq[key] for key in common_keys}
@@ -173,32 +175,24 @@ distanceThreshold = 10
 # # saveAsPickle(allPredictions,r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\all_predictions_22_3')
 
 
-def patchesList(allPredictions, i):
+def patchesList(allPredictions, i, dirPath, plddtThreshold):
     allKeys = list(allPredictions['dict_resids'].keys())[indexes[i]:indexes[i + 1]]
     proteinObjects = []
     cnt = 0
+    if i == 0:
+        os.mkdir(dirPath)
     for key in allKeys:
         print("i= ", i, " cnt = ", cnt, " key = ", key)
         cnt += 1
         try:
-            proteinObjects.append(Protein(key))
+            proteinObjects.append(Protein(key, plddtThreshold))
         except SizeDifferentiationException as e:
             print(e)
             continue
         except Exception as e:
             print(e)
             continue
-    saveAsPickle(proteinObjects,
-                 os.path.join(ubdPath,
-                              os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\proteinObjectsWithEvoluion85Precentile1_4',
-                                           'proteinObjectsWithEvoluion' + str(i))))
-
-
-indexes = list(range(0, 69578 + 1, 1500)) + [69578]
-
-
-# a = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\newListOfProteinObjects\newListOfProteinObjectsForAggregateFunc0.pkl')
-patchesList(allPredictions, int(sys.argv[1]))
+    saveAsPickle(proteinObjects, os.path.join(os.path.join(dirPath, 'proteinObjectsWithEvoluion' + str(i))))
 
 
 def makeDictWithIntegrationKeys(allPredictions):
@@ -316,11 +310,24 @@ def updateFunction(probabilities, priorUb, trainingUbRatio):
     probabilities[0] = 1 - updatedProbability
 
 
-# #
-# newListOfProteinLists = [loadPickle(
-#     os.path.join(ubdPath, os.path.join('proteinObjectsWithEvoluion22_3', 'proteinObjectsWithEvoluion' + str(
-#         i) + '.pkl'))) for i in range(45)]
-# concatenatedListOfProteins = [protein for sublist in newListOfProteinLists for protein in sublist]
+def pklComponentsOutOfProteinObjects(dirPath):
+    listOfProteinLists = [loadPickle(
+        os.path.join(os.path.join(dirPath, 'proteinObjectsWithEvoluion' + str(i) + '.pkl'))) for i in
+        range(len(indexes))]
+    concatenatedListOfProteins = [protein for sublist in listOfProteinLists for protein in sublist]
+    allComponents4d = [(protein.source, protein.uniprotName, protein.connectedComponentsTuples, protein.size,
+                        len(protein.connectedComponentsTuples)) for protein in concatenatedListOfProteins]
+    componentsDir = os.path.join(dirPath, 'components')
+    os.mkdir(componentsDir)
+    saveAsPickle(allComponents4d, os.path.join(componentsDir, 'components'))
+
+
+patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
+
+
+# pklComponentsOutOfProteinObjects(dirPath)
+
+
 # common_values = repeatingUniprotsToFilter()
 # # existingUniprotNames = [obj.uniprotName for obj in concatenatedListOfProteins]
 # for p in concatenatedListOfProteins:
