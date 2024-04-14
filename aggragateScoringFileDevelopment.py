@@ -352,7 +352,7 @@ trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
 # CREATE TRAIN TEST VALIDATION FOR ALL GROUPS
 x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
 y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
-allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups)
+allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups,trainingDictsDir)
 
 
 # common_values = repeatingUniprotsToFilter()
