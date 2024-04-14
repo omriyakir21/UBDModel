@@ -323,7 +323,9 @@ def pklComponentsOutOfProteinObjects(dirPath):
 
 
 # patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
+print()
 print(os.path.join(dirPath, 'proteinObjectsWithEvoluion' + str(0) + '.pkl'))
+print()
 pklComponentsOutOfProteinObjects(dirPath)
 
 
