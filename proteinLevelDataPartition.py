@@ -90,7 +90,8 @@ def divideClusters(clusterSizes):
 
 
 path2mafft = '/usr/bin/mafft'
-dirPath = sys.argv[1]
+dirName = sys.argv[1]
+dirPath = os.path.join(path.predictionsToDataSetDir, dirName)
 
 
 def create_x_y_groups(allPredictionsPath):
