@@ -233,11 +233,14 @@ def repeatingUniprotsToFilter():
 def createLabelsForComponents(allComponents):
     return np.array([0 if component[0] == 'proteome' else 1 for component in allComponents])
 
-def pklLabels(allComponents,dirPath):
+
+def pklLabels(allComponents, dirPath):
     labels = createLabelsForComponents(allComponents)
     labelsDir = os.path.join(dirPath, 'labels')
     os.mkdir(labelsDir)
     saveAsPickle(labels, os.path.join(labelsDir, 'labels'))
+
+
 def trainKBinDescretizierModel(data, n_bins_parameter):
     est = KBinsDiscretizer(n_bins=n_bins_parameter, encode='ordinal', strategy='quantile', subsample=None)
     est.fit(data)
@@ -317,7 +320,7 @@ def updateFunction(probabilities, priorUb, trainingUbRatio):
 def pklComponentsOutOfProteinObjects(dirPath):
     listOfProteinLists = [loadPickle(
         os.path.join(dirPath, 'proteinObjectsWithEvoluion' + str(i) + '.pkl')) for i in
-        range(len(indexes)-1)]
+        range(len(indexes) - 1)]
     concatenatedListOfProteins = [protein for sublist in listOfProteinLists for protein in sublist]
     allComponents4d = [(protein.source, protein.uniprotName, protein.connectedComponentsTuples, protein.size,
                         len(protein.connectedComponentsTuples)) for protein in concatenatedListOfProteins]
@@ -327,13 +330,23 @@ def pklComponentsOutOfProteinObjects(dirPath):
     return allComponents4d
 
 
-patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
-patchesList(allPredictions, int(sys.argv[1])+1, dirPath, plddtThreshold)
-# componentsDir = os.path.join(dirPath, 'components')
-#
-# components = loadPickle(os.path.join(componentsDir, 'components'+'.pkl'))
-components= pklComponentsOutOfProteinObjects(dirPath)
-labels =pklLabels(components,dirPath)
+# CREATE PROTEIN OBJECTS
+# patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
+
+# PKL ALL THE COMPONENTS TOGETHER AND CREATE LABELS
+# components = pklComponentsOutOfProteinObjects(dirPath)
+# labels = pklLabels(components, dirPath)
+
+# CREATE DATA FOR TRAINING (allInfoDicts and dictForTraining)
+componentsDir = os.path.join(dirPath, 'components')
+componentsPath = os.path.join(componentsDir, 'components.pkl')
+labelsDir = os.path.join(dirPath, 'labels')
+labelsPath = os.path.join(componentsDir, 'labels.pkl')
+trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
+os.mkdir(trainingDictsDir)
+allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
+
+
 
 # common_values = repeatingUniprotsToFilter()
 # # existingUniprotNames = [obj.uniprotName for obj in concatenatedListOfProteins]
