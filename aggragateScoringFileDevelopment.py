@@ -44,7 +44,7 @@ class Protein:
             return source
 
     def getStructure(self):
-        GoPath = r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO'
+        GoPath = path.GoPath
         typePath = os.path.join(GoPath, self.source)
         if self.source == 'proteome':
             structurePath = os.path.join(typePath, 'AF-' + self.uniprotName + '-F1-model_v4.cif')
@@ -67,7 +67,7 @@ class Protein:
             raise SizeDifferentiationException(self.uniprotName)
         for i in range(len(residues)):
             plddtVal = residues[i].child_list[0].bfactor
-            if plddtVal > 85 and self.ubiqPredictions[i] > percentile_90:
+            if plddtVal > plddtThreshold and self.ubiqPredictions[i] > percentile_90:
                 nodes.append(i)
         return nodes
 
@@ -158,8 +158,8 @@ allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
 allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
 percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
 distanceThreshold = 10
-plddtThreshold = sys.argv[2]
-dirName = sys.argv[3]
+dirName = sys.argv[2]
+plddtThreshold = int(sys.argv[3])
 dirPath = os.path.join(path.predictionsToDataSetDir, dirName)
 indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
 
