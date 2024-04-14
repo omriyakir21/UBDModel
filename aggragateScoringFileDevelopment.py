@@ -312,7 +312,7 @@ def updateFunction(probabilities, priorUb, trainingUbRatio):
 
 def pklComponentsOutOfProteinObjects(dirPath):
     listOfProteinLists = [loadPickle(
-        os.path.join(os.path.join(dirPath, 'proteinObjectsWithEvoluion' + str(i) + '.pkl'))) for i in
+        os.path.join(dirPath, 'proteinObjectsWithEvoluion' + str(i) + '.pkl')) for i in
         range(len(indexes))]
     concatenatedListOfProteins = [protein for sublist in listOfProteinLists for protein in sublist]
     allComponents4d = [(protein.source, protein.uniprotName, protein.connectedComponentsTuples, protein.size,
@@ -324,7 +324,6 @@ def pklComponentsOutOfProteinObjects(dirPath):
 
 # patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
 
-print(dirPath)
 pklComponentsOutOfProteinObjects(dirPath)
 
 
