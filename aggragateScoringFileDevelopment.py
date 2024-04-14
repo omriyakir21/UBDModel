@@ -327,7 +327,8 @@ def pklComponentsOutOfProteinObjects(dirPath):
     return allComponents4d
 
 
-# patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
+patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
+patchesList(allPredictions, int(sys.argv[1])+1, dirPath, plddtThreshold)
 # componentsDir = os.path.join(dirPath, 'components')
 #
 # components = loadPickle(os.path.join(componentsDir, 'components'+'.pkl'))
