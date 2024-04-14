@@ -341,7 +341,7 @@ def pklComponentsOutOfProteinObjects(dirPath):
 componentsDir = os.path.join(dirPath, 'components')
 componentsPath = os.path.join(componentsDir, 'components.pkl')
 labelsDir = os.path.join(dirPath, 'labels')
-labelsPath = os.path.join(componentsDir, 'labels.pkl')
+labelsPath = os.path.join(labelsDir, 'labels.pkl')
 trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
 os.mkdir(trainingDictsDir)
 allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
