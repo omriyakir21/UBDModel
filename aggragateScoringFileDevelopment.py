@@ -324,8 +324,9 @@ def pklComponentsOutOfProteinObjects(dirPath):
 
 # patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
 
-
+print(dirPath)
 pklComponentsOutOfProteinObjects(dirPath)
+
 
 
 # common_values = repeatingUniprotsToFilter()
