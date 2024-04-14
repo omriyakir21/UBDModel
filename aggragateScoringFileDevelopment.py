@@ -313,7 +313,7 @@ def updateFunction(probabilities, priorUb, trainingUbRatio):
 def pklComponentsOutOfProteinObjects(dirPath):
     listOfProteinLists = [loadPickle(
         os.path.join(dirPath, 'proteinObjectsWithEvoluion' + str(i) + '.pkl')) for i in
-        range(len(indexes))]
+        range(len(indexes)-1)]
     concatenatedListOfProteins = [protein for sublist in listOfProteinLists for protein in sublist]
     allComponents4d = [(protein.source, protein.uniprotName, protein.connectedComponentsTuples, protein.size,
                         len(protein.connectedComponentsTuples)) for protein in concatenatedListOfProteins]
