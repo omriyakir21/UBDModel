@@ -330,6 +330,7 @@ def pklComponentsOutOfProteinObjects(dirPath):
     return allComponents4d
 
 
+trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
 # CREATE PROTEIN OBJECTS
 # patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
 
@@ -338,17 +339,20 @@ def pklComponentsOutOfProteinObjects(dirPath):
 # labels = pklLabels(components, dirPath)
 
 # CREATE DATA FOR TRAINING (allInfoDicts and dictForTraining)
-componentsDir = os.path.join(dirPath, 'components')
-componentsPath = os.path.join(componentsDir, 'components.pkl')
-labelsDir = os.path.join(dirPath, 'labels')
-labelsPath = os.path.join(labelsDir, 'labels.pkl')
-trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
-try:
-    os.mkdir(trainingDictsDir)
-except Exception as e:
-    print(e)
-allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
+# componentsDir = os.path.join(dirPath, 'components')
+# componentsPath = os.path.join(componentsDir, 'components.pkl')
+# labelsDir = os.path.join(dirPath, 'labels')
+# labelsPath = os.path.join(labelsDir, 'labels.pkl')
+# try:
+#     os.mkdir(trainingDictsDir)
+# except Exception as e:
+#     print(e)
+# allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
+# CREATE TRAIN TEST VALIDATION FOR ALL GROUPS
+x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
+y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
+allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups)
 
 
 # common_values = repeatingUniprotsToFilter()
