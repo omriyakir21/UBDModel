@@ -328,9 +328,10 @@ def pklComponentsOutOfProteinObjects(dirPath):
 
 
 # patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
-componentsDir = os.path.join(dirPath, 'components')
-#components= pklComponentsOutOfProteinObjects(dirPath)
-components = loadPickle(os.path.join(componentsDir, 'components'+'.pkl'))
+# componentsDir = os.path.join(dirPath, 'components')
+#
+# components = loadPickle(os.path.join(componentsDir, 'components'+'.pkl'))
+components= pklComponentsOutOfProteinObjects(dirPath)
 labels =pklLabels(components,dirPath)
 
 # common_values = repeatingUniprotsToFilter()
