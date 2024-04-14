@@ -145,7 +145,7 @@ def scaleXValues2D(x_train, x_cv, x_test):
     return x_train, x_cv, x_test
 
 
-def Scale3DUtil(x, scalerSize, scalerAverageUbBinding, plddtScaler):
+def Scale4DUtil(x, scalerSize, scalerAverageUbBinding, plddtScaler):
     for i in range(len(x)):
         if x[i].shape == (0,):
             continue
@@ -167,9 +167,9 @@ def scaleXComponents4D(x_train_components, x_cv_components, x_test_components):
     scalerSize.fit(allTupleSizesTrain.reshape((-1, 1)))
     scalerAverageUbBinding.fit(allTupleUbAveragesTrain.reshape((-1, 1)))
     plddtScaler.fit(allTuplePlddtTrain.reshape((-1, 1)))
-    Scale3DUtil(x_train_components, scalerSize, scalerAverageUbBinding, plddtScaler)
-    Scale3DUtil(x_cv_components, scalerSize, scalerAverageUbBinding, plddtScaler)
-    Scale3DUtil(x_test_components, scalerSize, scalerAverageUbBinding, plddtScaler)
+    Scale4DUtil(x_train_components, scalerSize, scalerAverageUbBinding, plddtScaler)
+    Scale4DUtil(x_cv_components, scalerSize, scalerAverageUbBinding, plddtScaler)
+    Scale4DUtil(x_test_components, scalerSize, scalerAverageUbBinding, plddtScaler)
     return x_train_components, x_cv_components, x_test_components
 
 
@@ -312,7 +312,8 @@ def createDataForTraining(componentsPath, labelsPath, outputDirPath):
 
     saveAsPickle(allInfoDict, os.path.join(outputDirPath, 'allInfoDict'))
     saveAsPickle(dictForTraining, os.path.join(outputDirPath, 'dictForTraining'))
-    return allInfoDict,dictForTraining
+    return allInfoDict, dictForTraining
+
 
 def simpleModelTraining():
     model = Sequential(
@@ -351,7 +352,7 @@ def simpleModelTraining():
     print(classification_report(y_train, predictions_train))
 
 
-def createTrainValidationTestForAllGroups(x_groups, y_groups):
+def createTrainValidationTestForAllGroups(x_groups, y_groups, outputDir):
     dictsForTraining = []
     allInfoDicts = []
     for i in range(len(x_groups)):
@@ -396,10 +397,8 @@ def createTrainValidationTestForAllGroups(x_groups, y_groups):
 
         dictsForTraining.append(dictForTraining)
         allInfoDicts.append(allInfoDict)
-    saveAsPickle(allInfoDicts,
-                 os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining2902', 'allInfoDicts')))
-    saveAsPickle(dictsForTraining,
-                 os.path.join(path.aggregateFunctionMLPDir, os.path.join('dataForTraining2902', 'dictsForTraining')))
+    saveAsPickle(allInfoDicts, os.path.join(outputDir, 'allInfoDicts'))
+    saveAsPickle(dictsForTraining, os.path.join(outputDir, 'dictsForTraining'))
     return allInfoDicts, dictsForTraining
 
 
