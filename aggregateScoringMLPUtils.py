@@ -145,27 +145,31 @@ def scaleXValues2D(x_train, x_cv, x_test):
     return x_train, x_cv, x_test
 
 
-def Scale3DUtil(x, scalerSize, scalerAverageUbBinding):
+def Scale3DUtil(x, scalerSize, scalerAverageUbBinding, plddtScaler):
     for i in range(len(x)):
         if x[i].shape == (0,):
             continue
         size_scaled = scalerSize.transform(tf.reshape(x[i][:, 0], [-1, 1]))
         ubAverages_scaled = scalerAverageUbBinding.transform(tf.reshape(x[i][:, 1], [-1, 1]))
         nonUbAverages_scaled = scalerAverageUbBinding.transform(tf.reshape(x[i][:, 2], [-1, 1]))
-        x[i] = np.concatenate((size_scaled, ubAverages_scaled, nonUbAverages_scaled), axis=1)
+        plddt_scaled = plddtScaler.transform(tf.reshape(x[i][:, 3], [-1, 1]))
+        x[i] = np.concatenate((size_scaled, ubAverages_scaled, nonUbAverages_scaled, plddt_scaled), axis=1)
 
 
-def scaleXComponents3D(x_train_components, x_cv_components, x_test_components):
+def scaleXComponents4D(x_train_components, x_cv_components, x_test_components):
     # Scale the features using the z-score
     allTupleSizesTrain = np.concatenate([tuples[:, 0] for tuples in x_train_components if tuples.shape != (0,)])
     allTupleUbAveragesTrain = np.concatenate([tuples[:, 1] for tuples in x_train_components if tuples.shape != (0,)])
+    allTuplePlddtTrain = np.concatenate([tuples[:, 3] for tuples in x_train_components if tuples.shape != (0,)])
     scalerSize = StandardScaler()
     scalerAverageUbBinding = StandardScaler()
+    plddtScaler = StandardScaler()
     scalerSize.fit(allTupleSizesTrain.reshape((-1, 1)))
     scalerAverageUbBinding.fit(allTupleUbAveragesTrain.reshape((-1, 1)))
-    Scale3DUtil(x_train_components, scalerSize, scalerAverageUbBinding)
-    Scale3DUtil(x_cv_components, scalerSize, scalerAverageUbBinding)
-    Scale3DUtil(x_test_components, scalerSize, scalerAverageUbBinding)
+    plddtScaler.fit(allTuplePlddtTrain.reshape((-1, 1)))
+    Scale3DUtil(x_train_components, scalerSize, scalerAverageUbBinding, plddtScaler)
+    Scale3DUtil(x_cv_components, scalerSize, scalerAverageUbBinding, plddtScaler)
+    Scale3DUtil(x_test_components, scalerSize, scalerAverageUbBinding, plddtScaler)
     return x_train_components, x_cv_components, x_test_components
 
 
@@ -274,10 +278,10 @@ def plotPrecisionRecall(y_probs, labels, header):
     plt.show()
 
 
-def createDataForTraining(componentsPath,labelsPath,outputDirPath):
+def createDataForTraining(componentsPath, labelsPath, outputDirPath):
     labels = loadPickle(labelsPath)
-    tuplesLen3 = loadPickle(componentsPath)
-    x_train, x_cv, x_test, y_train, y_cv, y_test = divideTrainValidationTest(tuplesLen3, labels)
+    tuplesLen4 = loadPickle(componentsPath)
+    x_train, x_cv, x_test, y_train, y_cv, y_test = divideTrainValidationTest(tuplesLen4, labels)
     x_train_components, x_train_sizes, x_train_n_patches = divideXData(x_train)
     x_cv_components, x_cv_sizes, x_cv_n_patches = divideXData(x_cv)
     x_test_components, x_test_sizes, x_test_n_patches = divideXData(x_test)
@@ -287,7 +291,7 @@ def createDataForTraining(componentsPath,labelsPath,outputDirPath):
     sortPatches(x_train_components)
     sortPatches(x_cv_components)
     sortPatches(x_test_components)
-    scaleXComponents3D(x_train_components, x_cv_components, x_test_components)
+    scaleXComponents4D(x_train_components, x_cv_components, x_test_components)
     x_train_sizes_scaled, x_cv_sizes_scaled, x_test_sizes_scaled = getScaleXSizes3D(x_train_sizes, x_cv_sizes,
                                                                                     x_test_sizes)
     x_train_components_scaled_padded, x_cv_components_scaled_padded, x_test_components_scaled_padded = padXValues(
@@ -306,9 +310,9 @@ def createDataForTraining(componentsPath,labelsPath,outputDirPath):
                        'y_test': y_test
                        }
 
-    saveAsPickle(allInfoDict,os.path.join(outputDirPath, 'allInfoDict'))
-    saveAsPickle(dictForTraining,os.path.join(outputDirPath, 'dictForTraining'))
-
+    saveAsPickle(allInfoDict, os.path.join(outputDirPath, 'allInfoDict'))
+    saveAsPickle(dictForTraining, os.path.join(outputDirPath, 'dictForTraining'))
+    return allInfoDict,dictForTraining
 
 def simpleModelTraining():
     model = Sequential(
@@ -371,7 +375,7 @@ def createTrainValidationTestForAllGroups(x_groups, y_groups):
         sortPatches(x_train_components)
         sortPatches(x_cv_components)
         sortPatches(x_test_components)
-        scaleXComponents3D(x_train_components, x_cv_components, x_test_components)
+        scaleXComponents4D(x_train_components, x_cv_components, x_test_components)
         x_train_sizes_scaled, x_cv_sizes_scaled, x_test_sizes_scaled = getScaleXSizes3D(x_train_sizes, x_cv_sizes,
                                                                                         x_test_sizes)
         x_train_components_scaled_padded, x_cv_components_scaled_padded, x_test_components_scaled_padded = padXValues(
@@ -481,7 +485,6 @@ def buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers):
         activation = tf.keras.layers.ReLU()(batchNorm)
         currentOutput = activation
     size_and_n_patches_output = currentOutput
-
 
     concatenated_output = tf.keras.layers.Concatenate()(
         [global_pooling_output, size_and_n_patches_output])
