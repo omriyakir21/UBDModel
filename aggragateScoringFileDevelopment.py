@@ -322,12 +322,8 @@ def pklComponentsOutOfProteinObjects(dirPath):
     saveAsPickle(allComponents4d, os.path.join(componentsDir, 'components'))
 
 
-# patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
-print(dirPath)
-print()
-print(os.path.join(dirPath, 'proteinObjectsWithEvoluion' + str(0) + '.pkl'))
-print()
-pklComponentsOutOfProteinObjects(dirPath)
+patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
+# pklComponentsOutOfProteinObjects(dirPath)
 
 
 # common_values = repeatingUniprotsToFilter()
