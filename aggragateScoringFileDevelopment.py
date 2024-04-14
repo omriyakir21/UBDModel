@@ -233,7 +233,11 @@ def repeatingUniprotsToFilter():
 def createLabelsForComponents(allComponents):
     return np.array([0 if component[0] == 'proteome' else 1 for component in allComponents])
 
-
+def pklLabels(allComponents,dirPath):
+    labels = createLabelsForComponents(allComponents)
+    labelsDir = os.path.join(dirPath, 'labels')
+    os.mkdir(labelsDir)
+    saveAsPickle(labels, os.path.join(labelsDir, 'labels'))
 def trainKBinDescretizierModel(data, n_bins_parameter):
     est = KBinsDiscretizer(n_bins=n_bins_parameter, encode='ordinal', strategy='quantile', subsample=None)
     est.fit(data)
@@ -322,9 +326,9 @@ def pklComponentsOutOfProteinObjects(dirPath):
     saveAsPickle(allComponents4d, os.path.join(componentsDir, 'components'))
 
 
-patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
+# patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
 # pklComponentsOutOfProteinObjects(dirPath)
-
+labels = createLabelsForComponents(dirPath)
 
 # common_values = repeatingUniprotsToFilter()
 # # existingUniprotNames = [obj.uniprotName for obj in concatenatedListOfProteins]
