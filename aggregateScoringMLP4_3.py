@@ -7,7 +7,7 @@ import path
 import aggregateScoringMLPUtils as utils
 import tensorflow as tf
 
-dirName = sys.argv[1]
+dirName = sys.argv[3]
 dirPath = os.path.join(path.predictionsToDataSetDir, dirName)
 trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
 
