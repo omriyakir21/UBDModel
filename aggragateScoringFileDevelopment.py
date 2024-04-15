@@ -342,18 +342,18 @@ trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
 # patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
 
 # PKL ALL THE COMPONENTS TOGETHER AND CREATE LABELS
-components = pklComponentsOutOfProteinObjects(dirPath)
-labels = pklLabels(components, dirPath)
+# components = pklComponentsOutOfProteinObjects(dirPath)
+# labels = pklLabels(components, dirPath)
 
 # CREATE DATA FOR TRAINING (allInfoDicts and dictForTraining)
 componentsDir = os.path.join(dirPath, 'components')
 componentsPath = os.path.join(componentsDir, 'components.pkl')
 labelsDir = os.path.join(dirPath, 'labels')
 labelsPath = os.path.join(labelsDir, 'labels.pkl')
-# try:
-#     os.mkdir(trainingDictsDir)
-# except Exception as e:
-#     print(e)
+try:
+    os.mkdir(trainingDictsDir)
+except Exception as e:
+    print(e)
 allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
 # PARTITION THE DATA
