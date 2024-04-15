@@ -14,6 +14,7 @@ import pandas as pd
 import aggregateScoringMLPUtils as utils
 from Bio.PDB import MMCIFParser
 import path
+import proteinLevelDataPartition
 
 parser = MMCIFParser()
 ubdPath = path.mainProjectDir
@@ -38,18 +39,23 @@ class Protein:
         self.connectedComponentsTuples = self.creatConnectedComponentsTuples()
 
     def getSource(self, source):
+        if serverPDBs:
+            return source
         if source == 'Human proteome':
             return 'proteome'
         else:
             return source
 
     def getStructure(self):
-        GoPath = path.GoPath
-        typePath = os.path.join(GoPath, self.source)
-        if self.source == 'proteome':
-            structurePath = os.path.join(typePath, 'AF-' + self.uniprotName + '-F1-model_v4.cif')
+        if serverPDBs:
+            structurePath = allPredictions['dict_pdb_files'][self.uniprotName]
         else:
-            structurePath = os.path.join(typePath, self.uniprotName + '.cif')
+            GoPath = path.GoPath
+            typePath = os.path.join(GoPath, self.source)
+            if self.source == 'proteome':
+                structurePath = os.path.join(typePath, 'AF-' + self.uniprotName + '-F1-model_v4.cif')
+            else:
+                structurePath = os.path.join(typePath, self.uniprotName + '.cif')
         structure = parser.get_structure(self.uniprotName, structurePath)
         return structure
 
@@ -152,18 +158,6 @@ def CAlphaDistance(atom1, atom2):
     return distance
 
 
-allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_22_3.pkl'))
-allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
-allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
-allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
-percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
-distanceThreshold = 10
-dirName = sys.argv[2]
-plddtThreshold = int(sys.argv[3])
-dirPath = os.path.join(path.predictionsToDataSetDir, dirName)
-indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
-
-
 # # allPredictionsUbiq = {key: allPredictionsUbiq[key] for key in common_keys}
 # # dict_resids = {key: allPredictions['dict_resids'][key] for key in common_keys}
 # # dict_sequences = {key: allPredictions['dict_sequences'][key] for key in common_keys}
@@ -231,7 +225,7 @@ def repeatingUniprotsToFilter():
 
 
 def createLabelsForComponents(allComponents):
-    return np.array([0 if component[0] == 'proteome' else 1 for component in allComponents])
+    return np.array([0 if component[0] in NegativeSources else 1 for component in allComponents])
 
 
 def pklLabels(allComponents, dirPath):
@@ -329,10 +323,23 @@ def pklComponentsOutOfProteinObjects(dirPath):
     saveAsPickle(allComponents4d, os.path.join(componentsDir, 'components'))
     return allComponents4d
 
+serverPDBs=True
+NegativeSources = set(['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
+allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_22_3.pkl'))
+allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
+allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
+allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
+percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
+distanceThreshold = 10
+dirName = sys.argv[2]
+plddtThreshold = int(sys.argv[3])
+dirPath = os.path.join(path.predictionsToDataSetDir, dirName)
+indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
 
 trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
+
 # CREATE PROTEIN OBJECTS
-# patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
+patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
 
 # PKL ALL THE COMPONENTS TOGETHER AND CREATE LABELS
 # components = pklComponentsOutOfProteinObjects(dirPath)
@@ -349,10 +356,13 @@ trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
 #     print(e)
 # allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
+# PARTITION THE DATA
+proteinLevelDataPartition.create_x_y_groups('all_predictions_22_3.pkl', trainingDictsDir)
+
 # CREATE TRAIN TEST VALIDATION FOR ALL GROUPS
 x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
 y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
-allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups,trainingDictsDir)
+allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
 
 
 # common_values = repeatingUniprotsToFilter()
