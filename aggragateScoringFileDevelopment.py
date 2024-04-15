@@ -339,30 +339,30 @@ indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(al
 trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
 
 # CREATE PROTEIN OBJECTS
-patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
+# patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
 
 # PKL ALL THE COMPONENTS TOGETHER AND CREATE LABELS
-# components = pklComponentsOutOfProteinObjects(dirPath)
-# labels = pklLabels(components, dirPath)
+components = pklComponentsOutOfProteinObjects(dirPath)
+labels = pklLabels(components, dirPath)
 
 # CREATE DATA FOR TRAINING (allInfoDicts and dictForTraining)
-# componentsDir = os.path.join(dirPath, 'components')
-# componentsPath = os.path.join(componentsDir, 'components.pkl')
-# labelsDir = os.path.join(dirPath, 'labels')
-# labelsPath = os.path.join(labelsDir, 'labels.pkl')
+componentsDir = os.path.join(dirPath, 'components')
+componentsPath = os.path.join(componentsDir, 'components.pkl')
+labelsDir = os.path.join(dirPath, 'labels')
+labelsPath = os.path.join(labelsDir, 'labels.pkl')
 # try:
 #     os.mkdir(trainingDictsDir)
 # except Exception as e:
 #     print(e)
-# allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
+allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
 # PARTITION THE DATA
-# proteinLevelDataPartition.create_x_y_groups('all_predictions_22_3.pkl', trainingDictsDir)
+proteinLevelDataPartition.create_x_y_groups('all_predictions_22_3.pkl', trainingDictsDir)
 
 # CREATE TRAIN TEST VALIDATION FOR ALL GROUPS
-# x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
-# y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
-# allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
+x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
+y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
+allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
 
 
 # common_values = repeatingUniprotsToFilter()
