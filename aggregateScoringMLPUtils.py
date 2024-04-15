@@ -404,7 +404,7 @@ def createTrainValidationTestForAllGroups(x_groups, y_groups, outputDir):
 
 def buildModel(n_layers_component, n_layers_size, n_layers_n_patches, n_layers_final):
     # Define the input shape
-    input_shape = (maxNumberOfPatches, 3)
+    input_shape = (maxNumberOfPatches, 4)
     input_data = tf.keras.Input(shape=input_shape, name='sensor_input')
     size_value = tf.keras.Input(shape=(1,), name='extra_value_input')
     n_patches_hot_encoded_value = tf.keras.Input(shape=(maxNumberOfPatches + 1,), name='hot_encoded_value_input')
@@ -461,7 +461,7 @@ def buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers):
     :return:
     '''
     # Define the input shape
-    input_shape = (maxNumberOfPatches, 3)
+    input_shape = (maxNumberOfPatches, 4)
     input_data = tf.keras.Input(shape=input_shape, name='sensor_input')
     size_value = tf.keras.Input(shape=(1,), name='extra_value_input')
     n_patches_hot_encoded_value = tf.keras.Input(shape=(maxNumberOfPatches + 1,), name='hot_encoded_value_input')
