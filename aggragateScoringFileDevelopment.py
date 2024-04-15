@@ -357,12 +357,12 @@ patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
 # allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
 # PARTITION THE DATA
-proteinLevelDataPartition.create_x_y_groups('all_predictions_22_3.pkl', trainingDictsDir)
+# proteinLevelDataPartition.create_x_y_groups('all_predictions_22_3.pkl', trainingDictsDir)
 
 # CREATE TRAIN TEST VALIDATION FOR ALL GROUPS
-x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
-y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
-allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
+# x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
+# y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
+# allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
 
 
 # common_values = repeatingUniprotsToFilter()
