@@ -95,13 +95,17 @@ for m_b in m_values:
                                                       n_early_stopping_epochs, batch_size), all_predictions,
                                                      all_labels))
         allArchitecturesAucs.append(architectureAucs)
-        precision, recall, thresholds = utils.precision_recall_curve(all_labels, all_predictions)
+        precision, recall, thresholds = utils.precision_recall_curve(all_predictions, all_labels)
+        pr_auc = auc(recall, precision)
+        totalAucs.append(((m_a, m_b, m_c, n_layers,
+                           n_early_stopping_epochs, batch_size), pr_auc))
         # utils.plotPrecisionRecall(all_predictions, all_labels, 'allPredictions')
 
 utils.saveAsPickle(allArchitecturesAucs,
                    os.path.join(directory_name, 'allArchitecturesAucs' + str(n_layers) + " " + str(m_a)))
 utils.saveAsPickle(totalAucs, os.path.join(directory_name, 'totalAucs' + str(n_layers) + " " + str(m_a)))
-utils.saveAsPickle(allArchitecturesPredictionsAndLabels, os.path.join(directory_name, 'predictions_labels_' + str(n_layers) + " " + str(m_a)))
+utils.saveAsPickle(allArchitecturesPredictionsAndLabels,
+                   os.path.join(directory_name, 'predictions_labels_' + str(n_layers) + " " + str(m_a)))
 
 # for m_b in m_values:
 #     for m_c in m_values:
