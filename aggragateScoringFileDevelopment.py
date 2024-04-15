@@ -173,7 +173,7 @@ def patchesList(allPredictions, i, dirPath, plddtThreshold):
     allKeys = list(allPredictions['dict_resids'].keys())[indexes[i]:indexes[i + 1]]
     proteinObjects = []
     cnt = 0
-    if i == 0:
+    if not os.path.exists(dirPath):
         os.mkdir(dirPath)
     for key in allKeys:
         print("i= ", i, " cnt = ", cnt, " key = ", key)
