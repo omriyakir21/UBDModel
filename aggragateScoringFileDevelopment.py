@@ -357,7 +357,7 @@ labelsPath = os.path.join(labelsDir, 'labels.pkl')
 # allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
 # PARTITION THE DATA
-proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', trainingDictsDir)
+proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', dirPath)
 
 # CREATE TRAIN TEST VALIDATION FOR ALL GROUPS
 x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
