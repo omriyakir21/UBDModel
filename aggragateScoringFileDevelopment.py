@@ -325,7 +325,7 @@ def pklComponentsOutOfProteinObjects(dirPath):
 
 serverPDBs=True
 NegativeSources = set(['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
-allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_22_3.pkl'))
+allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
 allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
 allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
 allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
