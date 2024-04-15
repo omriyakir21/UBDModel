@@ -90,11 +90,8 @@ def divideClusters(clusterSizes):
 
 
 path2mafft = '/usr/bin/mafft'
-dirName = sys.argv[1]
-dirPath = os.path.join(path.predictionsToDataSetDir, dirName)
 
-
-def create_x_y_groups(allPredictionsPath):
+def create_x_y_groups(allPredictionsPath,dirPath):
     allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, allPredictionsPath))
     trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
     allInfoDict = loadPickle(os.path.join(trainingDictsDir, 'allInfoDict.pkl'))
@@ -128,4 +125,4 @@ def create_x_y_groups(allPredictionsPath):
     return x_groups, y_groups
 
 
-create_x_y_groups('all_predictions_22_3.pkl')
+
