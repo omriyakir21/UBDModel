@@ -95,7 +95,7 @@ for m_b in m_values:
                                                       n_early_stopping_epochs, batch_size), all_predictions,
                                                      all_labels))
         allArchitecturesAucs.append(architectureAucs)
-        precision, recall, thresholds = utils.precision_recall_curve(all_predictions, all_labels)
+        precision, recall, thresholds = utils.precision_recall_curve(all_labels, all_predictions)
         pr_auc = auc(recall, precision)
         totalAucs.append(((m_a, m_b, m_c, n_layers,
                            n_early_stopping_epochs, batch_size), pr_auc))
