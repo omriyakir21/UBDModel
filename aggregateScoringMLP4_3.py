@@ -21,8 +21,6 @@ if not os.path.exists(directory_name):
 allArchitecturesAucs = []
 allArchitecturesPredictionsAndLabels = []
 totalAucs = []
-all_predictions = []
-all_labels = []
 yhat_groups = []
 label_groups = []
 y_train_groups = []
@@ -38,6 +36,8 @@ n_early_stopping_epochs = 5
 dictForTraining = dictsForTraining
 for m_b in m_values:
     for m_c in m_values:
+        all_predictions = []
+        all_labels = []
         model = utils.buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers)
         # Compile the model
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
