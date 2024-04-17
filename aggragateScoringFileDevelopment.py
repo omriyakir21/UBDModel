@@ -19,6 +19,7 @@ import path
 import proteinLevelDataPartition
 
 
+
 parser = MMCIFParser()
 ubdPath = path.mainProjectDir
 
@@ -298,7 +299,10 @@ def plotPrecisionRecall(y_probs, labels):
 
 
 def KComputation(prediction, trainingUbRation):
-    K = ((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (1 - prediction))
+    val = 1 - prediction
+    if  val== 0:
+        return
+    K = ((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (val))
     return K
 
 
@@ -348,6 +352,7 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     dataDictPath = os.path.join(os.path.join(path.GoPath, 'idmapping_2023_12_26.tsv'), 'AllOrganizemsDataDict.pkl')
     yhat_groups = utils.createYhatGroupsFromPredictions(predictions, dictsForTraining)
     outputPath = os.path.join(gridSearchDir, 'results_' + dirName)
+    print( outputPath)
     utils.createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)
 
 
