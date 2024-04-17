@@ -1,4 +1,5 @@
 # for array computations and loading data
+import math
 import os
 import csv
 
@@ -503,7 +504,10 @@ def buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers):
 
 
 def KComputation(prediction, trainingUbRation):
-    K = float(((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (1 - prediction)))
+    val = 1 - prediction
+    if val == 0:
+        return math.inf
+    K = float(((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (val)))
     return K
 
 
