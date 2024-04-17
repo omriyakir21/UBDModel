@@ -503,12 +503,12 @@ def buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers):
 
 
 def KComputation(prediction, trainingUbRation):
-    K = ((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (1 - prediction))
+    K = float(((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (1 - prediction)))
     return K
 
 
 def predictionFunctionUsingBayesFactorComputation(priorUb, KValue):
-    finalPrediction = (KValue * priorUb) / ((KValue * priorUb) + (1 - priorUb))
+    finalPrediction = float((KValue * priorUb) / ((KValue * priorUb) + (1 - priorUb)))
     return finalPrediction
 
 
@@ -527,9 +527,23 @@ def readDataFromUni(fileName):
         return data_dict
 
 
-def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts):
-    data_dict = readDataFromUni(
-        r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO\idmapping_2023_12_26.tsv\idmapping_2023_12_26.tsv')
+def list_to_tsv(list_of_strings, output_file):
+    with open(output_file, 'w') as f:
+        for string in list_of_strings:
+            f.write(string + '\t')
+
+
+def createYhatGroupsFromPredictions(predictions, dictsForTraining):
+    yhat_groups = []
+    cnt = 0
+    for i in range(len(dictsForTraining)):
+        yhat_groups.append([predictions[i] for i in range(cnt, cnt + dictsForTraining[i]['y_cv'].size)])
+        cnt += dictsForTraining[i]['y_cv'].size
+    return yhat_groups
+
+
+def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath):
+    data_dict = loadPickle(dataDictPath)
 
     allKvalues = []
     for i in range(len(dictsForTraining)):
@@ -544,9 +558,13 @@ def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts):
     types = []
     for i in range(len(allInfoDicts)):
         for j in range(len(allInfoDicts[i]['x_cv'])):
-            uniDict = data_dict[allInfoDicts[i]['x_cv'][j][1]]
+            if allInfoDicts[i]['x_cv'][j][1] in data_dict:
+                uniDict = data_dict[allInfoDicts[i]['x_cv'][j][1]]
+            else:
+                uniDict = {'Entry': allInfoDicts[i]['x_cv'][j][1], 'Protein names': 'No Info', 'Organism': 'No Info'}
             uniDictList.append(uniDict)
             types.append(allInfoDicts[i]['x_cv'][j][0])
+    assert len(allKvalues) == len(uniDictList)
     for i in range(len(allKvalues)):
         uniDict = uniDictList[i]
         myList.append(
@@ -555,10 +573,8 @@ def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts):
 
     headers = ('Entry', 'type', 'Protein Name', 'Organism', 'Inference Prediction 0.05 prior',
                'log10Kvalue')
-    # Define file path for writing
-    file_path = r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\dataForTraining2902\InfoFileScoringFunctionBeforeGridSearch.csv'
     # Write the data to a TSV file
-    with open(file_path, 'w', newline='') as csv_file:
+    with open(outputPath, 'w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=',')
         # Write headers
         csv_writer.writerow(headers)
