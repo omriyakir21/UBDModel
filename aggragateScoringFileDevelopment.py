@@ -17,7 +17,7 @@ import aggregateScoringMLPUtils as utils
 from Bio.PDB import MMCIFParser
 import path
 import proteinLevelDataPartition
-from UBDModel.CreateProteinLevelDB import loadPickle
+
 
 parser = MMCIFParser()
 ubdPath = path.mainProjectDir
