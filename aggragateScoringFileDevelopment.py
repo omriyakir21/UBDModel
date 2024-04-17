@@ -294,8 +294,8 @@ def plotPrecisionRecall(y_probs, labels):
     plt.show()
 
 
-def KComputation(logisticPrediction, trainingUbRation):
-    K = ((1 - trainingUbRation) * logisticPrediction) / ((trainingUbRation) * (1 - logisticPrediction))
+def KComputation(prediction, trainingUbRation):
+    K = ((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (1 - prediction))
     return K
 
 
@@ -323,6 +323,10 @@ def pklComponentsOutOfProteinObjects(dirPath):
     saveAsPickle(allComponents4d, os.path.join(componentsDir, 'components'))
     return allComponents4d
 
+
+
+
+# JEROME lOOK FROM HERE
 serverPDBs=True
 NegativeSources = set(['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
 allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
@@ -338,32 +342,34 @@ indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(al
 
 trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
 
-# CREATE PROTEIN OBJECTS
+# CREATE PROTEIN OBJECTS, I'M DOING IT IN BATCHES
 patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
 
-# PKL ALL THE COMPONENTS TOGETHER AND CREATE LABELS
-# components = pklComponentsOutOfProteinObjects(dirPath)
-# labels = pklLabels(components, dirPath)
+# FROM HERE FOLLOWS IN ONE RUN
+# PKL ALL THE COMPONENTS TOGETHER AND CREATE LABELS FROM THE PATCHES LIST
+components = pklComponentsOutOfProteinObjects(dirPath)
+labels = pklLabels(components, dirPath)
 
 # CREATE DATA FOR TRAINING (allInfoDicts and dictForTraining)
-# componentsDir = os.path.join(dirPath, 'components')
-# componentsPath = os.path.join(componentsDir, 'components.pkl')
-# labelsDir = os.path.join(dirPath, 'labels')
-# labelsPath = os.path.join(labelsDir, 'labels.pkl')
-# try:
-#     os.mkdir(trainingDictsDir)
-# except Exception as e:
-#     print(e)
-# allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
+componentsDir = os.path.join(dirPath, 'components')
+componentsPath = os.path.join(componentsDir, 'components.pkl')
+labelsDir = os.path.join(dirPath, 'labels')
+labelsPath = os.path.join(labelsDir, 'labels.pkl')
+try:
+    os.mkdir(trainingDictsDir)
+except Exception as e:
+    print(e)
+allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
 # PARTITION THE DATA
-# proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', dirPath)
+proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', dirPath)
 
 # CREATE TRAIN TEST VALIDATION FOR ALL GROUPS
-# x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
-# y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
-# allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
+x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
+y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
+allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
 
+# THATS IT FOR CREATING THE DATA
 
 # common_values = repeatingUniprotsToFilter()
 # # existingUniprotNames = [obj.uniprotName for obj in concatenatedListOfProteins]
@@ -385,6 +391,9 @@ patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
 #     os.path.join(ubdPath, os.path.join('aggregateFunctionMLP', 'allTuplesListsOfLen3_23_3.pkl')))
 # labels = loadPickle(
 #     os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'labels3d_23_3.pkl'))
+
+
+
 
 
 # KBINS
