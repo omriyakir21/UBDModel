@@ -2,6 +2,8 @@ import csv
 import pickle
 import sys
 from itertools import chain
+from plistlib import load
+
 import networkx as nx
 import numpy as np
 import os
@@ -15,6 +17,7 @@ import aggregateScoringMLPUtils as utils
 from Bio.PDB import MMCIFParser
 import path
 import proteinLevelDataPartition
+from UBDModel.CreateProteinLevelDB import loadPickle
 
 parser = MMCIFParser()
 ubdPath = path.mainProjectDir
@@ -324,11 +327,35 @@ def pklComponentsOutOfProteinObjects(dirPath):
     return allComponents4d
 
 
+def createCSVFileFromResults(gridSearchDir, trainingDataDir, dirName):
+    totalAucs = loadPickle(os.path.join(gridSearchDir, 'totalAucs.pkl'))
+    totalAucs.sort(key=lambda x: -x[1])
+    bestArchitecture = totalAucs[0][0]
+    m_a = bestArchitecture[0]
+    m_b = bestArchitecture[1]
+    m_c = bestArchitecture[2]
+    layers = bestArchitecture[3]
+    predictionsAndLabels = loadPickle(
+        os.path.join(gridSearchDir, 'predictions_labels_' + str(layers) + ' ' + str(m_a) + '.pkl'))
+    for i in range(len(predictionsAndLabels)):
+        if predictionsAndLabels[i][0][1] == m_b and predictionsAndLabels[i][0][1] == m_c:
+            predictions = predictionsAndLabels[i][1]
+            labels = predictionsAndLabels[i][2]
+            break
+
+    allInfoDicts = loadPickle(os.path.join(trainingDataDir, 'allInfoDicts.pkl'))
+    dictsForTraining = loadPickle(os.path.join(trainingDataDir, 'dictsForTraining.pkl'))
+    dataDictPath = os.path.join(os.path.join(path.GoPath, 'idmapping_2023_12_26.tsv'), 'AllOrganizemsDataDict.pkl')
+    yhat_groups = utils.createYhatGroupsFromPredictions(predictions, dictsForTraining)
+    outputPath = os.path.join(gridSearchDir, 'results_' + dirName)
+    utils.createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)
 
 
+# !!!!
 # JEROME lOOK FROM HERE
-serverPDBs=True
-NegativeSources = set(['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
+serverPDBs = True
+NegativeSources = set(
+    ['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
 allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
 allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
 allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
@@ -337,39 +364,47 @@ percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
 distanceThreshold = 10
 dirName = sys.argv[2]
 plddtThreshold = int(sys.argv[3])
-dirPath = os.path.join(path.predictionsToDataSetDir, dirName)
+trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
+gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_trainAccStoppage' + dirName)
 indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
 
-trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
+trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 # CREATE PROTEIN OBJECTS, I'M DOING IT IN BATCHES
-patchesList(allPredictions, int(sys.argv[1]), dirPath, plddtThreshold)
+# patchesList(allPredictions, int(sys.argv[1]), trainingDataDir, plddtThreshold)
 
 # FROM HERE FOLLOWS IN ONE RUN
 # PKL ALL THE COMPONENTS TOGETHER AND CREATE LABELS FROM THE PATCHES LIST
-components = pklComponentsOutOfProteinObjects(dirPath)
-labels = pklLabels(components, dirPath)
+# components = pklComponentsOutOfProteinObjects(trainingDataDir)
+# labels = pklLabels(components, trainingDataDir)
 
 # CREATE DATA FOR TRAINING (allInfoDicts and dictForTraining)
-componentsDir = os.path.join(dirPath, 'components')
-componentsPath = os.path.join(componentsDir, 'components.pkl')
-labelsDir = os.path.join(dirPath, 'labels')
-labelsPath = os.path.join(labelsDir, 'labels.pkl')
-try:
-    os.mkdir(trainingDictsDir)
-except Exception as e:
-    print(e)
-allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
+# componentsDir = os.path.join(trainingDataDir, 'components')
+# componentsPath = os.path.join(componentsDir, 'components.pkl')
+# labelsDir = os.path.join(trainingDataDir, 'labels')
+# labelsPath = os.path.join(labelsDir, 'labels.pkl')
+# try:
+#     os.mkdir(trainingDictsDir)
+# except Exception as e:
+#     print(e)
+# allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
 # PARTITION THE DATA
-proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', dirPath)
+# proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', trainingDataDir)
 
 # CREATE TRAIN TEST VALIDATION FOR ALL GROUPS
-x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
-y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
-allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
+# x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
+# y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
+# allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
 
-# THATS IT FOR CREATING THE DATA
+
+# CREATING THE CSV FILE
+createCSVFileFromResults(gridSearchDir, trainingDataDir, dirName)
+
+
+# THATS IT FROM HERE IT IS NOT RELEVANT
+
+# !!!!
 
 # common_values = repeatingUniprotsToFilter()
 # # existingUniprotNames = [obj.uniprotName for obj in concatenatedListOfProteins]
@@ -391,9 +426,6 @@ allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_g
 #     os.path.join(ubdPath, os.path.join('aggregateFunctionMLP', 'allTuplesListsOfLen3_23_3.pkl')))
 # labels = loadPickle(
 #     os.path.join(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP', 'labels3d_23_3.pkl'))
-
-
-
 
 
 # KBINS
@@ -438,7 +470,7 @@ def readDataFromUni(fileName):
 # data_dict = readDataFromUni(
 #     r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO\idmapping_2023_12_26.tsv\idmapping_2023_12_26.tsv')
 
-def createInfoCsv(data_dict, predBayes10, predBayes50, KValues):
+def createInfoCsvLogisticRegression(data_dict, predBayes10, predBayes50, KValues):
     myList = []
     for i in range(len(finalOutputsTen)):
         uniDict = data_dict[allComponentsFiltered[i][1]]
