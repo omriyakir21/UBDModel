@@ -330,7 +330,7 @@ def pklComponentsOutOfProteinObjects(dirPath):
 def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     totalAucs = loadPickle(os.path.join(gridSearchDir, 'totalAucs.pkl'))
     totalAucs.sort(key=lambda x: -x[1])
-    bestArchitecture = totalAucs[0][0].split(',')
+    bestArchitecture = totalAucs[0][0]
     m_a = bestArchitecture[0]
     m_b = bestArchitecture[1]
     m_c = bestArchitecture[2]
