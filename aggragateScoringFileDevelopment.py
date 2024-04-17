@@ -327,7 +327,7 @@ def pklComponentsOutOfProteinObjects(dirPath):
     return allComponents4d
 
 
-def createCSVFileFromResults(gridSearchDir, trainingDataDir, dirName):
+def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     totalAucs = loadPickle(os.path.join(gridSearchDir, 'totalAucs.pkl'))
     totalAucs.sort(key=lambda x: -x[1])
     bestArchitecture = totalAucs[0][0]
@@ -343,8 +343,8 @@ def createCSVFileFromResults(gridSearchDir, trainingDataDir, dirName):
             labels = predictionsAndLabels[i][2]
             break
 
-    allInfoDicts = loadPickle(os.path.join(trainingDataDir, 'allInfoDicts.pkl'))
-    dictsForTraining = loadPickle(os.path.join(trainingDataDir, 'dictsForTraining.pkl'))
+    allInfoDicts = loadPickle(os.path.join(trainingDictsDir, 'allInfoDicts.pkl'))
+    dictsForTraining = loadPickle(os.path.join(trainingDictsDir, 'dictsForTraining.pkl'))
     dataDictPath = os.path.join(os.path.join(path.GoPath, 'idmapping_2023_12_26.tsv'), 'AllOrganizemsDataDict.pkl')
     yhat_groups = utils.createYhatGroupsFromPredictions(predictions, dictsForTraining)
     outputPath = os.path.join(gridSearchDir, 'results_' + dirName)
@@ -399,7 +399,7 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 
 # CREATING THE CSV FILE
-createCSVFileFromResults(gridSearchDir, trainingDataDir, dirName)
+createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
 
 
 # THATS IT FROM HERE IT IS NOT RELEVANT
