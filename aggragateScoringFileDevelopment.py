@@ -330,7 +330,7 @@ def pklComponentsOutOfProteinObjects(dirPath):
 def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     totalAucs = loadPickle(os.path.join(gridSearchDir, 'totalAucs.pkl'))
     totalAucs.sort(key=lambda x: -x[1])
-    bestArchitecture = totalAucs[0][0]
+    bestArchitecture = totalAucs[0][0].split(',')
     m_a = bestArchitecture[0]
     m_b = bestArchitecture[1]
     m_c = bestArchitecture[2]
@@ -338,7 +338,7 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     predictionsAndLabels = loadPickle(
         os.path.join(gridSearchDir, 'predictions_labels_' + str(layers) + ' ' + str(m_a) + '.pkl'))
     for i in range(len(predictionsAndLabels)):
-        if predictionsAndLabels[i][0][1] == m_b and predictionsAndLabels[i][0][1] == m_c:
+        if predictionsAndLabels[i][0][1] == m_b and predictionsAndLabels[i][0][2] == m_c:
             predictions = predictionsAndLabels[i][1]
             labels = predictionsAndLabels[i][2]
             break
