@@ -11,3 +11,6 @@ analyze_training_results/*.cxc
 analyze_training_results/0608/
 protein_classification/*predictions*
 protein_classification/*annotated*
+*.zip
+/protein_classification/tophit_human_classifier
+*.numbers
