@@ -351,7 +351,7 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     dictsForTraining = loadPickle(os.path.join(trainingDictsDir, 'dictsForTraining.pkl'))
     dataDictPath = os.path.join(os.path.join(path.GoPath, 'idmapping_2023_12_26.tsv'), 'AllOrganizemsDataDict.pkl')
     yhat_groups = utils.createYhatGroupsFromPredictions(predictions, dictsForTraining)
-    outputPath = os.path.join(gridSearchDir, 'results_' + dirName)
+    outputPath = os.path.join(gridSearchDir, 'results_' + dirName+'.csv')
     print( outputPath)
     utils.createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)
 
