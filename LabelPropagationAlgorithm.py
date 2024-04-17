@@ -337,5 +337,5 @@ def normalizeASAData(fullAsaPssmContent):
 
 # normalizeASAData('FullAsaPssmContent')
 
-createPropagatedPssmFile(clustersDict, chainsLabels, clustersParticipantsList, chainsSequences, chainNames, lines,
-                         chainsAsaValues)
+# createPropagatedPssmFile(clustersDict, chainsLabels, clustersParticipantsList, chainsSequences, chainNames, lines,
+#                          chainsAsaValues)

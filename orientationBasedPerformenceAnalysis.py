@@ -1,4 +1,3 @@
-import openpyxl
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,12 +5,13 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.mixture import GaussianMixture
-import requests
-from xml.etree.ElementTree import fromstring
 
+from UBDModel import LabelPropagationAlgorithm
+from UBDModel import Uniprot_utils
 
 summaryFile = open('FullSummaryContent', 'r')
 lines = summaryFile.readlines()
+summaryFile.close()
 splittedLines = [line.split('$') for line in lines]
 monoUbiquitinSplittedLines = [splittedLine for splittedLine in splittedLines if splittedLine[2] == '1']
 monoUbiquitinReceptorsNames = [splittedLine[0] for splittedLine in monoUbiquitinSplittedLines]
@@ -71,9 +71,6 @@ def plotResults(transformed_data, labels, gmm):
     plt.show()
 
 
-print(1)
-
-
 # plotResults(transformed_data, labels, gmm)
 
 def unpickle(path):
@@ -109,7 +106,8 @@ def calculatePositivesAvaragePredictedProbabilityForReceptor(receptorName, unpro
     labelsList = unpropagatedPredictions['list_labels'][index]
     predictionsList = unpropagatedPredictions['list_predictions'][predictionsIndex]
 
-    positivesPredictions = [predictionsList[i] for i in range(len(labelsList)) if labelsList[i] == 2 or labelsList[i] == 3]
+    positivesPredictions = [predictionsList[i] for i in range(len(labelsList)) if
+                            labelsList[i] == 2 or labelsList[i] == 3]
     averagePositivesPredictions = sum(positivesPredictions) / len(positivesPredictions)
     return averagePositivesPredictions
 
@@ -162,51 +160,90 @@ def calculateClustersForReceptors(monoUbiquitinReceptorsNames, ubiquitinBindingR
         receptorsClustersDict[monoUbiquitinReceptorsNames[index]] = labels[index]
     return receptorsClustersDict
 
+
+def makeChainDict(chainNames):
+    chainDict = dict()
+    for chainName in chainNames:
+        receptorName = chainName.split('$')[0]
+        chainId = chainName.split('$')[1]
+        if receptorName in chainDict:
+            chainDict[receptorName].append(chainId)
+        else:
+            chainDict[receptorName] = []
+            chainDict[receptorName].append(chainId)
+    return chainDict
+
+
+def lookForClassInStringUtil(dicriptionString, classDictForReceptor):
+    lookupStringsDict = {'e1': ['e1', 'activating'], 'e2': ['e2', 'conjugating'], 'e3|e4': ['e3', 'e4', 'ligase'],
+                         'deubiquitylase': ['deubiquitylase', 'hydrolase', 'deubiquitinating', 'deubiquitinase',
+                                            'protease', 'deubiquitin', 'isopeptidase', 'peptidase']}
+    dicriptionStringLower = dicriptionString.lower()
+    for key in classDictForReceptor.keys():
+        for lookupString in lookupStringsDict[key]:
+            if dicriptionStringLower.find(lookupString) != -1:
+                classDictForReceptor[key] = True
+
+
+def findClassForReceptor(pdbName, chainsNames, notFoundTuplesList):
+    classDictForReceptor = {'e1': False, 'e2': False, 'e3|e4': False, 'deubiquitylase': False}
+    for chainName in chainsNames:
+        pdbName4Letters = pdbName[:4]
+        print((pdbName4Letters, chainName))
+        try:
+            _, name, _, _, _ = Uniprot_utils.get_chain_organism(pdbName4Letters, chainName)
+            lookForClassInStringUtil(name, classDictForReceptor)
+        except:
+            print('Exception! ')
+            notFoundTuplesList.append((pdbName4Letters, chainName))
+    return classDictForReceptor
+
+
+def findClassForReceptors():
+    rootPath = 'C:\\Users\\omriy\\UBDAndScanNet\\'
+    _, _, _, chainNames, _, _ = LabelPropagationAlgorithm.splitReceptorsIntoIndividualChains(
+        rootPath + '\\UBDModel\\FullPssmContent.txt', rootPath + '\\UBDModel\\normalizedFullASAPssmContent')
+    chainDict = makeChainDict(chainNames)
+    notFoundTuplesList = []
+    e1Dict = dict()
+    e2Dict = dict()
+    e3e4Dict = dict()
+    deubiquitylaseDict = dict()
+    for i in range(len(monoUbiquitinReceptorsNames)):
+        chainIdsForReceptor = chainDict[monoUbiquitinReceptorsNames[i]]
+        classDictForReceptor = findClassForReceptor(monoUbiquitinReceptorsNames[i], chainIdsForReceptor,
+                                                    notFoundTuplesList)
+        e1Dict[monoUbiquitinReceptorsNames[i]] = classDictForReceptor['e1']
+        e2Dict[monoUbiquitinReceptorsNames[i]] = classDictForReceptor['e2']
+        e3e4Dict[monoUbiquitinReceptorsNames[i]] = classDictForReceptor['e3|e4']
+        deubiquitylaseDict[monoUbiquitinReceptorsNames[i]] = classDictForReceptor['deubiquitylase']
+    return e1Dict, e2Dict, e3e4Dict, deubiquitylaseDict, notFoundTuplesList
+
+
 receptorsClustersDict = calculateClustersForReceptors(monoUbiquitinReceptorsNames, ubiquitinBindingResidues,
                                                       unpropagatedPredictions)
 isCovalentBondDict = calculateIsCovalentBondForReceptors(monoUbiquitinReceptorsNames)
+# e1Dict, e2Dict, e3e4Dict, deubiquitylaseDict, notFoundTuplesList = findClassForReceptors()
 averagePositivesPredictionsDict = calculatePositivesAveragePredictedProbability(monoUbiquitinReceptorsNames, unpropagatedPredictions)
-data = {'ClusterNumber': receptorsClustersDict, 'isCovalent': isCovalentBondDict, 'averagePositivesPredictions': averagePositivesPredictionsDict}
+
+# print(e1Dict)
+# print(e2Dict)
+# print(e3e4Dict)
+# print(deubiquitylaseDict)
+# print(notFoundTuplesList)
+# classificationList = [e1Dict, e2Dict, e3e4Dict, deubiquitylaseDict, notFoundTuplesList]
+# LabelPropagationAlgorithm.saveAsPickle(classificationList, 'classificationList')
+classificationList = LabelPropagationAlgorithm.loadPickle('classificationList.pkl')
+e1Dict = classificationList[0]
+e2Dict = classificationList[1]
+e3e4Dict = classificationList[2]
+deubiquitylaseDict = classificationList[3]
+notFoundTuplesList = classificationList[4]
+data = {'ClusterNumber': receptorsClustersDict, 'isCovalent': isCovalentBondDict,
+        'averagePositivesPredictions': averagePositivesPredictionsDict, 'e1': e1Dict, 'e2': e2Dict, 'e3|e4': e3e4Dict,
+        'deubiquitylase':deubiquitylaseDict}
+
 df = pd.DataFrame(data)
 df.index.name = 'ReceptorName'
 excelFileName = 'orientationAnalysis.xlsx'
 df.to_excel(excelFileName, index=True)
-
-# import requests
-# import xml.etree.ElementTree as ET
-#
-# pdb_id = '4hhb.A'
-# pdb_mapping_url = 'http://www.rcsb.org/pdb/rest/das/pdb_uniprot_mapping/alignment'
-# uniprot_url = 'http://www.uniprot.org/uniprot/{}.xml'
-#
-# def get_uniprot_accession_id(response_xml):
-#     root = ET.fromstring(response_xml)
-#     for el in root.findall('.//{http://www.pdb.org/das-pdb-uniprot}accession'):
-#         return el.text
-#     return None
-#
-# def get_uniprot_protein_name(uniprot_id):
-#     uniprot_response = requests.get(uniprot_url.format(uniprot_id)).text
-#     root = ET.fromstring(uniprot_response)
-#     full_name_elem = root.find('.//{http://uniprot.org/uniprot}recommendedName/{http://uniprot.org/uniprot}fullName')
-#     if full_name_elem is not None:
-#         return full_name_elem.text
-#     return None
-#
-# def map_pdb_to_uniprot(pdb_id):
-#     pdb_mapping_response = requests.get(pdb_mapping_url, params={'query': pdb_id}).text
-#     uniprot_id = get_uniprot_accession_id(pdb_mapping_response)
-#     if uniprot_id is not None:
-#         uniprot_name = get_uniprot_protein_name(uniprot_id)
-#         return {
-#             'pdb_id': pdb_id,
-#             'uniprot_id': uniprot_id,
-#             'uniprot_name': uniprot_name
-#         }
-#     return None
-#
-# result = map_pdb_to_uniprot(pdb_id)
-# if result is not None:
-#     print(result)
-# else:
-#     print(f"No UniProt information found for PDB ID {pdb_id}")
