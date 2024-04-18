@@ -39,7 +39,7 @@ for m_b in m_values:
         # Compile the model
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                       loss='binary_crossentropy',
-                      metrics=[tf.keras.metrics.AUC_PR, 'accuracy'])
+                      metrics=[tf.keras.metrics.AUC(curve = 'PR'), 'accuracy'])
         architectureAucs = []
         for i in range(len(dictsForTraining)):
             print(m_a, m_b, m_c, n_layers,
@@ -69,7 +69,7 @@ for m_b in m_values:
                 verbose=1,
                 validation_data=(
                     [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded], y_cv),
-                callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_auc',
+                callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_auc_precision_recall',
                                                             patience=n_early_stopping_epochs,
                                                             restore_best_weights=True)],
                 batch_size=batch_size
