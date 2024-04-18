@@ -430,7 +430,7 @@ patchesList(allPredictions, int(sys.argv[1]), trainingDataDir, plddtThreshold)
 
 
 # CREATING THE CSV FILE
-createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
+# createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
 
 
 
