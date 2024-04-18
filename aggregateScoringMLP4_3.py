@@ -39,7 +39,7 @@ for m_b in m_values:
         # Compile the model
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                       loss='binary_crossentropy',
-                      metrics=[tf.keras.metrics.AUC_PR(curve='PR'), 'accuracy'])
+                      metrics=[tf.keras.metrics.AUC_PR, 'accuracy'])
         architectureAucs = []
         for i in range(len(dictsForTraining)):
             print(m_a, m_b, m_c, n_layers,
