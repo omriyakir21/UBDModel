@@ -399,10 +399,10 @@ gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_trainAccStop
 indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
 
 trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
-plotPlddtHistogramForPositivieAndProteome(allPredictions)
+# plotPlddtHistogramForPositivieAndProteome(allPredictions)
 
 # CREATE PROTEIN OBJECTS, I'M DOING IT IN BATCHES
-# patchesList(allPredictions, int(sys.argv[1]), trainingDataDir, plddtThreshold)
+patchesList(allPredictions, int(sys.argv[1]), trainingDataDir, plddtThreshold)
 
 # FROM HERE FOLLOWS IN ONE RUN
 # PKL ALL THE COMPONENTS TOGETHER AND CREATE LABELS FROM THE PATCHES LIST
