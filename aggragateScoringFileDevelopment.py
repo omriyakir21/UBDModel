@@ -373,7 +373,7 @@ def plotPlddtHistogramForKeys(keys, allPredictions, header):
 
 
 def plotPlddtHistogramForPositivieAndProteome(allPredictions):
-    keys = allPredictions['dict_sources'].keys()
+    keys = allPredictions['dict_sources'].keys()[:100]
     positiveKeys = [key for key in keys if
                     allPredictions['dict_sources'][key] in ['E1', 'E2', 'E3', 'ubiquitinBinding', 'DUB']]
     proteomeKeys = [key for key in keys if allPredictions['dict_sources'][key] == 'Human proteome']
