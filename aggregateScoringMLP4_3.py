@@ -14,7 +14,7 @@ trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
 allInfoDicts = utils.loadPickle(os.path.join(trainingDictsDir, 'allInfoDicts.pkl'))
 dictsForTraining = utils.loadPickle(os.path.join(trainingDictsDir, 'dictsForTraining.pkl'))
 
-directory_name = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_trainAccStoppage' + dirName)
+directory_name = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
 if not os.path.exists(directory_name):
     os.mkdir(directory_name)
 
@@ -39,7 +39,7 @@ for m_b in m_values:
         # Compile the model
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                       loss='binary_crossentropy',
-                      metrics=['accuracy'])
+                      metrics=[tf.keras.metrics.AUC(curve='PR'), 'accuracy'])
         architectureAucs = []
         for i in range(len(dictsForTraining)):
             print(m_a, m_b, m_c, n_layers,
@@ -69,10 +69,10 @@ for m_b in m_values:
                 verbose=1,
                 validation_data=(
                     [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded], y_cv),
-                callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy',
-                                                            patience=n_early_stopping_epochs)],
-                batch_size=batch_size,
-                class_weight=class_weight
+                callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_AUC',
+                                                            patience=n_early_stopping_epochs,
+                                                            restore_best_weights=True)],
+                batch_size=batch_size
 
             )
 
@@ -100,4 +100,3 @@ utils.saveAsPickle(allArchitecturesAucs,
 utils.saveAsPickle(totalAucs, os.path.join(directory_name, 'totalAucs' + str(n_layers) + " " + str(m_a)))
 utils.saveAsPickle(allArchitecturesPredictionsAndLabels,
                    os.path.join(directory_name, 'predictions_labels_' + str(n_layers) + " " + str(m_a)))
-
