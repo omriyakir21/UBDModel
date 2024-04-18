@@ -9,3 +9,5 @@ else:
     mainProjectDir = r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel'
     aggregateFunctionMLPDir = r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP'
     GoPath = r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\GO'
+    predictionsToDataSetDir = r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\predictionsToDataSetDir'
+    ScanNetPredictionsPath = r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions'
