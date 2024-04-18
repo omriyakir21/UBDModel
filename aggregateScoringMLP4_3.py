@@ -69,7 +69,7 @@ for m_b in m_values:
                 verbose=1,
                 validation_data=(
                     [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded], y_cv),
-                callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_auc_precision_recall',
+                callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_auc_pr',
                                                             patience=n_early_stopping_epochs,
                                                             restore_best_weights=True)],
                 batch_size=batch_size
