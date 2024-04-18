@@ -17,8 +17,7 @@ import aggregateScoringMLPUtils as utils
 from Bio.PDB import MMCIFParser
 import path
 import proteinLevelDataPartition
-
-
+import seaborn as sns
 
 parser = MMCIFParser()
 ubdPath = path.mainProjectDir
@@ -300,7 +299,7 @@ def plotPrecisionRecall(y_probs, labels):
 
 def KComputation(prediction, trainingUbRation):
     val = 1 - prediction
-    if  val== 0:
+    if val == 0:
         return
     K = ((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (val))
     return K
@@ -351,9 +350,35 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     dictsForTraining = loadPickle(os.path.join(trainingDictsDir, 'dictsForTraining.pkl'))
     dataDictPath = os.path.join(os.path.join(path.GoPath, 'idmapping_2023_12_26.tsv'), 'AllOrganizemsDataDict.pkl')
     yhat_groups = utils.createYhatGroupsFromPredictions(predictions, dictsForTraining)
-    outputPath = os.path.join(gridSearchDir, 'results_' + dirName+'.csv')
-    print( outputPath)
+    outputPath = os.path.join(gridSearchDir, 'results_' + dirName + '.csv')
+    print(outputPath)
     utils.createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)
+
+
+def plotPlddtHistogramForKeys(keys, allPredictions, header):
+    avgs = []
+    for uniprot in keys:
+        print(uniprot)
+        structurePath = allPredictions['dict_pdb_files'][uniprot]
+        structure = parser.get_structure(uniprot, structurePath)
+        model = structure.child_list[0]
+        assert (len(model) == 1)
+        for chain in model:
+            residues = aaOutOfChain(chain)
+            avg = np.mean(np.array([residues[i].child_list[0].bfactor for i in range(len(residues))]))
+            avgs.append(avg)
+        sns.histplot(avgs, kde=True)
+        plt.title(header)
+        plt.show()
+
+
+def plotPlddtHistogramForPositivieAndProteome(allPredictions):
+    keys = allPredictions['dict_sources'].keys()
+    positiveKeys = [key for key in keys if
+                    allPredictions['dict_sources'][key] in ['E1', 'E2', 'E3', 'ubiquitinBinding', 'DUB']]
+    proteomeKeys = [key for key in keys if allPredictions['dict_sources'][key] == 'Human proteome']
+    plotPlddtHistogramForKeys(positiveKeys, allPredictions, 'Positives plddt histogram')
+    plotPlddtHistogramForKeys(proteomeKeys, allPredictions, 'Proteome plddt histogram')
 
 
 # !!!!
@@ -374,6 +399,7 @@ gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_trainAccStop
 indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
 
 trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
+plotPlddtHistogramForPositivieAndProteome(allPredictions)
 
 # CREATE PROTEIN OBJECTS, I'M DOING IT IN BATCHES
 # patchesList(allPredictions, int(sys.argv[1]), trainingDataDir, plddtThreshold)
