@@ -402,31 +402,31 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 # plotPlddtHistogramForPositivieAndProteome(allPredictions)
 
 # CREATE PROTEIN OBJECTS, I'M DOING IT IN BATCHES
-patchesList(allPredictions, int(sys.argv[1]), trainingDataDir, plddtThreshold)
+# patchesList(allPredictions, int(sys.argv[1]), trainingDataDir, plddtThreshold)
 
 # FROM HERE FOLLOWS IN ONE RUN
 # PKL ALL THE COMPONENTS TOGETHER AND CREATE LABELS FROM THE PATCHES LIST
-# components = pklComponentsOutOfProteinObjects(trainingDataDir)
-# labels = pklLabels(components, trainingDataDir)
+components = pklComponentsOutOfProteinObjects(trainingDataDir)
+labels = pklLabels(components, trainingDataDir)
 
 # CREATE DATA FOR TRAINING (allInfoDicts and dictForTraining)
-# componentsDir = os.path.join(trainingDataDir, 'components')
-# componentsPath = os.path.join(componentsDir, 'components.pkl')
-# labelsDir = os.path.join(trainingDataDir, 'labels')
-# labelsPath = os.path.join(labelsDir, 'labels.pkl')
-# try:
-#     os.mkdir(trainingDictsDir)
-# except Exception as e:
-#     print(e)
-# allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
+componentsDir = os.path.join(trainingDataDir, 'components')
+componentsPath = os.path.join(componentsDir, 'components.pkl')
+labelsDir = os.path.join(trainingDataDir, 'labels')
+labelsPath = os.path.join(labelsDir, 'labels.pkl')
+try:
+    os.mkdir(trainingDictsDir)
+except Exception as e:
+    print(e)
+allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
 # PARTITION THE DATA
-# proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', trainingDataDir)
+proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', trainingDataDir)
 
 # CREATE TRAIN TEST VALIDATION FOR ALL GROUPS
-# x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
-# y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
-# allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
+x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
+y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
+allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups, trainingDictsDir)
 
 
 # CREATING THE CSV FILE
