@@ -430,7 +430,7 @@ plotPlddtHistogramForPositivieAndProteome(allPredictions)
 
 
 # CREATING THE CSV FILE
-# createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
+createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
 
 
 
