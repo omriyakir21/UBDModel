@@ -404,7 +404,8 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 
 # CREATING THE CSV FILE
-createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
+# createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
+
 
 
 # THATS IT FROM HERE IT IS NOT RELEVANT
