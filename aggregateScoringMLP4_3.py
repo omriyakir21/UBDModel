@@ -26,13 +26,14 @@ label_groups = []
 y_train_groups = []
 n_layers = int(sys.argv[1])
 m_a = int(sys.argv[2])
-m_values = [128, 256, 512]
+m_b_values = [128, 256, 512]
+m_c_values = [256, 512]
 batch_size = 1024
 n_early_stopping_epochs = 5
 
 dictForTraining = dictsForTraining
-for m_b in m_values:
-    for m_c in m_values:
+for m_b in m_b_values:
+    for m_c in m_c_values:
         all_predictions = []
         all_labels = []
         model = utils.buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers)
