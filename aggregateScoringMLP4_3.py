@@ -31,7 +31,7 @@ m_b_values = [128, 256, 512]
 m_c_values = [256, 512]
 # m_c_values = [2]
 batch_size = 1024
-n_early_stopping_epochs = 5
+n_early_stopping_epochs = 12
 
 dictForTraining = dictsForTraining
 for m_b in m_b_values:
