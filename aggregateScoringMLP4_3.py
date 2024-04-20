@@ -26,10 +26,10 @@ label_groups = []
 y_train_groups = []
 n_layers = int(sys.argv[1])
 m_a = int(sys.argv[2])
-# m_b_values = [128, 256, 512]
-m_b_values = [2]
-# m_c_values = [256, 512]
-m_c_values = [2]
+m_b_values = [128, 256, 512]
+# m_b_values = [2]
+m_c_values = [256, 512]
+# m_c_values = [2]
 batch_size = 1024
 n_early_stopping_epochs = 5
 
@@ -68,7 +68,7 @@ for m_b in m_b_values:
             model.fit(
                 [x_train_components_scaled_padded, x_train_sizes_scaled, x_train_n_patches_encoded],
                 y_train,
-                epochs=30,
+                epochs=300,
                 verbose=1,
                 validation_data=(
                     [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded], y_cv),
