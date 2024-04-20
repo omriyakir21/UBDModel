@@ -22,7 +22,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, GlobalAveragePooling1D, Reshape, Masking
 
 maxNumberOfPatches = 10
-from keras import backend
+from tensorflow.python.keras import backend
 
 
 class GlobalSumPooling(GlobalAveragePooling1D):
