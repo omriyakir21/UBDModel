@@ -68,7 +68,7 @@ for m_b in m_b_values:
             model.fit(
                 [x_train_components_scaled_padded, x_train_sizes_scaled, x_train_n_patches_encoded],
                 y_train,
-                epochs=3,
+                epochs=30,
                 verbose=1,
                 validation_data=(
                     [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded], y_cv),
