@@ -27,22 +27,24 @@ y_train_groups = []
 n_layers = int(sys.argv[1])
 m_a = int(sys.argv[2])
 m_b_values = [128, 256, 512]
+m_b_values = [2, 2, 2]
 # m_b_values = [2]
-m_c_values = [256, 512]
+m_c_values = [2, 2]
 # m_c_values = [2]
 batch_size = 1024
 n_early_stopping_epochs = 12
-
+cnt = -1
 dictForTraining = dictsForTraining
 for m_b in m_b_values:
     for m_c in m_c_values:
         all_predictions = []
         all_labels = []
+        cnt += 1
         model = utils.buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers)
         # Compile the model
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
                       loss='binary_crossentropy',
-                      metrics=[tf.keras.metrics.AUC(curve = 'PR'), 'accuracy'])
+                      metrics=[tf.keras.metrics.AUC(curve='PR'), 'accuracy'])
         architectureAucs = []
         for i in range(len(dictsForTraining)):
             print(m_a, m_b, m_c, n_layers,
@@ -64,6 +66,10 @@ for m_b in m_b_values:
                                                        y=y_train)
             # Convert class weights to a dictionary
             class_weight = {i: class_weights[i] for i in range(len(class_weights))}
+            if cnt != 0:
+                name = 'val_auc' + str(cnt)
+            else:
+                name = 'val_auc'
 
             model.fit(
                 [x_train_components_scaled_padded, x_train_sizes_scaled, x_train_n_patches_encoded],
@@ -72,7 +78,7 @@ for m_b in m_b_values:
                 verbose=1,
                 validation_data=(
                     [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded], y_cv),
-                callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_auc',
+                callbacks=[tf.keras.callbacks.EarlyStopping(monitor=name,
                                                             mode='max',
                                                             patience=n_early_stopping_epochs,
                                                             restore_best_weights=True)],
