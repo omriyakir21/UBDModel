@@ -39,14 +39,14 @@ for m_b in m_b_values:
     for m_c in m_c_values:
         all_predictions = []
         all_labels = []
-        cnt += 1
-        model = utils.buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers)
-        # Compile the model
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
-                      loss='binary_crossentropy',
-                      metrics=[tf.keras.metrics.AUC(curve='PR'), 'accuracy'])
-        architectureAucs = []
         for i in range(len(dictsForTraining)):
+            cnt += 1
+            model = utils.buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers)
+            # Compile the model
+            model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                          loss='binary_crossentropy',
+                          metrics=[tf.keras.metrics.AUC(curve='PR'), 'accuracy'])
+            architectureAucs = []
             print(m_a, m_b, m_c, n_layers,
                   n_early_stopping_epochs, batch_size, i)
             dictForTraining = dictsForTraining[i]
