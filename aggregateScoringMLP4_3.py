@@ -67,7 +67,7 @@ for m_b in m_b_values:
             # Convert class weights to a dictionary
             class_weight = {i: class_weights[i] for i in range(len(class_weights))}
             if cnt != 0:
-                name = 'val_auc' + str(cnt)
+                name = 'val_auc_' + str(cnt)
             else:
                 name = 'val_auc'
 
