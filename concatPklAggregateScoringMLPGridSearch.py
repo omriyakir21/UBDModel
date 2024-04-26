@@ -26,7 +26,7 @@ def concatAllFilesOfName(dirPath, name):
 
 
 def concatAllHalfPredictions(dirPath):
-    dictsDict = []
+    dictsDict = {}
     for filename in os.listdir(dirPath):
         if ' m_c' in filename:
             prefix = filename.split(' m_c')[0]
