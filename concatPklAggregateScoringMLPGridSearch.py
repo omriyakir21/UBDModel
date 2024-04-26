@@ -30,15 +30,14 @@ def concatAllHalfPredictions(dirPath):
     for filename in os.listdir(dirPath):
         if ' m_c' in filename:
             prefix = filename.split(' m_c')[0]
-            predictions = loadPickle(filename)
+            predictions = loadPickle(os.path.join(dirPath, filename))
             if prefix not in dictsDict:
                 dictsDict[prefix] = predictions
             else:
                 dictsDict[prefix].update(predictions)
     for key in dictsDict:
         filename = key.split('m_a')[0]
-        saveAsPickle(dictsDict[key], filename)
-
+        saveAsPickle(dictsDict[key], os.path.join(dirPath, filename))
 
 
 dirPath = '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/MLP_MSA_val_AUC_stoppage_with_evolution_85_plddt_all_organizems_15_4/'
