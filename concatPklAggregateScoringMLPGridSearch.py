@@ -36,7 +36,7 @@ def concatAllHalfPredictions(dirPath):
             else:
                 predictionsDict[prefix] += predictions
     for key in predictionsDict:
-        filename = key.split('m_a')[0]
+        filename = key.split('m_a: ')[0]+key.split('m_a: ')[1]
         saveAsPickle(predictionsDict[key], os.path.join(dirPath, filename))
 
 
