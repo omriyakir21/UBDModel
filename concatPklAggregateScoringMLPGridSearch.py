@@ -21,9 +21,14 @@ def concatAllFilesOfName(dirPath,name):
       concatenated_lists.extend(data)
   return concatenated_lists
 
-dirPath = '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/gridSearch6_3/'
+dirPath = '/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP/MLP_MSA_val_AUC_stoppage_with_evolution_85_plddt_all_organizems_15_4/'
 name = 'Allarchite'
 
 concatenated_lists= concatAllFilesOfName(dirPath,name)
 saveAsPickle(concatenated_lists, os.path.join(dirPath,'allArchitectureAucs'))
+name = 'totalA'
+concatenated_lists= concatAllFilesOfName(dirPath,name)
+saveAsPickle(concatenated_lists, os.path.join(dirPath,'totalAucs'))
+
+
 
