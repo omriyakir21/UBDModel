@@ -548,7 +548,6 @@ def createYhatGroupsFromPredictions(predictions, dictsForTraining):
 
 def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath):
     data_dict = loadPickle(dataDictPath)
-
     allKvalues = []
     for i in range(len(dictsForTraining)):
         trainingUbRatio = np.mean(dictsForTraining[i]['y_train'])
@@ -556,7 +555,6 @@ def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, out
     Inference5PercentPredictions = [predictionFunctionUsingBayesFactorComputation(0.05, KValue) for KValue in
                                     allKvalues]
     logKValues = [np.log10(k) for k in allKvalues]
-
     uniDictList = []
     myList = []
     types = []

@@ -330,7 +330,7 @@ def pklComponentsOutOfProteinObjects(dirPath):
     return allComponents4d
 
 
-def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
+def getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir):
     totalAucs = loadPickle(os.path.join(gridSearchDir, 'totalAucs.pkl'))
     totalAucs.sort(key=lambda x: -x[1])
     bestArchitecture = totalAucs[0][0]
@@ -345,7 +345,11 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
             predictions = predictionsAndLabels[i][1]
             labels = predictionsAndLabels[i][2]
             break
+    return predictions, labels, bestArchitecture
 
+
+def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
+    predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
     allInfoDicts = loadPickle(os.path.join(trainingDictsDir, 'allInfoDicts.pkl'))
     dictsForTraining = loadPickle(os.path.join(trainingDictsDir, 'dictsForTraining.pkl'))
     dataDictPath = os.path.join(os.path.join(path.GoPath, 'idmapping_2023_12_26.tsv'), 'AllOrganizemsDataDict.pkl')
@@ -353,6 +357,29 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     outputPath = os.path.join(gridSearchDir, 'results_' + dirName + '.csv')
     print(outputPath)
     utils.createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)
+
+
+def createPRPlotFromResults(gridSearchDir):
+    predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
+    precision, recall, thresholds = precision_recall_curve(labels, predictions)
+    auc = roc_auc_score(labels, predictions)
+    plt.figure(figsize=(8, 6))
+    plt.plot(recall, precision, label='Precision-Recall Curve')
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curve, architecture = ' + str(bestArchitecture) + " auc=" + str(auc))
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(os.path.join(gridSearchDir, 'PR plot'))
+    plt.close()
+
+
+def createLogBayesDistributionPlotFromResults(gridSearchDir):
+    predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
+    allKvalues = [KComputation(prediction, 0.05) for prediction in predictions]
+    plt.hist(allKvalues)
+    plt.savefig(os.path.join(gridSearchDir, 'logKvalues Distribution'))
+    plt.close()
 
 
 def plotPlddtHistogramForKeys(keys, allPredictions, header):
@@ -399,6 +426,8 @@ gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stop
 indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
 
 trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
+
+
 # plotPlddtHistogramForPositivieAndProteome(allPredictions)
 
 # CREATE PROTEIN OBJECTS, I'M DOING IT IN BATCHES
@@ -430,10 +459,12 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 
 # CREATING THE CSV FILE
-createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
+# createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
 
-
-
+#PLOT SUMMARY  FILES
+createPRPlotFromResults(gridSearchDir)
+createLogBayesDistributionPlotFromResults(gridSearchDir
+                                          )
 # THATS IT FROM HERE IT IS NOT RELEVANT
 
 # !!!!
