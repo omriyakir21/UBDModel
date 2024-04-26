@@ -395,7 +395,7 @@ distanceThreshold = 10
 dirName = sys.argv[2]
 plddtThreshold = int(sys.argv[3])
 trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
-gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_trainAccStoppage' + dirName)
+gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
 indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
 
 trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
