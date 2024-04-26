@@ -109,4 +109,4 @@ utils.saveAsPickle(allArchitecturesAucs,
                    os.path.join(directory_name, 'allArchitecturesAucs' + str(n_layers) + "m_a: " + str(m_a)+" m_c: "+str(m_c)))
 utils.saveAsPickle(totalAucs, os.path.join(directory_name, 'totalAucs' + str(n_layers) + "m_a: " + str(m_a)+" m_c: "+str(m_c)))
 utils.saveAsPickle(allArchitecturesPredictionsAndLabels,
-                   os.path.join(directory_name, 'predictions_labels_' + "m_a: " + str(m_a)+" m_c: "+str(m_c)))
+                   os.path.join(directory_name, 'predictions_labels_' + str(n_layers)+ "m_a: " + str(m_a)+" m_c: "+str(m_c)))
