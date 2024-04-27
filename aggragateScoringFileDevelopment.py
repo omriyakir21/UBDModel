@@ -18,6 +18,7 @@ from Bio.PDB import MMCIFParser
 import path
 import proteinLevelDataPartition
 import seaborn as sns
+from sklearn.metrics import auc
 
 parser = MMCIFParser()
 ubdPath = path.mainProjectDir
@@ -362,12 +363,12 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
 def createPRPlotFromResults(gridSearchDir):
     predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
     precision, recall, thresholds = precision_recall_curve(labels, predictions)
-    auc = roc_auc_score(labels, predictions)
+    aucScore = auc(labels, predictions)
     plt.figure(figsize=(8, 6))
     plt.plot(recall, precision, label='Precision-Recall Curve')
     plt.xlabel('Recall')
     plt.ylabel('Precision')
-    plt.title('Precision-Recall Curve, architecture = ' + str(bestArchitecture) + " auc=" + str(auc))
+    plt.title('Precision-Recall Curve, architecture = ' + str(bestArchitecture) + " auc=" + str(aucScore))
     plt.legend()
     plt.grid(True)
     plt.savefig(os.path.join(gridSearchDir, 'PR plot'))
