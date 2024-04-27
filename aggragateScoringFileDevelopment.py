@@ -344,6 +344,7 @@ def getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir):
     for i in range(len(predictionsAndLabels)):
         if predictionsAndLabels[i][0][1] == m_b and predictionsAndLabels[i][0][2] == m_c:
             predictions = predictionsAndLabels[i][1]
+            predictions = np.array([val[0] for val in predictions])
             labels = predictionsAndLabels[i][2]
             break
     return predictions, labels, bestArchitecture
@@ -363,7 +364,10 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
 def createPRPlotFromResults(gridSearchDir):
     predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
     precision, recall, thresholds = precision_recall_curve(labels, predictions)
-    aucScore = auc(labels, predictions)
+    sorted_indices = np.argsort(predictions)
+    predictions_sorted = predictions[sorted_indices]
+    labels_sorted = labels[sorted_indices]
+    aucScore = auc(labels_sorted, predictions_sorted)
     plt.figure(figsize=(8, 6))
     plt.plot(recall, precision, label='Precision-Recall Curve')
     plt.xlabel('Recall')
@@ -464,8 +468,8 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 #PLOT SUMMARY  FILES
 createPRPlotFromResults(gridSearchDir)
-createLogBayesDistributionPlotFromResults(gridSearchDir
-                                          )
+# createLogBayesDistributionPlotFromResults(gridSearchDir
+#                                           )
 # THATS IT FROM HERE IT IS NOT RELEVANT
 
 # !!!!
