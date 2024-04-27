@@ -459,7 +459,7 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 
 # CREATING THE CSV FILE
-# createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
+createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
 
 #PLOT SUMMARY  FILES
 createPRPlotFromResults(gridSearchDir)
