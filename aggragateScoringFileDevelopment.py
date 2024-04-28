@@ -389,10 +389,12 @@ def createPRPlotFromResults(gridSearchDir):
     predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
     labels = np.array(labels)
     precision, recall, thresholds = precision_recall_curve(labels, predictions)
-    # sorted_indices = np.argsort(predictions)
+    sorted_indices = np.argsort(precision)
+    sorted_precision = precision[sorted_indices]
+    sorted_recall = recall[sorted_indices]
     # predictions_sorted = predictions[sorted_indices]
     # labels_sorted = labels[sorted_indices]
-    aucScore = auc(precision, recall)
+    aucScore = auc(sorted_precision, sorted_recall)
     # aucScore = auc(predictions_sorted, labels_sorted)
     plt.figure(figsize=(8, 6))
     plt.plot(recall, precision, label='Precision-Recall Curve')
