@@ -494,7 +494,7 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 # createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
 
 # PLOT SUMMARY  FILES
-createPRPlotFromResults(gridSearchDir)
+# createPRPlotFromResults(gridSearchDir)
 # createLogBayesDistributionPlotFromResults(gridSearchDir
 #                                           )
 # THATS IT FROM HERE IT IS NOT RELEVANT
@@ -503,6 +503,7 @@ createPRPlotFromResults(gridSearchDir)
 dirName2 = sys.argv[4]
 trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
 gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
+createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2)
 
 
 # !!!!
