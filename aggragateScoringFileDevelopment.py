@@ -360,7 +360,8 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     print(outputPath)
     utils.createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)
 
-def createCombinedCsv(gridSearchDir, dirName,gridSearchDir2,  dirName2):
+
+def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2):
     # Read the first CSV file
     df1 = pd.read_csv(os.path.join(gridSearchDir, 'results_' + dirName + '.csv'))
 
@@ -381,17 +382,17 @@ def createCombinedCsv(gridSearchDir, dirName,gridSearchDir2,  dirName2):
                  "log10Kvalue_y": "log10Kvalue_second"}, inplace=True)
 
     # Write the merged dataframe to a new CSV file
-    merged_df[selected_columns].to_csv(os.path.join(path.aggregateFunctionMLPDir,"merged_file.csv"), index=False)
+    merged_df[selected_columns].to_csv(os.path.join(path.aggregateFunctionMLPDir, "merged_file.csv"), index=False)
 
 
 def createPRPlotFromResults(gridSearchDir):
     predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
     labels = np.array(labels)
     precision, recall, thresholds = precision_recall_curve(labels, predictions)
-    sorted_indices = np.argsort(labels)
+    sorted_indices = np.argsort(predictions)
     predictions_sorted = predictions[sorted_indices]
     labels_sorted = labels[sorted_indices]
-    aucScore = auc(labels_sorted, predictions_sorted)
+    aucScore = auc(predictions_sorted, labels_sorted)
     plt.figure(figsize=(8, 6))
     plt.plot(recall, precision, label='Precision-Recall Curve')
     plt.xlabel('Recall')
@@ -456,7 +457,6 @@ indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(al
 
 trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
-
 # plotPlddtHistogramForPositivieAndProteome(allPredictions)
 
 # CREATE PROTEIN OBJECTS, I'M DOING IT IN BATCHES
@@ -490,16 +490,17 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 # CREATING THE CSV FILE
 # createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
 
-#PLOT SUMMARY  FILES
+# PLOT SUMMARY  FILES
 createPRPlotFromResults(gridSearchDir)
 # createLogBayesDistributionPlotFromResults(gridSearchDir
 #                                           )
 # THATS IT FROM HERE IT IS NOT RELEVANT
 
-#CREATE COMBINED CSV
+# CREATE COMBINED CSV
 dirName2 = sys.argv[4]
 trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
 gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
+
 
 # !!!!
 
