@@ -360,9 +360,33 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     print(outputPath)
     utils.createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)
 
+def createCombinedCsv(gridSearchDir, dirName,gridSearchDir2,  dirName2):
+    # Read the first CSV file
+    df1 = pd.read_csv(os.path.join(gridSearchDir, 'results_' + dirName + '.csv'))
+
+    # Read the second CSV file
+    df2 = pd.read_csv(os.path.join(gridSearchDir2, 'results_' + dirName2 + '.csv'))
+
+    # Merge the two dataframes based on common columns
+    merged_df = pd.merge(df1, df2, on=["Entry", "type", "Protein Name", "Organism"])
+
+    # Select the desired columns for the new CSV file
+    selected_columns = ["Entry", "type", "Protein Name", "Organism", "Inference Prediction 0.05_x", "log10Kvalue_x",
+                        "Inference Prediction 0.05_y", "log10Kvalue_y"]
+
+    # Rename the columns to differentiate between the two CSV files
+    merged_df.rename(
+        columns={"Inference Prediction 0.05_x": "Inference Prediction 0.05_first", "log10Kvalue_x": "log10Kvalue_first",
+                 "Inference Prediction 0.05_y": "Inference Prediction 0.05_second",
+                 "log10Kvalue_y": "log10Kvalue_second"}, inplace=True)
+
+    # Write the merged dataframe to a new CSV file
+    merged_df[selected_columns].to_csv(os.path.join(path.aggregateFunctionMLPDir,"merged_file.csv"), index=False)
+
 
 def createPRPlotFromResults(gridSearchDir):
     predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
+    labels = np.array(labels)
     precision, recall, thresholds = precision_recall_curve(labels, predictions)
     sorted_indices = np.argsort(predictions)
     predictions_sorted = predictions[sorted_indices]
@@ -471,6 +495,11 @@ createPRPlotFromResults(gridSearchDir)
 # createLogBayesDistributionPlotFromResults(gridSearchDir
 #                                           )
 # THATS IT FROM HERE IT IS NOT RELEVANT
+
+#CREATE COMBINED CSV
+dirName2 = sys.argv[4]
+trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
+gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
 
 # !!!!
 
