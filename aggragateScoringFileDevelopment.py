@@ -499,7 +499,7 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 # CREATE COMBINED CSV
 dirName2 = sys.argv[4]
-plddtThreshold2 = sys.argv[5]
+plddtThreshold2 = int(sys.argv[5])
 trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
 gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
 createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2)
