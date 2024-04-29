@@ -361,7 +361,7 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     utils.createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)
 
 
-def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2):
+def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2,plddtThreshold,plddtThreshold2):
     # Read the first CSV file
     df1 = pd.read_csv(os.path.join(gridSearchDir, 'results_' + dirName + '.csv'))
 
@@ -377,25 +377,22 @@ def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2):
 
     # Rename the columns to differentiate between the two CSV files
     merged_df.rename(
-        columns={"Inference Prediction 0.05_x": "Inference Prediction 0.05_first", "log10Kvalue_x": "log10Kvalue_first",
-                 "Inference Prediction 0.05_y": "Inference Prediction 0.05_second",
-                 "log10Kvalue_y": "log10Kvalue_second"}, inplace=True)
+        columns={"Inference Prediction 0.05 prior_x": "Inference Prediction 0.05_"+str(plddtThreshold), "log10Kvalue_x": "log10Kvalue_"+str(plddtThreshold),
+                 "Inference Prediction 0.05 prior_y": "Inference Prediction 0.05_"+str(plddtThreshold2),
+                 "log10Kvalue_y": "log10Kvalue_"+str(plddtThreshold2)}, inplace=True)
 
     # Write the merged dataframe to a new CSV file
-    merged_df[selected_columns].to_csv(os.path.join(path.aggregateFunctionMLPDir, "merged_file.csv"), index=False)
+    merged_df[selected_columns].to_csv(os.path.join(path.aggregateFunctionMLPDir, "combined_csv_"+str(len(df1['Entry']))+'.csv'), index=False)
 
 
 def createPRPlotFromResults(gridSearchDir):
     predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
     labels = np.array(labels)
     precision, recall, thresholds = precision_recall_curve(labels, predictions)
-    sorted_indices = np.argsort(precision)
+    sorted_indices = np.argsort(recall)
     sorted_precision = precision[sorted_indices]
     sorted_recall = recall[sorted_indices]
-    # predictions_sorted = predictions[sorted_indices]
-    # labels_sorted = labels[sorted_indices]
-    aucScore = auc(sorted_precision, sorted_recall)
-    # aucScore = auc(predictions_sorted, labels_sorted)
+    aucScore = auc(sorted_recall, sorted_precision)
     plt.figure(figsize=(8, 6))
     plt.plot(recall, precision, label='Precision-Recall Curve')
     plt.xlabel('Recall')
@@ -409,8 +406,9 @@ def createPRPlotFromResults(gridSearchDir):
 
 def createLogBayesDistributionPlotFromResults(gridSearchDir):
     predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
-    allKvalues = [KComputation(prediction, 0.05) for prediction in predictions]
-    plt.hist(allKvalues)
+    allLog10Kvalues = [np.log10(KComputation(prediction, 0.05)) for prediction in predictions]
+    plt.hist(allLog10Kvalues)
+    plt.title('logKvalues Distribution, architecture = '+str(bestArchitecture))
     plt.savefig(os.path.join(gridSearchDir, 'logKvalues Distribution'))
     plt.close()
 
@@ -494,16 +492,16 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 # createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
 
 # PLOT SUMMARY  FILES
-# createPRPlotFromResults(gridSearchDir)
-# createLogBayesDistributionPlotFromResults(gridSearchDir
-#                                           )
+createPRPlotFromResults(gridSearchDir)
+createLogBayesDistributionPlotFromResults(gridSearchDir)
 # THATS IT FROM HERE IT IS NOT RELEVANT
 
 # CREATE COMBINED CSV
-dirName2 = sys.argv[4]
-trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
-gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
-createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2)
+# dirName2 = sys.argv[4]
+# plddtThreshold2 = sys.argv[5]
+# trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
+# gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
+# createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2)
 
 
 # !!!!
