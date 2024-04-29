@@ -361,7 +361,7 @@ def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
     utils.createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)
 
 
-def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2,plddtThreshold,plddtThreshold2):
+def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThreshold, plddtThreshold2):
     # Read the first CSV file
     df1 = pd.read_csv(os.path.join(gridSearchDir, 'results_' + dirName + '.csv'))
 
@@ -378,12 +378,14 @@ def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2,plddtThre
 
     # Rename the columns to differentiate between the two CSV files
     merged_df.rename(
-        columns={"Inference Prediction 0.05 prior_x": "Inference Prediction 0.05_"+str(plddtThreshold), "log10Kvalue_x": "log10Kvalue_"+str(plddtThreshold),
-                 "Inference Prediction 0.05 prior_y": "Inference Prediction 0.05_"+str(plddtThreshold2),
-                 "log10Kvalue_y": "log10Kvalue_"+str(plddtThreshold2)}, inplace=True)
+        columns={"Inference Prediction 0.05 prior_x": "Inference Prediction 0.05_" + str(plddtThreshold),
+                 "log10Kvalue_x": "log10Kvalue_" + str(plddtThreshold),
+                 "Inference Prediction 0.05 prior_y": "Inference Prediction 0.05_" + str(plddtThreshold2),
+                 "log10Kvalue_y": "log10Kvalue_" + str(plddtThreshold2)}, inplace=True)
 
     # Write the merged dataframe to a new CSV file
-    merged_df[selected_columns].to_csv(os.path.join(path.aggregateFunctionMLPDir, "combined_csv_"+str(len(df1['Entry']))+'.csv'), index=False)
+    merged_df[selected_columns].to_csv(
+        os.path.join(path.aggregateFunctionMLPDir, "combined_csv_" + str(len(df1['Entry'])) + '.csv'), index=False)
 
 
 def createPRPlotFromResults(gridSearchDir):
@@ -409,7 +411,7 @@ def createLogBayesDistributionPlotFromResults(gridSearchDir):
     predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
     allLog10Kvalues = [np.log10(KComputation(prediction, 0.05)) for prediction in predictions]
     plt.hist(allLog10Kvalues)
-    plt.title('logKvalues Distribution, architecture = '+str(bestArchitecture))
+    plt.title('logKvalues Distribution, architecture = ' + str(bestArchitecture))
     plt.savefig(os.path.join(gridSearchDir, 'logKvalues Distribution'))
     plt.close()
 
@@ -502,7 +504,7 @@ dirName2 = sys.argv[4]
 plddtThreshold2 = int(sys.argv[5])
 trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
 gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
-createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2)
+createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThreshold, plddtThreshold2)
 
 
 # !!!!
