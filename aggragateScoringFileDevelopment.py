@@ -370,7 +370,8 @@ def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2,plddtThre
 
     # Merge the two dataframes based on common columns
     merged_df = pd.merge(df1, df2, on=["Entry", "type", "Protein Name", "Organism"])
-
+    merged_df['average Inference'] = (merged_df['Inference Prediction 0.05 prior_x'] + merged_df[
+        'Inference Prediction 0.05_y']) / 2
     # Select the desired columns for the new CSV file
     selected_columns = ["Entry", "type", "Protein Name", "Organism", "Inference Prediction 0.05_x", "log10Kvalue_x",
                         "Inference Prediction 0.05_y", "log10Kvalue_y"]
@@ -492,16 +493,16 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 # createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
 
 # PLOT SUMMARY  FILES
-createPRPlotFromResults(gridSearchDir)
-createLogBayesDistributionPlotFromResults(gridSearchDir)
+# createPRPlotFromResults(gridSearchDir)
+# createLogBayesDistributionPlotFromResults(gridSearchDir)
 # THATS IT FROM HERE IT IS NOT RELEVANT
 
 # CREATE COMBINED CSV
-# dirName2 = sys.argv[4]
-# plddtThreshold2 = sys.argv[5]
-# trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
-# gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
-# createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2)
+dirName2 = sys.argv[4]
+plddtThreshold2 = sys.argv[5]
+trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
+gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
+createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2)
 
 
 # !!!!
