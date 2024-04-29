@@ -506,8 +506,8 @@ def buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers):
 def KComputation(prediction, trainingUbRation):
     val = 1 - prediction
     if val == 0:
-        return math.inf
-    K = float(((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (val)))
+        return
+    K = ((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (val))
     return K
 
 
@@ -537,16 +537,17 @@ def list_to_tsv(list_of_strings, output_file):
             f.write(string + '\t')
 
 
-def createYhatGroupsFromPredictions(predictions, dictsForTraining):
+def createYhatGroupsFromPredictions(predictions, dictsForTraining,testOn = 'cv'):
     yhat_groups = []
     cnt = 0
     for i in range(len(dictsForTraining)):
-        yhat_groups.append([predictions[i] for i in range(cnt, cnt + dictsForTraining[i]['y_cv'].size)])
-        cnt += dictsForTraining[i]['y_cv'].size
+        y = 'y_'+testOn
+        yhat_groups.append([predictions[i] for i in range(cnt, cnt + dictsForTraining[i][y].size)])
+        cnt += dictsForTraining[i][y].size
     return yhat_groups
 
 
-def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath):
+def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath,testOn = 'cv'):
     data_dict = loadPickle(dataDictPath)
     allKvalues = []
     for i in range(len(dictsForTraining)):
@@ -559,13 +560,14 @@ def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, out
     myList = []
     types = []
     for i in range(len(allInfoDicts)):
-        for j in range(len(allInfoDicts[i]['x_cv'])):
-            if allInfoDicts[i]['x_cv'][j][1] in data_dict:
-                uniDict = data_dict[allInfoDicts[i]['x_cv'][j][1]]
+        x = 'x_'+testOn
+        for j in range(len(allInfoDicts[i][x])):
+            if allInfoDicts[i][x][j][1] in data_dict:
+                uniDict = data_dict[allInfoDicts[i][x][j][1]]
             else:
-                uniDict = {'Entry': allInfoDicts[i]['x_cv'][j][1], 'Protein names': 'No Info', 'Organism': 'No Info'}
+                uniDict = {'Entry': allInfoDicts[i][x][j][1], 'Protein names': 'No Info', 'Organism': 'No Info'}
             uniDictList.append(uniDict)
-            types.append(allInfoDicts[i]['x_cv'][j][0])
+            types.append(allInfoDicts[i][x][j][0])
     assert len(allKvalues) == len(uniDictList)
     for i in range(len(allKvalues)):
         uniDict = uniDictList[i]
@@ -586,58 +588,31 @@ def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, out
             csv_writer.writerow(row)
 
 
-def experiment2D():
-    tuplesLen2 = loadPickle(
-        r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\aggregateFunctionMLP\allTuplesListsOfLen2.pkl')
-    # labels = labels[:100]
-    # tuplesLen2 = tuplesLen2[:100]
-    tuplesLen2 = [np.array(tuple) for tuple in tuplesLen2]
-    sortPatches(tuplesLen2)
-    x_train, x_test, labels_train, labels_test = train_test_split(tuplesLen2, labels, test_size=0.1, random_state=1)
+def getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir):
+    totalAucs = loadPickle(os.path.join(gridSearchDir, 'totalAucs.pkl'))
+    totalAucs.sort(key=lambda x: -x[1])
+    bestArchitecture = totalAucs[0][0]
+    m_a = bestArchitecture[0]
+    m_b = bestArchitecture[1]
+    m_c = bestArchitecture[2]
+    layers = bestArchitecture[3]
+    predictionsAndLabels = loadPickle(
+        os.path.join(gridSearchDir, 'predictions_labels_' + str(layers) + ' ' + str(m_a) + '.pkl'))
+    for i in range(len(predictionsAndLabels)):
+        if predictionsAndLabels[i][0][1] == m_b and predictionsAndLabels[i][0][2] == m_c:
+            predictions = predictionsAndLabels[i][1]
+            predictions = np.array([val[0] for val in predictions])
+            labels = predictionsAndLabels[i][2]
+            break
+    return predictions, labels, bestArchitecture
 
-    x_train_scaled, x_cv_scaled, x_test_scaled = scaleXValues2D(x_train, [], x_test)
-    x_scaled_padded_train, _, x_scaled_padded_test = padXValues(x_train_scaled, [], x_test_scaled,
-                                                                maxNumberOfPatches)
 
-    aggregateFunctionMLPDir = os.path.join(path.mainProjectDir, 'aggregateFunctionMLP')
-    x_scaled_padded_train_2d = loadPickle(os.path.join(aggregateFunctionMLPDir, 'x_scaled_padded_train_2d.pkl'))
-    x_scaled_padded_test_2d = loadPickle(os.path.join(aggregateFunctionMLPDir, 'x_scaled_padded_test_2d.pkl'))
-    labels_train = loadPickle(os.path.join(aggregateFunctionMLPDir, 'labels_train.pkl'))
-    labels_test = loadPickle(os.path.join(aggregateFunctionMLPDir, 'labels_test.pkl'))
-
-    model_2 = Sequential(
-        [
-            tf.keras.Input(shape=(maxNumberOfPatches, 2)),
-            Masking(mask_value=0.0),
-            Dense(25, activation='relu'),
-            Dense(16, activation='relu'),
-            GlobalSumPooling(data_format='channels_last'),
-            Dense(1, activation='sigmoid')
-        ],
-        name='model_2'
-    )
-    model_2.compile(
-        loss=tf.keras.losses.BinaryCrossentropy(),
-        optimizer=tf.keras.optimizers.Adam(learning_rate=0.01),
-        metrics=['accuracy']
-    )
-
-    class_weights = compute_class_weight('balanced', classes=np.unique(labels_train), y=labels_train)
-    # Convert class weights to a dictionary
-    class_weight = {i: class_weights[i] for i in range(len(class_weights))}
-    model_2.fit(
-        x_scaled_padded_train_2d, labels_train,
-        epochs=300,
-        verbose=1,
-        callbacks=[tf.keras.callbacks.EarlyStopping(monitor='accuracy', patience=6)],
-        batch_size=128,
-        class_weight=class_weight
-
-    )
-    yhat_train = model_2.predict(x_scaled_padded_train_2d)
-    predictions_train = np.where(yhat_train >= 0.5, 1, 0)
-    print(classification_report(labels_train, predictions_train))
-
-    yhat = model_2.predict(x_scaled_padded_test_2d)
-    predictions_test = np.where(yhat >= 0.5, 1, 0)
-    print(classification_report(labels_test, predictions_test))
+def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
+    predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
+    allInfoDicts = loadPickle(os.path.join(trainingDictsDir, 'allInfoDicts.pkl'))
+    dictsForTraining = loadPickle(os.path.join(trainingDictsDir, 'dictsForTraining.pkl'))
+    dataDictPath = os.path.join(os.path.join(path.GoPath, 'idmapping_2023_12_26.tsv'), 'AllOrganizemsDataDict.pkl')
+    yhat_groups = createYhatGroupsFromPredictions(predictions, dictsForTraining)
+    outputPath = os.path.join(gridSearchDir, 'results_' + dirName + '.csv')
+    print(outputPath)
+    createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)

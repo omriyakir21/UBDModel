@@ -109,7 +109,7 @@ class Protein:
         for componentSet in connected_components:
             averageUbiq, averageNonUbiq, averagePlddt = self.calculateAveragePredictionsForComponent(componentSet)
             length = len(componentSet)
-            tuples.append((length, averageUbiq, averageNonUbiq, averagePlddt))
+            tuples.append((length, averageUbiq, averageNonUbiq, averagePlddt, list(componentSet)))
         return tuples
 
     def calculateAveragePredictionsForComponent(self, indexSet):
@@ -298,16 +298,9 @@ def plotPrecisionRecall(y_probs, labels):
     plt.show()
 
 
-def KComputation(prediction, trainingUbRation):
-    val = 1 - prediction
-    if val == 0:
-        return
-    K = ((1 - trainingUbRation) * prediction) / ((trainingUbRation) * (val))
-    return K
-
 
 def predictionFunctionUsingBayesFactorComputation(logisticPrediction, priorUb, trainingUbRatio):
-    K = KComputation(logisticPrediction, trainingUbRatio)
+    K = utils.KComputation(logisticPrediction, trainingUbRatio)
     finalPrediction = (K * priorUb) / ((K * priorUb) + (1 - priorUb))
     return finalPrediction
 
@@ -330,35 +323,6 @@ def pklComponentsOutOfProteinObjects(dirPath):
     saveAsPickle(allComponents4d, os.path.join(componentsDir, 'components'))
     return allComponents4d
 
-
-def getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir):
-    totalAucs = loadPickle(os.path.join(gridSearchDir, 'totalAucs.pkl'))
-    totalAucs.sort(key=lambda x: -x[1])
-    bestArchitecture = totalAucs[0][0]
-    m_a = bestArchitecture[0]
-    m_b = bestArchitecture[1]
-    m_c = bestArchitecture[2]
-    layers = bestArchitecture[3]
-    predictionsAndLabels = loadPickle(
-        os.path.join(gridSearchDir, 'predictions_labels_' + str(layers) + ' ' + str(m_a) + '.pkl'))
-    for i in range(len(predictionsAndLabels)):
-        if predictionsAndLabels[i][0][1] == m_b and predictionsAndLabels[i][0][2] == m_c:
-            predictions = predictionsAndLabels[i][1]
-            predictions = np.array([val[0] for val in predictions])
-            labels = predictionsAndLabels[i][2]
-            break
-    return predictions, labels, bestArchitecture
-
-
-def createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName):
-    predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
-    allInfoDicts = loadPickle(os.path.join(trainingDictsDir, 'allInfoDicts.pkl'))
-    dictsForTraining = loadPickle(os.path.join(trainingDictsDir, 'dictsForTraining.pkl'))
-    dataDictPath = os.path.join(os.path.join(path.GoPath, 'idmapping_2023_12_26.tsv'), 'AllOrganizemsDataDict.pkl')
-    yhat_groups = utils.createYhatGroupsFromPredictions(predictions, dictsForTraining)
-    outputPath = os.path.join(gridSearchDir, 'results_' + dirName + '.csv')
-    print(outputPath)
-    utils.createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath)
 
 
 def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThreshold, plddtThreshold2):
@@ -387,7 +351,7 @@ def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThr
 
 
 def createPRPlotFromResults(gridSearchDir):
-    predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
+    predictions, labels, bestArchitecture = utils.getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
     labels = np.array(labels)
     precision, recall, thresholds = precision_recall_curve(labels, predictions)
     sorted_indices = np.argsort(recall)
@@ -406,8 +370,8 @@ def createPRPlotFromResults(gridSearchDir):
 
 
 def createLogBayesDistributionPlotFromResults(gridSearchDir):
-    predictions, labels, bestArchitecture = getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
-    allLog10Kvalues = [np.log10(KComputation(prediction, 0.05)) for prediction in predictions]
+    predictions, labels, bestArchitecture = utils.getLabelsPredictionsAndArchitectureOfBestArchitecture(gridSearchDir)
+    allLog10Kvalues = [np.log10(utils.KComputation(prediction, 0.05)) for prediction in predictions]
     plt.hist(allLog10Kvalues)
     plt.title('logKvalues Distribution, architecture = ' + str(bestArchitecture))
     plt.savefig(os.path.join(gridSearchDir, 'logKvalues Distribution'))
@@ -445,6 +409,8 @@ def plotPlddtHistogramForPositivieAndProteome(allPredictions):
 serverPDBs = True
 NegativeSources = set(
     ['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
+
+
 allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
 allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
 allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
@@ -455,8 +421,8 @@ dirName = sys.argv[2]
 plddtThreshold = int(sys.argv[3])
 trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
 gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
-indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
-
+# indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
+#
 trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 # plotPlddtHistogramForPositivieAndProteome(allPredictions)
@@ -490,19 +456,19 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 
 # CREATING THE CSV FILE
-# createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
+# utils.createCSVFileFromResults(gridSearchDir, trainingDictsDir, dirName)
 
 # PLOT SUMMARY  FILES
-# createPRPlotFromResults(gridSearchDir)
-# createLogBayesDistributionPlotFromResults(gridSearchDir)
+createPRPlotFromResults(gridSearchDir)
+createLogBayesDistributionPlotFromResults(gridSearchDir)
 # THATS IT FROM HERE IT IS NOT RELEVANT
 
 # CREATE COMBINED CSV
-dirName2 = sys.argv[4]
-plddtThreshold2 = int(sys.argv[5])
-trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
-gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
-createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThreshold, plddtThreshold2)
+# dirName2 = sys.argv[4]
+# plddtThreshold2 = int(sys.argv[5])
+# trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
+# gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
+# createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThreshold, plddtThreshold2)
 
 
 # !!!!
