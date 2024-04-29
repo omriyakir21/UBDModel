@@ -371,20 +371,18 @@ def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThr
     # Merge the two dataframes based on common columns
     merged_df = pd.merge(df1, df2, on=["Entry", "type", "Protein Name", "Organism"])
     merged_df['average Inference'] = (merged_df['Inference Prediction 0.05 prior_x'] + merged_df[
-        'Inference Prediction 0.05_y']) / 2
+        'Inference Prediction 0.05 prior_y']) / 2
     # Select the desired columns for the new CSV file
-    selected_columns = ["Entry", "type", "Protein Name", "Organism", "Inference Prediction 0.05_x", "log10Kvalue_x",
-                        "Inference Prediction 0.05_y", "log10Kvalue_y"]
 
     # Rename the columns to differentiate between the two CSV files
     merged_df.rename(
-        columns={"Inference Prediction 0.05 prior_x": "Inference Prediction 0.05_" + str(plddtThreshold),
+        columns={"Inference Prediction 0.05 prior_x": "Inference Prediction 0.05 prior_" + str(plddtThreshold),
                  "log10Kvalue_x": "log10Kvalue_" + str(plddtThreshold),
-                 "Inference Prediction 0.05 prior_y": "Inference Prediction 0.05_" + str(plddtThreshold2),
+                 "Inference Prediction 0.05 prior_y": "Inference Prediction 0.05 prior_" + str(plddtThreshold2),
                  "log10Kvalue_y": "log10Kvalue_" + str(plddtThreshold2)}, inplace=True)
 
     # Write the merged dataframe to a new CSV file
-    merged_df[selected_columns].to_csv(
+    merged_df.to_csv(
         os.path.join(path.aggregateFunctionMLPDir, "combined_csv_" + str(len(df1['Entry'])) + '.csv'), index=False)
 
 
