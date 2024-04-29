@@ -1,3 +1,4 @@
+import math
 import os
 import sys
 
@@ -37,7 +38,7 @@ def createCSVFileFromResults(gridSearchDir, dirName, predictions,
 
 
 def createLogBayesDistributionPlotFromResults(gridSearchDir, predictions, bestArchitecture):
-    allLog10Kvalues = [np.log10(utils.KComputation(prediction, 0.05)) for prediction in predictions]
+    allLog10Kvalues = [np.log10(utils.KComputation(prediction, 0.05)) if utils.KComputation(prediction, 0.05) != None else math.inf for prediction in predictions]
     plt.hist(allLog10Kvalues)
     plt.title('logKvalues Distribution, architecture = ' + str(bestArchitecture))
     plt.savefig(os.path.join(gridSearchDir, 'logKvalues Distribution final model'))
@@ -48,6 +49,9 @@ dirName = sys.argv[1]
 trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
 gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
 trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
+dirPath = os.path.join(gridSearchDir,'finalmodel')
+if not os.path.exists(dirPath):
+    os.mkdir(dirPath)
 
 allInfoDicts = utils.loadPickle(os.path.join(trainingDictsDir, 'allInfoDicts.pkl'))
 dictsForTraining = utils.loadPickle(os.path.join(trainingDictsDir, 'dictsForTraining.pkl'))
@@ -112,16 +116,14 @@ for i in range(len(dictsForTraining)):
     yhat_test = model.predict(
         [x_test_components_scaled_padded, x_test_sizes_scaled, x_test_n_patches_encoded])
     for j in range(y_test.size):
-        uniprot = allInfoDict['x_test'][j][2]
-        predictionsDict[uniprot] = (yhat_test[j], y_test[j])
+        uniprot = allInfoDict['x_test'][j][1]
+        predictionsDict[uniprot] = (yhat_test[j][0], y_test[j])
         predictions.append(yhat_test[j])
         labels.append(y_test[j])
+    tf.saved_model.save(model, os.path.join(dirPath, 'model'+str(i)))
 
-    modelsList.append(model)
 
-utils.saveAsPickle(modelsList, os.path.join(gridSearchDir, 'modelsList'))
-utils.saveAsPickle(predictionsDict, os.path.join(gridSearchDir, 'predictionsDict'))
-
-createPRPlotFromResults(gridSearchDir, predictions, labels, bestArchitecture)
-createLogBayesDistributionPlotFromResults(gridSearchDir, predictions, bestArchitecture)
-createCSVFileFromResults(gridSearchDir, dirName, predictions, allInfoDicts, dictsForTraining)
+utils.saveAsPickle(predictionsDict, os.path.join(dirPath, 'predictionsDict'))
+createPRPlotFromResults(dirPath, predictions, labels, bestArchitecture)
+createLogBayesDistributionPlotFromResults(dirPath, predictions, bestArchitecture)
+createCSVFileFromResults(dirPath, dirName, predictions, allInfoDicts, dictsForTraining)
