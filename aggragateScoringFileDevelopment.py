@@ -411,11 +411,11 @@ NegativeSources = set(
     ['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
 
 
-allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
-allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
-allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
-allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
-percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
+# allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
+# allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
+# allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
+# allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
+# percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
 distanceThreshold = 10
 dirName = sys.argv[2]
 plddtThreshold = int(sys.argv[3])
