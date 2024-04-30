@@ -316,6 +316,30 @@ def createDataForTraining(componentsPath, labelsPath, outputDirPath):
     return allInfoDict, dictForTraining
 
 
+def saveScalersForFinalModel(finalModelPath, allInfoDictPath):
+    allInfoDict = loadPickle(allInfoDictPath)
+    x_train = allInfoDict['x_train']
+    x_train_components, x_train_sizes, x_train_n_patches = divideXData(x_train)
+    sortPatches(x_train_components)
+    # CREATE SCALERS FOR COMPONENTS
+    allTupleSizesTrain = np.concatenate([tuples[:, 0] for tuples in x_train_components if tuples.shape != (0,)])
+    allTupleUbAveragesTrain = np.concatenate([tuples[:, 1] for tuples in x_train_components if tuples.shape != (0,)])
+    allTuplePlddtTrain = np.concatenate([tuples[:, 3] for tuples in x_train_components if tuples.shape != (0,)])
+    scalerSizeComponent = StandardScaler()
+    scalerAverageUbBinding = StandardScaler()
+    plddtScaler = StandardScaler()
+    scalerSizeComponent.fit(allTupleSizesTrain.reshape((-1, 1)))
+    scalerAverageUbBinding.fit(allTupleUbAveragesTrain.reshape((-1, 1)))
+    plddtScaler.fit(allTuplePlddtTrain.reshape((-1, 1)))
+    # CREATE SCALER FOR SIZE
+    scalerSizeProtein = StandardScaler()
+    scalerSizeProtein.fit(x_train_sizes.reshape((-1, 1)))
+    saveAsPickle(scalerSizeComponent, os.path.join(finalModelPath, 'sizeComponentScaler'))
+    saveAsPickle(scalerAverageUbBinding, os.path.join(finalModelPath, 'averageUbBindingScaler'))
+    saveAsPickle(plddtScaler, os.path.join(finalModelPath, 'plddtScaler'))
+    saveAsPickle(scalerSizeProtein, os.path.join(finalModelPath, 'proteinSizeScaler'))
+
+
 def simpleModelTraining():
     model = Sequential(
         [
@@ -537,17 +561,17 @@ def list_to_tsv(list_of_strings, output_file):
             f.write(string + '\t')
 
 
-def createYhatGroupsFromPredictions(predictions, dictsForTraining,testOn = 'cv'):
+def createYhatGroupsFromPredictions(predictions, dictsForTraining, testOn='cv'):
     yhat_groups = []
     cnt = 0
     for i in range(len(dictsForTraining)):
-        y = 'y_'+testOn
+        y = 'y_' + testOn
         yhat_groups.append([predictions[i] for i in range(cnt, cnt + dictsForTraining[i][y].size)])
         cnt += dictsForTraining[i][y].size
     return yhat_groups
 
 
-def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath,testOn = 'cv'):
+def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, outputPath, testOn='cv'):
     data_dict = loadPickle(dataDictPath)
     allKvalues = []
     for i in range(len(dictsForTraining)):
@@ -560,7 +584,7 @@ def createInfoCsv(yhat_groups, dictsForTraining, allInfoDicts, dataDictPath, out
     myList = []
     types = []
     for i in range(len(allInfoDicts)):
-        x = 'x_'+testOn
+        x = 'x_' + testOn
         for j in range(len(allInfoDicts[i][x])):
             if allInfoDicts[i][x][j][1] in data_dict:
                 uniDict = data_dict[allInfoDicts[i][x][j][1]]
