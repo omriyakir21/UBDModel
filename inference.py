@@ -6,7 +6,7 @@ import aggregateScoringMLPUtils as utils
 plddtThreshold = 50
 gridSearchDir = ('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP'
                  '/MLP_MSA_val_AUC_stoppage_with_evolution_50_plddt_all_organizems_15_4')
-modelsDir = os.path.join(gridSearchDir, 'finalModel')
+modelsDir = os.path.join(gridSearchDir, 'finalmodel')
 # models = [tf.keras.models.load_model(os.path.join(modelsDir, 'model' + str(i))) for i in range(5)]
 trainingDir = ('/home/iscb/wolfson/omriyakir/UBDModel/predictionsToDataSet/with_evolution_50_plddt_all_organizems_15_4'
                '/trainingDicts/')
