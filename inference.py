@@ -11,7 +11,7 @@ modelsDir = os.path.join(gridSearchDir, 'finalModel')
 trainingDir = ('/home/iscb/wolfson/omriyakir/UBDModel/predictionsToDataSet/with_evolution_50_plddt_all_organizems_15_4'
                '/trainingDicts/')
 allInfoDicts = utils.loadPickle(os.path.join(trainingDir, 'allInfoDicts.pkl'))
-uniprotSets = utils.loadPickle(os.path.join(trainingDir, 'uniprotSets.pkl'))
+# uniprotSets = utils.loadPickle(os.path.join(trainingDir, 'uniprotSets.pkl'))
 
 def createUniprotSets(allInfoDicts):
     uniprotSets = []
@@ -24,10 +24,10 @@ def createUniprotSets(allInfoDicts):
     utils.saveAsPickle(uniprotSets, os.path.join(trainingDir, 'uniprotSets'))
 
 
-def findModelNumber(uniprot):
-    for i in range(allInfoDicts):
-        if uniprot in uniprotSets[i]:
-            return i
+# def findModelNumber(uniprot):
+#     for i in range(allInfoDicts):
+#         if uniprot in uniprotSets[i]:
+#             return i
 
 
 def uniprotToPrediction(uniprot):
