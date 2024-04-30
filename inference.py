@@ -15,7 +15,7 @@ allInfoDicts = utils.loadPickle(os.path.join(trainingDir, 'allInfoDicts.pkl'))
 
 def createUniprotSets(allInfoDicts):
     uniprotSets = []
-    for i in range(allInfoDicts):
+    for i in range(len(allInfoDicts)):
         allInfoDict = allInfoDicts[i]
         uniprotSet = set()
         for j in range(len(allInfoDict['x_test'])):
