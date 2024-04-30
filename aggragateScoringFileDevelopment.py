@@ -409,21 +409,20 @@ def plotPlddtHistogramForPositivieAndProteome(allPredictions):
 serverPDBs = True
 NegativeSources = set(
     ['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
-
-
 # allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
-# allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
-# allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
-# allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
-# percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
+allPredictions = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\batch_predictions_interface_MSA_True_0_20.pkl')
+allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
+allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
+allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
+percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
 distanceThreshold = 10
-dirName = sys.argv[2]
-plddtThreshold = int(sys.argv[3])
-trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
-gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
-# indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
-#
-trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
+# dirName = sys.argv[2]
+# plddtThreshold = int(sys.argv[3])
+# trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
+# gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
+# # indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
+# #
+# trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 # plotPlddtHistogramForPositivieAndProteome(allPredictions)
 
@@ -464,12 +463,12 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 # THATS IT FROM HERE IT IS NOT RELEVANT
 
 # CREATE COMBINED CSV
-dirName2 = sys.argv[4]
-plddtThreshold2 = int(sys.argv[5])
-trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
-gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
-# createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThreshold, plddtThreshold2)
-createCombinedCsv(os.path.join(gridSearchDir,'finalModel'), dirName, os.path.join(gridSearchDir2,'finalModel'), dirName2, plddtThreshold, plddtThreshold2)
+# dirName2 = sys.argv[4]
+# plddtThreshold2 = int(sys.argv[5])
+# trainingDataDir2 = os.path.join(path.predictionsToDataSetDir, dirName2)
+# gridSearchDir2 = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName2)
+# # createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThreshold, plddtThreshold2)
+# createCombinedCsv(os.path.join(gridSearchDir,'finalModel'), dirName, os.path.join(gridSearchDir2,'finalModel'), dirName2, plddtThreshold, plddtThreshold2)
 
 
 # !!!!
