@@ -67,66 +67,66 @@ m_c = bestArchitecture[2]
 n_layers = bestArchitecture[3]
 n_early_stopping_epochs = bestArchitecture[4]
 batch_size = bestArchitecture[5]
-# predictionsDict = {}
-# modelsList = []
-# predictions = []
-# labels = []
-# for i in range(len(dictsForTraining)):
-#     tf.keras.utils.clear_session()
-#     model = utils.buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers)
-#     # Compile the model
-#     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
-#                   loss='binary_crossentropy',
-#                   metrics=[tf.keras.metrics.AUC(curve='PR'), 'accuracy'])
-#     print(m_a, m_b, m_c, n_layers,
-#           n_early_stopping_epochs, batch_size, i)
-#     dictForTraining = dictsForTraining[i]
-#     allInfoDict = allInfoDicts[i]
-#     x_train_components_scaled_padded = dictForTraining['x_train_components_scaled_padded']
-#     x_cv_components_scaled_padded = dictForTraining['x_cv_components_scaled_padded']
-#     x_test_components_scaled_padded = dictForTraining['x_test_components_scaled_padded']
-#     x_train_sizes_scaled = dictForTraining['x_train_sizes_scaled']
-#     x_cv_sizes_scaled = dictForTraining['x_cv_sizes_scaled']
-#     x_test_sizes_scaled = dictForTraining['x_test_sizes_scaled']
-#     x_train_n_patches_encoded = dictForTraining['x_train_n_patches_encoded']
-#     x_cv_n_patches_encoded = dictForTraining['x_cv_n_patches_encoded']
-#     x_test_n_patches_encoded = dictForTraining['x_test_n_patches_encoded']
-#     y_train = np.array(dictForTraining['y_train'])
-#     y_cv = np.array(dictForTraining['y_cv'])
-#     y_test = np.array(dictForTraining['y_test'])
-#     class_weights = utils.compute_class_weight('balanced', classes=np.unique(y_train),
-#                                                y=y_train)
-#     # Convert class weights to a dictionary
-#     class_weight = {i: class_weights[i] for i in range(len(class_weights))}
-#     model.fit(
-#         [x_train_components_scaled_padded, x_train_sizes_scaled, x_train_n_patches_encoded],
-#         y_train,
-#         epochs=300,
-#         verbose=1,
-#         validation_data=(
-#             [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded], y_cv),
-#         callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_auc',
-#                                                     mode='max',
-#                                                     patience=n_early_stopping_epochs,
-#                                                     restore_best_weights=True)],
-#         batch_size=batch_size
-#
-#     )
-#
-#     yhat_test = model.predict(
-#         [x_test_components_scaled_padded, x_test_sizes_scaled, x_test_n_patches_encoded])
-#     for j in range(y_test.size):
-#         uniprot = allInfoDict['x_test'][j][1]
-#         predictionsDict[uniprot] = (yhat_test[j][0], y_test[j])
-#         predictions.append(yhat_test[j][0])
-#         labels.append(y_test[j])
-#     tf.saved_model.save(model, os.path.join(dirPath, 'model'+str(i)))
-#
-#
-# utils.saveAsPickle(predictionsDict, os.path.join(dirPath, 'predictionsDict'))
-# createPRPlotFromResults(dirPath, predictions, labels, bestArchitecture)
-d = utils.loadPickle(os.path.join(dirPath, 'predictionsDict.pkl'))
-predictions = [v[0] for v in d.values()]
-labels = [v[1] for v in d.values()]
+predictionsDict = {}
+modelsList = []
+predictions = []
+labels = []
+for i in range(len(dictsForTraining)):
+    tf.keras.utils.clear_session()
+    model = utils.buildModelConcatSizeAndNPatchesSameNumberOfLayers(m_a, m_b, m_c, n_layers)
+    # Compile the model
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                  loss='binary_crossentropy',
+                  metrics=[tf.keras.metrics.AUC(curve='PR'), 'accuracy'])
+    print(m_a, m_b, m_c, n_layers,
+          n_early_stopping_epochs, batch_size, i)
+    dictForTraining = dictsForTraining[i]
+    allInfoDict = allInfoDicts[i]
+    x_train_components_scaled_padded = dictForTraining['x_train_components_scaled_padded']
+    x_cv_components_scaled_padded = dictForTraining['x_cv_components_scaled_padded']
+    x_test_components_scaled_padded = dictForTraining['x_test_components_scaled_padded']
+    x_train_sizes_scaled = dictForTraining['x_train_sizes_scaled']
+    x_cv_sizes_scaled = dictForTraining['x_cv_sizes_scaled']
+    x_test_sizes_scaled = dictForTraining['x_test_sizes_scaled']
+    x_train_n_patches_encoded = dictForTraining['x_train_n_patches_encoded']
+    x_cv_n_patches_encoded = dictForTraining['x_cv_n_patches_encoded']
+    x_test_n_patches_encoded = dictForTraining['x_test_n_patches_encoded']
+    y_train = np.array(dictForTraining['y_train'])
+    y_cv = np.array(dictForTraining['y_cv'])
+    y_test = np.array(dictForTraining['y_test'])
+    class_weights = utils.compute_class_weight('balanced', classes=np.unique(y_train),
+                                               y=y_train)
+    # Convert class weights to a dictionary
+    class_weight = {i: class_weights[i] for i in range(len(class_weights))}
+    model.fit(
+        [x_train_components_scaled_padded, x_train_sizes_scaled, x_train_n_patches_encoded],
+        y_train,
+        epochs=300,
+        verbose=1,
+        validation_data=(
+            [x_cv_components_scaled_padded, x_cv_sizes_scaled, x_cv_n_patches_encoded], y_cv),
+        callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_auc',
+                                                    mode='max',
+                                                    patience=n_early_stopping_epochs,
+                                                    restore_best_weights=True)],
+        batch_size=batch_size
+
+    )
+
+    yhat_test = model.predict(
+        [x_test_components_scaled_padded, x_test_sizes_scaled, x_test_n_patches_encoded])
+    for j in range(y_test.size):
+        uniprot = allInfoDict['x_test'][j][1]
+        predictionsDict[uniprot] = (yhat_test[j][0], y_test[j])
+        predictions.append(yhat_test[j][0])
+        labels.append(y_test[j])
+    tf.saved_model.save(model, os.path.join(dirPath, 'model'+str(i)))
+
+
+utils.saveAsPickle(predictionsDict, os.path.join(dirPath, 'predictionsDict'))
+createPRPlotFromResults(dirPath, predictions, labels, bestArchitecture)
+# d = utils.loadPickle(os.path.join(dirPath, 'predictionsDict.pkl'))
+# predictions = [v[0] for v in d.values()]
+# labels = [v[1] for v in d.values()]
 createLogBayesDistributionPlotFromResults(dirPath, predictions, bestArchitecture)
 createCSVFileFromResults(dirPath, dirName, predictions, allInfoDicts, dictsForTraining)
