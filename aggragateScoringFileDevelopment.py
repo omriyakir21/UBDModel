@@ -409,8 +409,8 @@ def plotPlddtHistogramForPositivieAndProteome(allPredictions):
 serverPDBs = True
 NegativeSources = set(
     ['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
-# allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
-allPredictions = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\batch_predictions_interface_MSA_True_0_20.pkl')
+allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
+# allPredictions = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\batch_predictions_interface_MSA_True_0_20.pkl')
 allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
 allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
 allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
