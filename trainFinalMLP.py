@@ -120,7 +120,7 @@ for i in range(len(dictsForTraining)):
         predictionsDict[uniprot] = (yhat_test[j][0], y_test[j])
         predictions.append(yhat_test[j][0])
         labels.append(y_test[j])
-    tf.saved_model.save(model, os.path.join(dirPath, 'model'+str(i)))
+    tf.saved_model.save(model, os.path.join(dirPath, 'model'+str(i)+'.keras'))
 
 
 utils.saveAsPickle(predictionsDict, os.path.join(dirPath, 'predictionsDict'))
