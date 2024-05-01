@@ -3,6 +3,7 @@ import os
 import tensorflow as tf
 import aggregateScoringMLPUtils as utils
 
+
 plddtThreshold = 50
 gridSearchDir = ('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP'
                  '/MLP_MSA_val_AUC_stoppage_with_evolution_50_plddt_all_organizems_15_4')
