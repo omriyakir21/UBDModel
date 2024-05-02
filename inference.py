@@ -67,7 +67,7 @@ def uniprotToPrediction(uniprot):
     yhat = model.predict([sortedScaledPadded, sizeScaled, n_patches_encoded])
     n_tuples = len(tuples)
     significance = [0 for _ in range(n_tuples)]
-    for i in range(n_tuples):
+    for i in range(n_tuples):in
         if i == n_tuples - 1:
             newTuples = tuples[:i]
         else:
