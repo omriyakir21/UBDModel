@@ -157,7 +157,7 @@ def Scale4DUtil(x, scalerSize, scalerAverageUbBinding, plddtScaler):
         x[i] = np.concatenate((size_scaled, ubAverages_scaled, nonUbAverages_scaled, plddt_scaled), axis=1)
 
 
-def scaleXComponents4D(x_train_components, x_cv_components, x_test_components):
+def scaleXComponents4D(x_train_components, x_cv_components, x_test_components, modelsDir):
     # Scale the features using the z-score
     allTupleSizesTrain = np.concatenate([tuples[:, 0] for tuples in x_train_components if tuples.shape != (0,)])
     allTupleUbAveragesTrain = np.concatenate([tuples[:, 1] for tuples in x_train_components if tuples.shape != (0,)])
@@ -171,15 +171,19 @@ def scaleXComponents4D(x_train_components, x_cv_components, x_test_components):
     Scale4DUtil(x_train_components, scalerSize, scalerAverageUbBinding, plddtScaler)
     Scale4DUtil(x_cv_components, scalerSize, scalerAverageUbBinding, plddtScaler)
     Scale4DUtil(x_test_components, scalerSize, scalerAverageUbBinding, plddtScaler)
+    saveAsPickle(scalerSize, os.path.join(modelsDir, 'sizeComponentScaler'))
+    saveAsPickle(scalerAverageUbBinding, os.path.join(modelsDir, 'averageUbBindingScaler'))
+    saveAsPickle(plddtScaler, os.path.join(modelsDir, 'plddtScaler'))
     return x_train_components, x_cv_components, x_test_components
 
 
-def getScaleXSizes3D(x_train_sizes, x_cv_sizes, x_test_sizes):
+def getScaleXSizes3D(x_train_sizes, x_cv_sizes, x_test_sizes, modelsDir):
     # Scale the features using the z-score
     scalerSize = StandardScaler()
     x_train_sizes_scaled = scalerSize.fit_transform(x_train_sizes.reshape((-1, 1)))
     x_cv_sizes_scaled = scalerSize.transform(x_cv_sizes.reshape((-1, 1)))
     x_test_sizes_scaled = scalerSize.transform(x_test_sizes.reshape((-1, 1)))
+    saveAsPickle(scalerSize, os.path.join(modelsDir, 'proteinSizeScaler'))
     return x_train_sizes_scaled, x_cv_sizes_scaled, x_test_sizes_scaled
 
 
@@ -280,6 +284,7 @@ def plotPrecisionRecall(y_probs, labels, header):
 
 
 def createDataForTraining(componentsPath, labelsPath, outputDirPath):
+    modelsDir = os.path.join(path.gridSearchDir, 'finalmodel')
     labels = loadPickle(labelsPath)
     tuplesLen4 = loadPickle(componentsPath)
     x_train, x_cv, x_test, y_train, y_cv, y_test = divideTrainValidationTest(tuplesLen4, labels)
@@ -292,9 +297,9 @@ def createDataForTraining(componentsPath, labelsPath, outputDirPath):
     sortPatches(x_train_components)
     sortPatches(x_cv_components)
     sortPatches(x_test_components)
-    scaleXComponents4D(x_train_components, x_cv_components, x_test_components)
+    scaleXComponents4D(x_train_components, x_cv_components, x_test_components, modelsDir)
     x_train_sizes_scaled, x_cv_sizes_scaled, x_test_sizes_scaled = getScaleXSizes3D(x_train_sizes, x_cv_sizes,
-                                                                                    x_test_sizes)
+                                                                                    x_test_sizes, modelsDir)
     x_train_components_scaled_padded, x_cv_components_scaled_padded, x_test_components_scaled_padded = padXValues(
         x_train_components, x_cv_components, x_test_components, maxNumberOfPatches)
     allInfoDict = {'x_train': x_train, 'x_cv': x_cv, 'x_test': x_test, 'y_train': y_train, 'y_cv': y_cv,
@@ -377,14 +382,32 @@ def simpleModelTraining():
     print(classification_report(y_train, predictions_train))
 
 
-def createTrainValidationTestForAllGroups(x_groups, y_groups, outputDir):
+def createTrainValidationTestForAllGroups(x_groups, y_groups, componentsGroups, sizesGroups, n_patchesGroups,
+                                          outputDir):
     dictsForTraining = []
     allInfoDicts = []
     for i in range(len(x_groups)):
+        x_cv_components_scaled_padded = componentsGroups[i % 5]
+        x_test_components_scaled_padded = componentsGroups[(i + 1) % 5]
+        x_cv_sizes_scaled = sizesGroups[i % 5]
+        x_test_sizes_scaled = sizesGroups[(i + 1) % 5]
+        x_cv_n_patches_encoded = n_patchesGroups[i % 5]
+        x_test_n_patches_encoded = n_patchesGroups[(i + 1) % 5]
         x_cv = x_groups[i % 5]
         x_test = x_groups[(i + 1) % 5]
         y_cv = y_groups[i % 5]
         y_test = y_groups[(i + 1) % 5]
+        groupsForComponentsXTrain = [componentsGroups[j] for j in range(len(componentsGroups)) if
+                                     j != i % 5 and j != (i + 1) % 5]
+        x_train_components_scaled_padded = np.concatenate(
+            (groupsForComponentsXTrain[0], groupsForComponentsXTrain[1], groupsForComponentsXTrain[2]), axis=0)
+        groupsForSizesXTrain = [sizesGroups[j] for j in range(len(sizesGroups)) if j != i % 5 and j != (i + 1) % 5]
+        x_train_sizes_scaled = np.concatenate(
+            (groupsForSizesXTrain[0], groupsForSizesXTrain[1], groupsForSizesXTrain[2]), axis=0)
+        groupsForNPatchesXTrain = [n_patchesGroups[j] for j in range(len(n_patchesGroups)) if
+                                   j != i % 5 and j != (i + 1) % 5]
+        x_train_n_patches_encoded = np.concatenate(
+            (groupsForNPatchesXTrain[0], groupsForNPatchesXTrain[1], groupsForNPatchesXTrain[2]), axis=0)
         groupsForXTrain = [x_groups[j] for j in range(len(x_groups)) if j != i % 5 and j != (i + 1) % 5]
         groupsForYTrain = [y_groups[j] for j in range(len(y_groups)) if j != i % 5 and j != (i + 1) % 5]
         x_train = []
@@ -392,20 +415,21 @@ def createTrainValidationTestForAllGroups(x_groups, y_groups, outputDir):
         for i in range(len(groupsForXTrain)):
             x_train.extend(groupsForXTrain[i])
             y_train.extend(groupsForYTrain[i])
-        x_train_components, x_train_sizes, x_train_n_patches = divideXData(x_train)
-        x_cv_components, x_cv_sizes, x_cv_n_patches = divideXData(x_cv)
-        x_test_components, x_test_sizes, x_test_n_patches = divideXData(x_test)
-        x_train_n_patches_encoded = hotOneEncodeNPatches(x_train_n_patches)
-        x_cv_n_patches_encoded = hotOneEncodeNPatches(x_cv_n_patches)
-        x_test_n_patches_encoded = hotOneEncodeNPatches(x_test_n_patches)
-        sortPatches(x_train_components)
-        sortPatches(x_cv_components)
-        sortPatches(x_test_components)
-        scaleXComponents4D(x_train_components, x_cv_components, x_test_components)
-        x_train_sizes_scaled, x_cv_sizes_scaled, x_test_sizes_scaled = getScaleXSizes3D(x_train_sizes, x_cv_sizes,
-                                                                                        x_test_sizes)
-        x_train_components_scaled_padded, x_cv_components_scaled_padded, x_test_components_scaled_padded = padXValues(
-            x_train_components, x_cv_components, x_test_components, maxNumberOfPatches)
+
+        # x_train_components, x_train_sizes, x_train_n_patches = divideXData(x_train)
+        # x_cv_components, x_cv_sizes, x_cv_n_patches = divideXData(x_cv)
+        # x_test_components, x_test_sizes, x_test_n_patches = divideXData(x_test)
+        # x_train_n_patches_encoded = hotOneEncodeNPatches(x_train_n_patches)
+        # x_cv_n_patches_encoded = hotOneEncodeNPatches(x_cv_n_patches)
+        # x_test_n_patches_encoded = hotOneEncodeNPatches(x_test_n_patches)
+        # sortPatches(x_train_components)
+        # sortPatches(x_cv_components)
+        # sortPatches(x_test_components)
+        # scaleXComponents4D(x_train_components, x_cv_components, x_test_components)
+        # x_train_sizes_scaled, x_cv_sizes_scaled, x_test_sizes_scaled = getScaleXSizes3D(x_train_sizes, x_cv_sizes,
+        #                                                                                 x_test_sizes)
+        # x_train_components_scaled_padded, x_cv_components_scaled_padded, x_test_components_scaled_padded = padXValues(
+        #     x_train_components, x_cv_components, x_test_components, maxNumberOfPatches)
         allInfoDict = {'x_train': x_train, 'x_cv': x_cv, 'x_test': x_test, 'y_train': y_train, 'y_cv': y_cv,
                        'y_test': y_test}
         dictForTraining = {'x_train_components_scaled_padded': x_train_components_scaled_padded,
