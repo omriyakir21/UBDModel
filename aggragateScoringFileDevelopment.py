@@ -423,8 +423,8 @@ allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
 allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
 percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
 distanceThreshold = 10
-dirName = sys.argv[2]
-plddtThreshold = int(sys.argv[3])
+# dirName = sys.argv[2]
+# plddtThreshold = int(sys.argv[3])
 trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
 gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
 indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
@@ -438,11 +438,11 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 # FROM HERE FOLLOWS IN ONE RUN
 # PKL ALL THE COMPONENTS TOGETHER AND CREATE LABELS FROM THE PATCHES LIST
-components = pklComponentsOutOfProteinObjects(trainingDataDir)
-labels = pklLabels(components, trainingDataDir)
+# components = pklComponentsOutOfProteinObjects(trainingDataDir)
+# labels = pklLabels(components, trainingDataDir)
 
 # CREATE DATA FOR TRAINING (allInfoDicts and dictForTraining)
-componentsDir = os.path.join(trainingDataDir, 'components')
+# componentsDir = os.path.join(trainingDataDir, 'components')
 # componentsPath = os.path.join(componentsDir, 'components.pkl')
 # labelsDir = os.path.join(trainingDataDir, 'labels')
 # labelsPath = os.path.join(labelsDir, 'labels.pkl')
@@ -453,16 +453,16 @@ except Exception as e:
 # allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
 # PARTITION THE DATA
-proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', trainingDataDir)
+# proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', trainingDataDir)
 
 # CREATE TRAIN TEST VALIDATION FOR ALL GROUPS
-x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
-y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
+# x_groups = loadPickle(os.path.join(trainingDictsDir, 'x_groups.pkl'))
+# y_groups = loadPickle(os.path.join(trainingDictsDir, 'y_groups.pkl'))
 
-componentsGroups = loadPickle(os.path.join(trainingDictsDir, 'componentsGroups.pkl'))
-sizesGroups = loadPickle(os.path.join(trainingDictsDir, 'sizesGroups.pkl'))
-n_patchesGroups = loadPickle(os.path.join(trainingDictsDir, 'n_patchesGroups.pkl'))
-allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups,componentsGroups, sizesGroups, n_patchesGroups, trainingDictsDir)
+# componentsGroups = loadPickle(os.path.join(trainingDictsDir, 'componentsGroups.pkl'))
+# sizesGroups = loadPickle(os.path.join(trainingDictsDir, 'sizesGroups.pkl'))
+# n_patchesGroups = loadPickle(os.path.join(trainingDictsDir, 'n_patchesGroups.pkl'))
+# allInfoDicts, dictsForTraining = utils.createTrainValidationTestForAllGroups(x_groups, y_groups,componentsGroups, sizesGroups, n_patchesGroups, trainingDictsDir)
 
 
 # CREATING THE CSV FILE
