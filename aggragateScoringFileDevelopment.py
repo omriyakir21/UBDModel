@@ -319,7 +319,10 @@ def pklComponentsOutOfProteinObjects(dirPath):
     allComponents4d = [(protein.source, protein.uniprotName, protein.connectedComponentsTuples, protein.size,
                         len(protein.connectedComponentsTuples)) for protein in concatenatedListOfProteins]
     componentsDir = os.path.join(dirPath, 'components')
-    os.mkdir(componentsDir)
+    try:
+        os.mkdir(componentsDir)
+    except Exception as e:
+        print(e)
     saveAsPickle(allComponents4d, os.path.join(componentsDir, 'components'))
     return allComponents4d
 
