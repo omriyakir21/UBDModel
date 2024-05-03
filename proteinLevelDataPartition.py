@@ -97,7 +97,7 @@ def create_x_y_groups(allPredictionsPath, dirPath):
     allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, allPredictionsPath))
     trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
     allInfoDict = loadPickle(os.path.join(trainingDictsDir, 'allInfoDict.pkl'))
-    dictForTraining = load(os.path.join(trainingDictsDir, 'dictForTraining.pkl'))
+    dictForTraining = loadPickle(os.path.join(trainingDictsDir, 'dictForTraining.pkl'))
     allProteinsDict = dict()
     allProteinsDict['x'] = allInfoDict['x_train'] + allInfoDict['x_cv'] + allInfoDict['x_test']
     allProteinsDict['y'] = np.concatenate((allInfoDict['y_train'], allInfoDict['y_cv'], allInfoDict['y_test']))
