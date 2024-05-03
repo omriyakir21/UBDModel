@@ -1,6 +1,7 @@
 import pickle
 import subprocess
 import sys
+from plistlib import load
 
 import pandas as pd
 import numpy as np
@@ -91,14 +92,24 @@ def divideClusters(clusterSizes):
 
 path2mafft = '/usr/bin/mafft'
 
-def create_x_y_groups(allPredictionsPath,dirPath):
+
+def create_x_y_groups(allPredictionsPath, dirPath):
     allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, allPredictionsPath))
     trainingDictsDir = os.path.join(dirPath, 'trainingDicts')
     allInfoDict = loadPickle(os.path.join(trainingDictsDir, 'allInfoDict.pkl'))
-
+    dictForTraining = load(os.path.join(trainingDictsDir, 'dictForTraining.pkl'))
     allProteinsDict = dict()
     allProteinsDict['x'] = allInfoDict['x_train'] + allInfoDict['x_cv'] + allInfoDict['x_test']
     allProteinsDict['y'] = np.concatenate((allInfoDict['y_train'], allInfoDict['y_cv'], allInfoDict['y_test']))
+    components = np.concatenate((dictForTraining['x_train_components_scaled_padded'],
+                                 dictForTraining['x_cv_components_scaled_padded'],
+                                 dictForTraining['x_test_components_scaled_padded']), axis=0)
+    sizes = np.concatenate((dictForTraining['x_train_sizes_scaled'],
+                            dictForTraining['x_cv_sizes_scaled'],
+                            dictForTraining['x_test_sizes_scaled']), axis=0)
+    n_patches = np.concatenate((dictForTraining['x_train_n_patches_encoded'],
+                                dictForTraining['x_cv_n_patches_encoded'],
+                                dictForTraining['x_test_n_patches_encoded']), axis=0)
 
     uniprots = [info[1] for info in allProteinsDict['x']]
     sequences = [allPredictions['dict_sequences'][uniprot] for uniprot in uniprots]
@@ -114,15 +125,25 @@ def create_x_y_groups(allPredictionsPath,dirPath):
 
     y_groups = []
     x_groups = []
+    componentsGroups = []
+    sizesGroups = []
+    n_patchesGroups = []
+    assert components.shape[0] == sizes.shape[0] == n_patches.shape[0]
     for indexGroup in groupsIndexes:
         x = [allProteinsDict['x'][index] for index in indexGroup]
         y = allProteinsDict['y'][indexGroup]
+        componentsGroup = components[indexGroup]
+        sizesGroup = sizes[indexGroup]
+        n_patchesGroup = n_patches[indexGroup]
         x_groups.append(x)
         y_groups.append(y)
+        componentsGroups.append(componentsGroup)
+        sizesGroups.append(sizesGroup)
+        n_patchesGroups.append(n_patchesGroup)
 
     saveAsPickle(x_groups, os.path.join(trainingDictsDir, 'x_groups'))
     saveAsPickle(y_groups, os.path.join(trainingDictsDir, 'y_groups'))
-    return x_groups, y_groups
-
-
-
+    saveAsPickle(componentsGroups, os.path.join(trainingDictsDir, 'componentsGroups'))
+    saveAsPickle(sizesGroups, os.path.join(trainingDictsDir, 'sizesGroups'))
+    saveAsPickle(n_patchesGroups, os.path.join(trainingDictsDir, 'n_patchesGroups'))
+    return x_groups, y_groups, componentsGroups, sizesGroups, n_patchesGroups
