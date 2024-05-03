@@ -236,7 +236,7 @@ def pklLabels(allComponents, dirPath):
     labels = createLabelsForComponents(allComponents)
     labelsDir = os.path.join(dirPath, 'labels')
     try:
-        os.mkdir(labels)
+        os.mkdir(labelsDir)
     except Exception as e:
         print(e)
     saveAsPickle(labels, os.path.join(labelsDir, 'labels'))
