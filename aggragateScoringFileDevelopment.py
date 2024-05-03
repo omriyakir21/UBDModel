@@ -443,14 +443,14 @@ labels = pklLabels(components, trainingDataDir)
 
 # CREATE DATA FOR TRAINING (allInfoDicts and dictForTraining)
 componentsDir = os.path.join(trainingDataDir, 'components')
-componentsPath = os.path.join(componentsDir, 'components.pkl')
-labelsDir = os.path.join(trainingDataDir, 'labels')
-labelsPath = os.path.join(labelsDir, 'labels.pkl')
+# componentsPath = os.path.join(componentsDir, 'components.pkl')
+# labelsDir = os.path.join(trainingDataDir, 'labels')
+# labelsPath = os.path.join(labelsDir, 'labels.pkl')
 try:
     os.mkdir(trainingDictsDir)
 except Exception as e:
     print(e)
-allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
+# allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
 # PARTITION THE DATA
 proteinLevelDataPartition.create_x_y_groups('all_predictions_0304_MSA_True.pkl', trainingDataDir)
