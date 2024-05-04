@@ -147,4 +147,4 @@ def createCsvForType(type,numOfType):
 
 
 for type in list(aggragate.NegativeSources):
-    createCsvForType(type,1000)
+    createCsvForType(type,500)
