@@ -425,11 +425,11 @@ percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
 distanceThreshold = 10
 # dirName = sys.argv[2]
 # plddtThreshold = int(sys.argv[3])
-trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
-gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
+# trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
+# gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
 indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
 # #
-trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
+# trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
 # plotPlddtHistogramForPositivieAndProteome(allPredictions)
 
@@ -446,10 +446,10 @@ trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 # componentsPath = os.path.join(componentsDir, 'components.pkl')
 # labelsDir = os.path.join(trainingDataDir, 'labels')
 # labelsPath = os.path.join(labelsDir, 'labels.pkl')
-try:
-    os.mkdir(trainingDictsDir)
-except Exception as e:
-    print(e)
+# try:
+#     os.mkdir(trainingDictsDir)
+# except Exception as e:
+#     print(e)
 # allInfoDict, dictForTraining = utils.createDataForTraining(componentsPath, labelsPath, trainingDictsDir)
 
 # PARTITION THE DATA
