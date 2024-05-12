@@ -7,32 +7,32 @@ import aggregateScoringMLPUtils as utils
 import tensorflow.keras.layers as layers
 import pandas as pd
 
-
-
 plddtThreshold = 50
 gridSearchDir = ('/home/iscb/wolfson/omriyakir/UBDModel/aggregateFunctionMLP'
                  '/MLP_MSA_val_AUC_stoppage_with_evolution_50_plddt_all_organizems_15_4')
 modelsDir = os.path.join(gridSearchDir, 'finalmodel')
-models = [tf.keras.models.load_model(os.path.join(modelsDir, 'model' + str(i)+'.keras')) for i in range(5)]
+models = [tf.keras.models.load_model(os.path.join(modelsDir, 'model' + str(i) + '.keras')) for i in range(5)]
 trainingDir = ('/home/iscb/wolfson/omriyakir/UBDModel/predictionsToDataSet/with_evolution_50_plddt_all_organizems_15_4'
                '/trainingDicts/')
 allInfoDicts = utils.loadPickle(os.path.join(trainingDir, 'allInfoDicts.pkl'))
 dictsForTraining = utils.loadPickle(os.path.join(trainingDir, 'dictsForTraining.pkl'))
 uniprotSets = utils.loadPickle(os.path.join(trainingDir, 'uniprotSets.pkl'))
-averageUbBindingScaler = utils.loadPickle(os.path.join(modelsDir,'averageUbBindingScaler.pkl'))
-plddtScaler = utils.loadPickle(os.path.join(modelsDir,'plddtScaler.pkl'))
-proteinSizeScaler = utils.loadPickle(os.path.join(modelsDir,'proteinSizeScaler.pkl'))
-sizeComponentScaler = utils.loadPickle(os.path.join(modelsDir,'sizeComponentScaler.pkl'))
+averageUbBindingScaler = utils.loadPickle(os.path.join(modelsDir, 'averageUbBindingScaler.pkl'))
+plddtScaler = utils.loadPickle(os.path.join(modelsDir, 'plddtScaler.pkl'))
+proteinSizeScaler = utils.loadPickle(os.path.join(modelsDir, 'proteinSizeScaler.pkl'))
+sizeComponentScaler = utils.loadPickle(os.path.join(modelsDir, 'sizeComponentScaler.pkl'))
 maxNumberOfPatches = 10
 uniprot = 'A0A7K5BL29'
 
-def strPatchFromListIndexes(residues,listLocations):
-    myList = [aggragate.threeLetterToSinglelDict[residues[index].resname]+str(residues[index].id[1]) for index in listLocations]
+
+def strPatchFromListIndexes(residues, listLocations):
+    myList = [aggragate.threeLetterToSinglelDict[residues[index].resname] + str(residues[index].id[1]) for index in
+              listLocations]
     strPatch = ','.join(myList)
     return strPatch
 
 
-def createStrPatchesAndSignificance10(significance,sortedLocationsCutted,uniprot,protein):
+def createStrPatchesAndSignificance10(significance, sortedLocationsCutted, uniprot, protein):
     structure = protein.getStructure()
     model = structure.child_list[0]
     assert (len(model) == 1)
@@ -41,10 +41,11 @@ def createStrPatchesAndSignificance10(significance,sortedLocationsCutted,uniprot
     strPatches = [None for _ in range(10)]
     significance10 = [None for _ in range(10)]
     for i in range(len(significance)):
-        strPatch = strPatchFromListIndexes(residues,sortedLocationsCutted[significance[i][0]])
+        strPatch = strPatchFromListIndexes(residues, sortedLocationsCutted[significance[i][0]])
         strPatches[i] = strPatch
         significance10[i] = significance[i][1]
-    return strPatches,significance10
+    return strPatches, significance10
+
 
 def createUniprotSets(allInfoDicts):
     uniprotSets = []
@@ -62,11 +63,13 @@ def findModelNumber(uniprot):
         if uniprot in uniprotSets[i]:
             return i
 
-def sortLocations(componentsLocations,sorted_indices):
+
+def sortLocations(componentsLocations, sorted_indices):
     sortedLocations = []
     for i in range(len(componentsLocations)):
         sortedLocations.append(componentsLocations[sorted_indices[i]])
     return sortedLocations
+
 
 def sortBestPatchesFromUniprot(uniprot):
     if uniprot not in aggragate.allPredictions['dict_resids'].keys():
@@ -81,7 +84,7 @@ def sortBestPatchesFromUniprot(uniprot):
     componentsLocations = [tup[4] for tup in tuples]
     n_patches = 0
     if len(tuples) == 0:
-        return [None for i in range(10)],[None for i in range(10)]
+        return [None for i in range(10)], [None for i in range(10)]
     # SORT BY UB BINDING PROB
     sorted_indices = tf.argsort(components[:, 1])
     sorted_tensor = tf.gather(components, sorted_indices)
@@ -113,9 +116,9 @@ def sortBestPatchesFromUniprot(uniprot):
 
     significance.sort(key=lambda x: -x[1])
 
-    strPatches,significance10 = createStrPatchesAndSignificance10(significance,sortedLocationsCutted,uniprot,protein)
-    return strPatches,significance10
-
+    strPatches, significance10 = createStrPatchesAndSignificance10(significance, sortedLocationsCutted, uniprot,
+                                                                   protein)
+    return strPatches, significance10
 
 
 # Human = df[df['type'] == 'Human proteome']
@@ -123,8 +126,8 @@ def sortBestPatchesFromUniprot(uniprot):
 # sortedHuman100 = sortedHuman.head(100)
 
 # strPatches,significance10 = sortBestPatchesFromUniprot(uniprot)
-def createCsvForType(type,numOfType):
-    finalReslutsPath = os.path.join(modelsDir,'results_final_modelwith_evolution_50_plddt_all_organizems_15_4.csv')
+def createCsvForType(type, numOfType):
+    finalReslutsPath = os.path.join(modelsDir, 'results_final_modelwith_evolution_50_plddt_all_organizems_15_4.csv')
     df = pd.read_csv(finalReslutsPath)
     typeDf = df[df['type'] == type]
     sortedDf = typeDf.sort_values(by='Inference Prediction 0.05 prior', ascending=False)
@@ -140,11 +143,11 @@ def createCsvForType(type,numOfType):
             significanceLists[j].append(significance10[j])
 
     for i in range(10):
-        sortedCutted['Patch'+str(i)] = strPatchesLists[i]
-        sortedCutted['Reduced Probability'+str(i)] = significanceLists[i]
-    sortedCutted.to_csv(os.path.join(modelsDir,type+'.csv'), index=False)
+        sortedCutted['Patch' + str(i)] = strPatchesLists[i]
+        sortedCutted['Reduced Probability' + str(i)] = significanceLists[i]
+    sortedCutted.to_csv(os.path.join(modelsDir, type + '.csv'), index=False)
     return sortedCutted
 
 
 for type in list(aggragate.NegativeSources):
-    createCsvForType(type,500)
+    createCsvForType(type, 500)
