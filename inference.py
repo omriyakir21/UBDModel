@@ -1,5 +1,5 @@
 import numpy as np
-
+import path
 import aggragateScoringFileDevelopment as aggragate
 import os
 import tensorflow as tf
@@ -62,6 +62,25 @@ def findModelNumber(uniprot):
     for i in range(len(allInfoDicts)):
         if uniprot in uniprotSets[i]:
             return i
+
+def changeProblamaticValues():
+    dataDictPath = os.path.join(os.path.join(path.GoPath, 'idmapping_2023_12_26.tsv'), 'AllOrganizemsDataDict.pkl')
+    data_dict = utils.loadPickle(dataDictPath)
+    entrysWithDifferentKeyNames = [(key, data_dict[key]['Entry']) for key in data_dict.keys() if
+                                   key != data_dict[key]['Entry']]
+    differentNamesDict = {}
+    for i in range (len(entrysWithDifferentKeyNames)):
+        differentNamesDict[entrysWithDifferentKeyNames[i][1]] = entrysWithDifferentKeyNames[i][0]
+
+    df = pd.read_csv(os.path.join(modelsDir, 'results_final_modelwith_evolution_50_plddt_all_organizems_15_4.csv'))
+
+    # Replace values in the 'Entry' column
+    df['Entry'].replace(differentNamesDict, inplace=True)
+
+    # Save the modified DataFrame back to a CSV file
+    df.to_csv(os.path.join(modelsDir, 'results_final_modelwith_evolution_50_plddt_all_organizems_fixed_15_4.csv'), index=False)
+
+    print("Replacement complete.")
 
 
 def sortLocations(componentsLocations, sorted_indices):
@@ -127,7 +146,7 @@ def sortBestPatchesFromUniprot(uniprot):
 
 # strPatches,significance10 = sortBestPatchesFromUniprot(uniprot)
 def createCsvForType(type, numOfType):
-    finalReslutsPath = os.path.join(modelsDir, 'results_final_modelwith_evolution_50_plddt_all_organizems_15_4.csv')
+    finalReslutsPath = os.path.join(modelsDir, 'results_final_modelwith_evolution_50_plddt_all_organizems_fixed_15_4.csv')
     df = pd.read_csv(finalReslutsPath)
     typeDf = df[df['type'] == type]
     sortedDf = typeDf.sort_values(by='Inference Prediction 0.05 prior', ascending=False)
@@ -148,6 +167,7 @@ def createCsvForType(type, numOfType):
     sortedCutted.to_csv(os.path.join(modelsDir, type + '.csv'), index=False)
     return sortedCutted
 
-
-for type in list(aggragate.NegativeSources):
-    createCsvForType(type, 500)
+# changeProblamaticValues()
+# for type in list(aggragate.NegativeSources):
+#     createCsvForType(type,500)
+createCsvForType('Ecoli proteome',500)
