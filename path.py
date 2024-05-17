@@ -9,6 +9,7 @@ if linux:
                      '/MLP_MSA_val_AUC_stoppage_with_evolution_50_plddt_all_organizems_15_4')
     trainingDir = ('/home/iscb/wolfson/omriyakir/UBDModel/predictionsToDataSet'
                    '/with_evolution_50_plddt_all_organizems_15_4/trainingDicts/')
+    ScanNetDB = '/home/iscb/wolfson/omriyakir/UBDModel/ScanNetDB/'
 
 else:
     mainProjectDir = r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel'
