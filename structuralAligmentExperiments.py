@@ -24,7 +24,16 @@ def copy_files_to_directory(file_paths, destination_directory):
         destination_path = os.path.join(destination_directory, file_name)
         # Copy the file to the destination directory
         shutil.copyfile(file_path, destination_path)
-
+def createPDBFilesFromCif():
+    cifDir = os.path.join(path.ScanNetDB, 'Cif')
+    PDBDir = os.path.join(path.ScanNetDB, 'PDB')
+    os.makedirs(PDBDir, exist_ok=True)
+    for fileName in os.listdir(cifDir):
+        proteinName = fileName.split("/")[-1].split(".")[0]
+        newFileName = os.path.join(PDBDir, proteinName + ".pdb")
+        with pymol2.PyMOL() as pymol:
+            pymol.cmd.load(fileName, proteinName)
+            pymol.cmd.save(newFileName, selection=proteinName)
 
 # chosenAssemblies = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\chosenAssemblies.pkl')
 
@@ -33,14 +42,6 @@ def copy_files_to_directory(file_paths, destination_directory):
 #
 # copy_files_to_directory(chosenAssemblies, destination_directory)
 
-fileName = "/home/iscb/wolfson/omriyakir/UBDModel/ScanNetDB/Cif/8eaz-assembly1.cif"
-cifDir = os.path.join(path.ScanNetDB, 'Cif')
-PDBDir = os.path.join(path.ScanNetDB, 'PDB')
-os.makedirs(PDBDir, exist_ok=True)
-proteinName = fileName.split("/")[-1].split(".")[0]
-newFileName = os.path.join(PDBDir, proteinName + ".pdb")
-with pymol2.PyMOL() as pymol:
-    pymol.cmd.load(fileName, proteinName)
-    pymol.cmd.save(newFileName, selection=proteinName)
+createPDBFilesFromCif()
 
 
