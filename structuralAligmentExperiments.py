@@ -3,7 +3,7 @@ import os
 import shutil
 import pickle
 import path
-
+from Bio.PDB import PDBList
 
 def loadPickle(fileName):
     with open(fileName, 'rb') as file:
@@ -36,6 +36,21 @@ def createPDBFilesFromCif():
             pymol.cmd.load(fileName, proteinName)
             pymol.cmd.save(newFileName, selection=proteinName)
 
+def downloadPDBS():
+    cifDir = os.path.join(path.ScanNetDB, 'Cif')
+    PDBDir = os.path.join(path.ScanNetDB, 'PDB')
+    os.makedirs(PDBDir, exist_ok=True)
+    pdb_downloader = PDBList()
+    pdb_list = [fileName[:4] for fileName in os.listdir(cifDir)]
+    for pdb_id in pdb_list:
+        pdb_downloader.retrieve_pdb_file(pdb_id, pdir=PDBDir, file_format="pdb")
+
+
+
+
+
+
+
 # chosenAssemblies = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\chosenAssemblies.pkl')
 
 # os.makedirs('ScanNetDB')
@@ -43,6 +58,7 @@ def createPDBFilesFromCif():
 #
 # copy_files_to_directory(chosenAssemblies, destination_directory)
 
-createPDBFilesFromCif()
+# createPDBFilesFromCif()
 
+downloadPDBS()
 
