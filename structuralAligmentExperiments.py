@@ -24,7 +24,6 @@ def copy_files_to_directory(file_paths, destination_directory):
         destination_path = os.path.join(destination_directory, file_name)
         # Copy the file to the destination directory
         shutil.copyfile(file_path, destination_path)
-        print(f"Copied {file_path} to {destination_path}")
 
 
 # chosenAssemblies = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\chosenAssemblies.pkl')
