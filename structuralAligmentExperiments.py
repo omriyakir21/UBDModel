@@ -29,6 +29,7 @@ def createPDBFilesFromCif():
     PDBDir = os.path.join(path.ScanNetDB, 'PDB')
     os.makedirs(PDBDir, exist_ok=True)
     for fileName in os.listdir(cifDir):
+        fileName = os.path.join(cifDir, fileName)
         proteinName = fileName.split("/")[-1].split(".")[0]
         newFileName = os.path.join(PDBDir, proteinName + ".pdb")
         with pymol2.PyMOL() as pymol:
