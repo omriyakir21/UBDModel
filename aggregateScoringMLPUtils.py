@@ -24,7 +24,8 @@ from tensorflow.keras.layers import Dense, GlobalAveragePooling1D, Reshape, Mask
 maxNumberOfPatches = 10
 from tensorflow.python.keras import backend
 
-
+NegativeSources = set(
+    ['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
 class GlobalSumPooling(GlobalAveragePooling1D):
     def call(self, inputs, mask=None):
         steps_axis = 1 if self.data_format == "channels_last" else 2
@@ -242,9 +243,11 @@ def build_models():
 
 
 def divideXData(x):
-    components = [np.array(tup[2]) for tup in x]
+    components = [tup[2] for tup in x]
     sizes = np.array([tup[3] for tup in x])
     n_patches = np.array([tup[4] for tup in x])
+    # componentWithoutIndexes = [np.array(tup[:4])for tup in components]
+    # componentIndexes = [tup[4] for tup in components]
 
     return components, sizes, n_patches
 
