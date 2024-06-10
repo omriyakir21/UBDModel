@@ -419,7 +419,9 @@ def createDummyPRPlot(dirPath, predictions, labels, header):
     plt.plot(recall, precision, label='Precision-Recall Curve')
     plt.xlabel('Recall')
     plt.ylabel('Precision')
-    plt.title(header+ 'auc = ' + str(aucScore))
+    plt.title(header)
+    auc_text = f'AUC = {aucScore:.2f}'
+    plt.text(0.6, 0.2, auc_text, bbox=dict(facecolor='white', alpha=0.5))
     plt.legend()
     plt.grid(True)
     plt.savefig(os.path.join(dirPath, header))
@@ -431,7 +433,7 @@ def plotDummyPRAUC(allPredictions):
     dict_predictions_ubiquitin = allPredictions['dict_predictions_ubiquitin']
     labels = np.array([0 if dict_sources[key] in NegativeSources else 1 for key in dict_sources.keys()])
     predictions = np.array([np.max(dict_predictions_ubiquitin[key]) for key in dict_sources.keys()])
-    createDummyPRPlot(trainingDataDir, predictions, labels, 'highest Predicted Amino Acid Baseline')
+    createDummyPRPlot(trainingDataDir, predictions, labels, 'Highest Predicted Amino Acid Baseline')
 
 
 # !!!!
