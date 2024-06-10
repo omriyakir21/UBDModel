@@ -301,7 +301,6 @@ def plotPrecisionRecall(y_probs, labels):
     plt.show()
 
 
-
 def predictionFunctionUsingBayesFactorComputation(logisticPrediction, priorUb, trainingUbRatio):
     K = utils.KComputation(logisticPrediction, trainingUbRatio)
     finalPrediction = (K * priorUb) / ((K * priorUb) + (1 - priorUb))
@@ -328,7 +327,6 @@ def pklComponentsOutOfProteinObjects(dirPath):
         print(e)
     saveAsPickle(allComponents4d, os.path.join(componentsDir, 'components'))
     return allComponents4d
-
 
 
 def createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThreshold, plddtThreshold2):
@@ -410,12 +408,37 @@ def plotPlddtHistogramForPositivieAndProteome(allPredictions):
     plotPlddtHistogramForKeys(proteomeKeys, allPredictions, 'Proteome plddt histogram')
 
 
+def createDummyPRPlot(dirPath, predictions, labels, header):
+    labels = np.array(labels)
+    precision, recall, thresholds = precision_recall_curve(labels, predictions)
+    sorted_indices = np.argsort(recall)
+    sorted_precision = precision[sorted_indices]
+    sorted_recall = recall[sorted_indices]
+    aucScore = auc(sorted_recall, sorted_precision)
+    plt.figure(figsize=(8, 6))
+    plt.plot(recall, precision, label='Precision-Recall Curve')
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title(header+ 'auc = ' + aucScore)
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(os.path.join(dirPath, header))
+    plt.close()
+
+
+def plotDummyPRAUC(allPredictions):
+    dict_sources = allPredictions['dict_sources']
+    dict_predictions_ubiquitin = allPredictions['dict_predictions_ubiquitin']
+    labels = np.array([0 if dict_sources[key] in NegativeSources else 1 for key in dict_sources.keys()])
+    predictions = np.array([dict_predictions_ubiquitin[key] for key in dict_sources.keys()])
+    createDummyPRPlot(trainingDataDir, predictions, labels, 'highest Predicted Amino Acid Baseline')
+
+
 # !!!!
 # JEROME lOOK FROM HERE
 allPredictions = None
 serverPDBs = True
-NegativeSources = set(
-    ['Yeast proteome', 'Human proteome', 'Ecoli proteome', 'Celegans proteome', 'Arabidopsis proteome'])
+NegativeSources = utils.NegativeSources
 allPredictions = loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
 # allPredictions = loadPickle(r'C:\Users\omriy\UBDAndScanNet\newUBD\UBDModel\Predictions\batch_predictions_interface_MSA_True_0_20.pkl')
 allPredictionsUbiq = allPredictions['dict_predictions_ubiquitin']
@@ -423,11 +446,13 @@ allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
 allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
 percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
 distanceThreshold = 10
-# dirName = sys.argv[2]
-# plddtThreshold = int(sys.argv[3])
-# trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
-# gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
+dirName = sys.argv[2]
+plddtThreshold = int(sys.argv[3])
+trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
+gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
 indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
+
+
 # #
 # trainingDictsDir = os.path.join(trainingDataDir, 'trainingDicts')
 
@@ -481,6 +506,8 @@ indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(al
 # # createCombinedCsv(gridSearchDir, dirName, gridSearchDir2, dirName2, plddtThreshold, plddtThreshold2)
 # createCombinedCsv(os.path.join(gridSearchDir,'finalModel'), dirName, os.path.join(gridSearchDir2,'finalModel'), dirName2, plddtThreshold, plddtThreshold2)
 
+# PLOT DUMMY BASELINE FOR AGGREGATE SCORING FUNCTION
+plotDummyPRAUC(allPredictions)
 
 # !!!!
 
