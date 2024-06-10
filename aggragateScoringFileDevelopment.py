@@ -430,7 +430,7 @@ def plotDummyPRAUC(allPredictions):
     dict_sources = allPredictions['dict_sources']
     dict_predictions_ubiquitin = allPredictions['dict_predictions_ubiquitin']
     labels = np.array([0 if dict_sources[key] in NegativeSources else 1 for key in dict_sources.keys()])
-    predictions = np.array([dict_predictions_ubiquitin[key] for key in dict_sources.keys()])
+    predictions = np.array([np.max(dict_predictions_ubiquitin[key]) for key in dict_sources.keys()])
     createDummyPRPlot(trainingDataDir, predictions, labels, 'highest Predicted Amino Acid Baseline')
 
 
