@@ -416,12 +416,10 @@ def createDummyPRPlot(dirPath, predictions, labels, header):
     sorted_recall = recall[sorted_indices]
     aucScore = auc(sorted_recall, sorted_precision)
     plt.figure(figsize=(8, 6))
-    plt.plot(recall, precision, label='Precision-Recall Curve')
+    plt.plot(recall, precision, label=f'ROC curve (area = {aucScore:.2f})')
     plt.xlabel('Recall')
     plt.ylabel('Precision')
     plt.title(header)
-    auc_text = f'AUC = {aucScore:.2f}'
-    plt.text(0.6, 0.2, auc_text, bbox=dict(facecolor='white', alpha=0.5))
     plt.legend()
     plt.grid(True)
     plt.savefig(os.path.join(dirPath, header))
