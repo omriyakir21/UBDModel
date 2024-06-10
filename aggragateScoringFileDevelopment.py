@@ -419,7 +419,7 @@ def createDummyPRPlot(dirPath, predictions, labels, header):
     plt.plot(recall, precision, label='Precision-Recall Curve')
     plt.xlabel('Recall')
     plt.ylabel('Precision')
-    plt.title(header+ 'auc = ' + aucScore)
+    plt.title(header+ 'auc = ' + str(aucScore))
     plt.legend()
     plt.grid(True)
     plt.savefig(os.path.join(dirPath, header))
