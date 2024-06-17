@@ -38,7 +38,7 @@ def select_n_random_indices(n):
 
 
 def createInputFiles(n):
-    selected_keys = utils.loadPickle(os.path.join(path.AF2_multimerDir, 'selected_keys_'+str(n)))
+    selected_keys = utils.loadPickle(os.path.join(path.AF2_multimerDir, 'selected_keys_'+str(n)+'.pkl'))
     for uniprot_id in selected_keys:
         sequence = allPredictions['dict_sequences'][uniprot_id]
         fasta_content = f">{uniprot_id}\n{sequence}:\n{ubiqString}\n"
