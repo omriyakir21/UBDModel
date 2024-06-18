@@ -446,11 +446,11 @@ allPredictionsNonUbiq = allPredictions['dict_predictions_interface']
 allPredictionsUbiqFlatten = [value for values_list in allPredictionsUbiq.values() for value in values_list]
 percentile_90 = np.percentile(allPredictionsUbiqFlatten, 90)
 distanceThreshold = 10
-dirName = sys.argv[2]
-plddtThreshold = int(sys.argv[3])
-trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
-gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
-indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
+# dirName = sys.argv[2]
+# plddtThreshold = int(sys.argv[3])
+# trainingDataDir = os.path.join(path.predictionsToDataSetDir, dirName)
+# gridSearchDir = os.path.join(path.aggregateFunctionMLPDir, 'MLP_MSA_val_AUC_stoppage_' + dirName)
+# indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(allPredictions['dict_resids'])]
 
 
 # #
@@ -507,7 +507,7 @@ indexes = list(range(0, len(allPredictions['dict_resids']) + 1, 1500)) + [len(al
 # createCombinedCsv(os.path.join(gridSearchDir,'finalModel'), dirName, os.path.join(gridSearchDir2,'finalModel'), dirName2, plddtThreshold, plddtThreshold2)
 
 # PLOT DUMMY BASELINE FOR AGGREGATE SCORING FUNCTION
-plotDummyPRAUC(allPredictions)
+# plotDummyPRAUC(allPredictions)
 
 # !!!!
 
