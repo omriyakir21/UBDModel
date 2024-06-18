@@ -93,7 +93,6 @@ def sortLocations(componentsLocations, sorted_indices):
 def sortBestPatchesFromUniprot(uniprot):
     if uniprot not in aggragate.allPredictions['dict_resids'].keys():
         raise Exception("uniprot " + str(uniprot) + " not in the DB")
-    modelNum = findModelNumber(uniprot)
     modelIndex = findModelNumber(uniprot)
     model = models[modelIndex]
     trainingUbRatio = np.mean(allInfoDicts[modelIndex]['y_train'])
@@ -167,7 +166,11 @@ def createCsvForType(type, numOfType):
     sortedCutted.to_csv(os.path.join(modelsDir, type + '.csv'), index=False)
     return sortedCutted
 
+
+
+
 # changeProblamaticValues()
 # for type in list(aggragate.NegativeSources):
 #     createCsvForType(type,500)
-createCsvForType('Ecoli proteome',500)
+# createCsvForType('Ecoli proteome',500)
+print(sortBestPatchesFromUniprot('P54787'))
