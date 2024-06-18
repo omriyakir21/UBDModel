@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import path
 import aggragateScoringFileDevelopment as aggragate
@@ -22,7 +24,6 @@ plddtScaler = utils.loadPickle(os.path.join(modelsDir, 'plddtScaler.pkl'))
 proteinSizeScaler = utils.loadPickle(os.path.join(modelsDir, 'proteinSizeScaler.pkl'))
 sizeComponentScaler = utils.loadPickle(os.path.join(modelsDir, 'sizeComponentScaler.pkl'))
 maxNumberOfPatches = 10
-uniprot = 'A0A7K5BL29'
 
 
 def strPatchFromListIndexes(residues, listLocations):
@@ -173,4 +174,5 @@ def createCsvForType(type, numOfType):
 # for type in list(aggragate.NegativeSources):
 #     createCsvForType(type,500)
 # createCsvForType('Ecoli proteome',500)
-print(sortBestPatchesFromUniprot('P54787'))
+uniprot = sys.argv[1]
+print(sortBestPatchesFromUniprot(uniprot))
