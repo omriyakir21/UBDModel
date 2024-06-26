@@ -171,24 +171,61 @@ def createCsvForType(type, numOfType):
     return sortedCutted
 
 
+# def getPredictionForUniprot(uniprot):
+#     if uniprot not in aggragate.allPredictions['dict_resids'].keys():
+#         raise Exception("uniprot " + str(uniprot) + " not in the DB")
+#     modelIndex = findModelNumber(uniprot)
+#     model = models[modelIndex]
+#     protein = aggragate.Protein(uniprot, plddtThreshold)
+#     tuples = protein.connectedComponentsTuples
+#     components = np.array([[tup[0], tup[1], tup[2], tup[3]] for tup in tuples])
+#     n_patches = 0
+#     # SORT BY UB BINDING PROB
+#     sorted_indices = tf.argsort(components[:, 1])
+#     sorted_tensor = tf.gather(components, sorted_indices)
+#     sortedTensorListed = [sorted_tensor]
+#     utils.Scale4DUtil(sortedTensorListed, sizeComponentScaler, averageUbBindingScaler, plddtScaler)
+#     sortedScaledPadded = tf.keras.preprocessing.sequence.pad_sequences(
+#         sortedTensorListed, padding="post", maxlen=maxNumberOfPatches, dtype='float32')
+#     n_patches = np.array([np.min([maxNumberOfPatches, sorted_tensor.shape[0]])])
+#     n_patches_encoded = utils.hotOneEncodeNPatches(n_patches)
+#
+#     size = protein.size
+#     sizeScaled = proteinSizeScaler.transform(np.array([size]).reshape(-1, 1))
+#
+#     yhat = model.predict([sortedScaledPadded, sizeScaled, n_patches_encoded])
+#     return yhat
+
+
 def getPredictionForUniprot(uniprot):
     if uniprot not in aggragate.allPredictions['dict_resids'].keys():
         raise Exception("uniprot " + str(uniprot) + " not in the DB")
+
     modelIndex = findModelNumber(uniprot)
     model = models[modelIndex]
     protein = aggragate.Protein(uniprot, plddtThreshold)
     tuples = protein.connectedComponentsTuples
-    components = np.array([[tup[0], tup[1], tup[2], tup[3]] for tup in tuples])
-    n_patches = 0
-    sortedTensorListed = []
-    if len(tuples) != 0:
-        # SORT BY UB BINDING PROB
+
+    # Create components array
+    if tuples:
+        components = np.array([[tup[0], tup[1], tup[2], tup[3]] for tup in tuples])
+    else:
+        components = np.array([]).reshape(0, 4)  # Create an empty array with shape (0, 4)
+
+    # SORT BY UB BINDING PROB
+    if components.size > 0:
         sorted_indices = tf.argsort(components[:, 1])
         sorted_tensor = tf.gather(components, sorted_indices)
-        sortedTensorListed = [sorted_tensor]
-        utils.Scale4DUtil(sortedTensorListed, sizeComponentScaler, averageUbBindingScaler, plddtScaler)
+    else:
+        sorted_tensor = components  # Remain empty
+
+    sortedTensorListed = [sorted_tensor]
+
+    utils.Scale4DUtil(sortedTensorListed, sizeComponentScaler, averageUbBindingScaler, plddtScaler)
+
     sortedScaledPadded = tf.keras.preprocessing.sequence.pad_sequences(
         sortedTensorListed, padding="post", maxlen=maxNumberOfPatches, dtype='float32')
+
     n_patches = np.array([np.min([maxNumberOfPatches, sorted_tensor.shape[0]])])
     n_patches_encoded = utils.hotOneEncodeNPatches(n_patches)
 
