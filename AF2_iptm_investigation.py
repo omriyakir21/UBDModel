@@ -23,7 +23,7 @@ def select_n_random_indices(n):
 
 
 def createInputFiles(n):
-    selected_keys = utils.loadPickle(os.path.join(path.AF2_multimerDir, 'selected_keys_'+str(n)+'.pkl'))
+    selected_keys = utils.loadPickle(os.path.join(path.AF2_multimerDir, 'selected_keys_' + str(n) + '.pkl'))
     for uniprot_id in selected_keys:
         sequence = allPredictions['dict_sequences'][uniprot_id]
         fasta_content = f">{uniprot_id}\n{sequence}:\n{ubiqString}\n"
@@ -31,6 +31,7 @@ def createInputFiles(n):
         filename = os.path.join(inputDir, f"{uniprot_id}.fasta")
         with open(filename, "w") as f:
             f.write(fasta_content)
+
 
 def get_max_iptm_value(uniprotId):
     # Define the directory path
@@ -41,7 +42,8 @@ def get_max_iptm_value(uniprotId):
         raise FileNotFoundError(f"Directory {dir_path} does not exist")
 
     # Search for all JSON files containing "seed" in their filenames
-    json_files = [file_name for file_name in os.listdir(dir_path) if "seed" in file_name and file_name.endswith(".json")]
+    json_files = [file_name for file_name in os.listdir(dir_path) if
+                  "seed" in file_name and file_name.endswith(".json")]
 
     if not json_files:
         raise FileNotFoundError(f"No JSON files containing 'seed' found in the directory for {uniprotId}")
@@ -67,16 +69,19 @@ def get_max_iptm_value(uniprotId):
 
     return max_iptm_value
 
+
 # Example usage:
 # uniprotId = "your_uniprot_id_here"
 # print(get_max_iptm_value(uniprotId))
 
 
 def plotAF2IptmPredictorPlot():
-    selected_keys = utils.loadPickle(os.path.join(path.AF2_multimerDir, 'selected_keys_'+str(200)+'.pkl'))
+    selected_keys = utils.loadPickle(os.path.join(path.AF2_multimerDir, 'selected_keys_' + str(200) + '.pkl'))
     dict_sources = allPredictions['dict_sources']
     labels = np.array([0 if dict_sources[key] in NegativeSources else 1 for key in selected_keys])
-    predictions =  np.array([get_max_iptm_value(key) for key in selected_keys])
+    predictions = np.array([get_max_iptm_value(key) for key in selected_keys])
+    iptmPredictorDict = {'predictions': predictions, 'labels': labels}
+    utils.saveAsPickle(os.path.join(iptmPredictorDict, path.AF2_multimerDir, 'iptmPredictorLabelsPredictions'))
     precision, recall, thresholds = utils.precision_recall_curve(labels, predictions)
     sorted_indices = np.argsort(recall)
     sorted_precision = precision[sorted_indices]
