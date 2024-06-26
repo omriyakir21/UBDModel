@@ -48,7 +48,7 @@ def get_iptm_value(uniprotId):
             break
 
     if json_file is None:
-        raise FileNotFoundError("No JSON file containing 'rank_001' found in the directory")
+        raise FileNotFoundError(uniprotId+" No JSON file containing 'rank_001' found in the directory")
 
     # Construct the full path to the JSON file
     json_file_path = os.path.join(dir_path, json_file)
