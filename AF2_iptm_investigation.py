@@ -32,36 +32,45 @@ def createInputFiles(n):
         with open(filename, "w") as f:
             f.write(fasta_content)
 
-def get_iptm_value(uniprotId):
+def get_max_iptm_value(uniprotId):
     # Define the directory path
-    dir_path = os.path.join(path.AF2_multimerDir,f"output/{uniprotId}")
+    dir_path = os.path.join(path.AF2_multimerDir, f"output/{uniprotId}")
 
     # Check if the directory exists
     if not os.path.exists(dir_path):
         raise FileNotFoundError(f"Directory {dir_path} does not exist")
 
-    # Search for the JSON file containing "rank_001" in its filename
-    json_file = None
-    for file_name in os.listdir(dir_path):
-        if "rank_001" in file_name and file_name.endswith(".json"):
-            json_file = file_name
-            break
+    # Search for all JSON files containing "seed" in their filenames
+    json_files = [file_name for file_name in os.listdir(dir_path) if "seed" in file_name and file_name.endswith(".json")]
 
-    if json_file is None:
-        raise FileNotFoundError(uniprotId+" No JSON file containing 'rank_001' found in the directory")
+    if not json_files:
+        raise FileNotFoundError(f"No JSON files containing 'seed' found in the directory for {uniprotId}")
 
-    # Construct the full path to the JSON file
-    json_file_path = os.path.join(dir_path, json_file)
+    # Initialize a variable to store the maximum iptm value
+    max_iptm_value = float('-inf')
 
-    # Read the JSON file and retrieve the "iptm" value
-    with open(json_file_path, 'r') as file:
-        data = json.load(file)
-        iptm_value = data.get("iptm")
+    # Iterate through the found JSON files and update the max iptm value
+    for json_file in json_files:
+        json_file_path = os.path.join(dir_path, json_file)
+        with open(json_file_path, 'r') as file:
+            data = json.load(file)
+            iptm_value = data.get("iptm")
 
-        if iptm_value is None:
-            raise ValueError("The 'iptm' property does not exist in the JSON file")
+            if iptm_value is None:
+                raise ValueError(f"The 'iptm' property does not exist in the JSON file {json_file}")
 
-    return float(iptm_value)
+            max_iptm_value = max(max_iptm_value, float(iptm_value))
+
+    # Check if any valid iptm value was found
+    if max_iptm_value == float('-inf'):
+        raise ValueError("No valid 'iptm' values found in the JSON files")
+
+    return max_iptm_value
+
+# Example usage:
+# uniprotId = "your_uniprot_id_here"
+# print(get_max_iptm_value(uniprotId))
+
 
 def plotAF2IptmPredictorPlot():
     selected_keys = utils.loadPickle(os.path.join(path.AF2_multimerDir, 'selected_keys_'+str(200)+'.pkl'))
