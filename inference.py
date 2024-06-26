@@ -206,19 +206,15 @@ def getPredictionForUniprot(uniprot):
     protein = aggragate.Protein(uniprot, plddtThreshold)
     tuples = protein.connectedComponentsTuples
 
-    # Create components array
+    # Create components array with a default value if empty
     if tuples:
         components = np.array([[tup[0], tup[1], tup[2], tup[3]] for tup in tuples])
     else:
-        components = np.array([]).reshape(0, 4)  # Create an empty array with shape (0, 4)
+        components = np.array([[0, 0, 0, 0]])  # Default value to prevent empty array
 
     # SORT BY UB BINDING PROB
-    if components.size > 0:
-        sorted_indices = tf.argsort(components[:, 1])
-        sorted_tensor = tf.gather(components, sorted_indices)
-    else:
-        sorted_tensor = components  # Remain empty
-
+    sorted_indices = tf.argsort(components[:, 1])
+    sorted_tensor = tf.gather(components, sorted_indices)
     sortedTensorListed = [sorted_tensor]
 
     utils.Scale4DUtil(sortedTensorListed, sizeComponentScaler, averageUbBindingScaler, plddtScaler)
