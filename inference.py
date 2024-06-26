@@ -167,12 +167,60 @@ def createCsvForType(type, numOfType):
     sortedCutted.to_csv(os.path.join(modelsDir, type + '.csv'), index=False)
     return sortedCutted
 
+def getPredictionForUniprot(uniprot):
+    if uniprot not in aggragate.allPredictions['dict_resids'].keys():
+        raise Exception("uniprot " + str(uniprot) + " not in the DB")
+    modelIndex = findModelNumber(uniprot)
+    model = models[modelIndex]
+    protein = aggragate.Protein(uniprot, plddtThreshold)
+    tuples = protein.connectedComponentsTuples
+    components = np.array([[tup[0], tup[1], tup[2], tup[3]] for tup in tuples])
+    n_patches = 0
+    # SORT BY UB BINDING PROB
+    sorted_indices = tf.argsort(components[:, 1])
+    sorted_tensor = tf.gather(components, sorted_indices)
+    sortedTensorListed = [sorted_tensor]
+    utils.Scale4DUtil(sortedTensorListed, sizeComponentScaler, averageUbBindingScaler, plddtScaler)
+    sortedScaledPadded = tf.keras.preprocessing.sequence.pad_sequences(
+        sortedTensorListed, padding="post", maxlen=maxNumberOfPatches, dtype='float32')
+    n_patches = np.array([np.min([maxNumberOfPatches, sorted_tensor.shape[0]])])
+    n_patches_encoded = utils.hotOneEncodeNPatches(n_patches)
 
+    size = protein.size
+    sizeScaled = proteinSizeScaler.transform(np.array([size]).reshape(-1, 1))
+
+    yhat = model.predict([sortedScaledPadded, sizeScaled, n_patches_encoded])
+    return yhat
 
 
 # changeProblamaticValues()
 # for type in list(aggragate.NegativeSources):
 #     createCsvForType(type,500)
 # createCsvForType('Ecoli proteome',500)
-uniprot = sys.argv[1]
-print(sortBestPatchesFromUniprot(uniprot))
+# uniprot = sys.argv[1]
+# print(sortBestPatchesFromUniprot(uniprot))
+from matplotlib import pyplot as plt
+from sklearn.metrics import auc
+
+allPredictions = utils.loadPickle(os.path.join(path.ScanNetPredictionsPath, 'all_predictions_0304_MSA_True.pkl'))
+selected_keys = utils.loadPickle(os.path.join(path.AF2_multimerDir, 'selected_keys_' + str(200) + '.pkl'))
+predictions = np.array([getPredictionForUniprot(uniprot) for uniprot in selected_keys])
+dict_sources = allPredictions['dict_sources']
+labels = np.array([0 if dict_sources[key] in utils.NegativeSources else 1 for key in selected_keys])
+ubinetPredictionsDict = {'predictions': predictions, 'labels': labels}
+utils.saveAsPickle(ubinetPredictionsDict, os.path.join(path.AF2_multimerDir, 'ubinetLabelsPredictions200'))
+precision, recall, thresholds = utils.precision_recall_curve(labels, predictions)
+sorted_indices = np.argsort(recall)
+sorted_precision = precision[sorted_indices]
+sorted_recall = recall[sorted_indices]
+aucScore = auc(sorted_recall, sorted_precision)
+plt.figure(figsize=(8, 6))
+plt.plot(recall, precision, label=f'Precision Recall curve (auc = {aucScore:.2f})')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('AF2 iptm based predictor')
+plt.legend()
+plt.grid(True)
+plt.savefig(os.path.join(path.AF2_multimerDir, 'ubinetPredictor'))
+plt.close()
+
