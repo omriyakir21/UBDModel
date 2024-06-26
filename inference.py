@@ -176,11 +176,12 @@ def getPredictionForUniprot(uniprot):
     tuples = protein.connectedComponentsTuples
     components = np.array([[tup[0], tup[1], tup[2], tup[3]] for tup in tuples])
     n_patches = 0
-    # SORT BY UB BINDING PROB
-    sorted_indices = tf.argsort(components[:, 1])
-    sorted_tensor = tf.gather(components, sorted_indices)
-    sortedTensorListed = [sorted_tensor]
-    utils.Scale4DUtil(sortedTensorListed, sizeComponentScaler, averageUbBindingScaler, plddtScaler)
+    if len(tuples) != 0:
+        # SORT BY UB BINDING PROB
+        sorted_indices = tf.argsort(components[:, 1])
+        sorted_tensor = tf.gather(components, sorted_indices)
+        sortedTensorListed = [sorted_tensor]
+        utils.Scale4DUtil(sortedTensorListed, sizeComponentScaler, averageUbBindingScaler, plddtScaler)
     sortedScaledPadded = tf.keras.preprocessing.sequence.pad_sequences(
         sortedTensorListed, padding="post", maxlen=maxNumberOfPatches, dtype='float32')
     n_patches = np.array([np.min([maxNumberOfPatches, sorted_tensor.shape[0]])])
