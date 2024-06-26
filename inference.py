@@ -64,13 +64,14 @@ def findModelNumber(uniprot):
         if uniprot in uniprotSets[i]:
             return i
 
+
 def changeProblamaticValues():
     dataDictPath = os.path.join(os.path.join(path.GoPath, 'idmapping_2023_12_26.tsv'), 'AllOrganizemsDataDict.pkl')
     data_dict = utils.loadPickle(dataDictPath)
     entrysWithDifferentKeyNames = [(key, data_dict[key]['Entry']) for key in data_dict.keys() if
                                    key != data_dict[key]['Entry']]
     differentNamesDict = {}
-    for i in range (len(entrysWithDifferentKeyNames)):
+    for i in range(len(entrysWithDifferentKeyNames)):
         differentNamesDict[entrysWithDifferentKeyNames[i][1]] = entrysWithDifferentKeyNames[i][0]
 
     df = pd.read_csv(os.path.join(modelsDir, 'results_final_modelwith_evolution_50_plddt_all_organizems_15_4.csv'))
@@ -79,7 +80,8 @@ def changeProblamaticValues():
     df['Entry'].replace(differentNamesDict, inplace=True)
 
     # Save the modified DataFrame back to a CSV file
-    df.to_csv(os.path.join(modelsDir, 'results_final_modelwith_evolution_50_plddt_all_organizems_fixed_15_4.csv'), index=False)
+    df.to_csv(os.path.join(modelsDir, 'results_final_modelwith_evolution_50_plddt_all_organizems_fixed_15_4.csv'),
+              index=False)
 
     print("Replacement complete.")
 
@@ -146,7 +148,8 @@ def sortBestPatchesFromUniprot(uniprot):
 
 # strPatches,significance10 = sortBestPatchesFromUniprot(uniprot)
 def createCsvForType(type, numOfType):
-    finalReslutsPath = os.path.join(modelsDir, 'results_final_modelwith_evolution_50_plddt_all_organizems_fixed_15_4.csv')
+    finalReslutsPath = os.path.join(modelsDir,
+                                    'results_final_modelwith_evolution_50_plddt_all_organizems_fixed_15_4.csv')
     df = pd.read_csv(finalReslutsPath)
     typeDf = df[df['type'] == type]
     sortedDf = typeDf.sort_values(by='Inference Prediction 0.05 prior', ascending=False)
@@ -167,6 +170,7 @@ def createCsvForType(type, numOfType):
     sortedCutted.to_csv(os.path.join(modelsDir, type + '.csv'), index=False)
     return sortedCutted
 
+
 def getPredictionForUniprot(uniprot):
     if uniprot not in aggragate.allPredictions['dict_resids'].keys():
         raise Exception("uniprot " + str(uniprot) + " not in the DB")
@@ -176,6 +180,7 @@ def getPredictionForUniprot(uniprot):
     tuples = protein.connectedComponentsTuples
     components = np.array([[tup[0], tup[1], tup[2], tup[3]] for tup in tuples])
     n_patches = 0
+    sortedTensorListed = []
     if len(tuples) != 0:
         # SORT BY UB BINDING PROB
         sorted_indices = tf.argsort(components[:, 1])
@@ -224,4 +229,3 @@ plt.legend()
 plt.grid(True)
 plt.savefig(os.path.join(path.AF2_multimerDir, 'ubinetPredictor'))
 plt.close()
-
