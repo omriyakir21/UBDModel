@@ -1,23 +1,8 @@
-import csv
-import pickle
-import sys
-from itertools import chain
-from plistlib import load
 import json
-import networkx as nx
 import numpy as np
 import os
-import networkx
-from sklearn.preprocessing import KBinsDiscretizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report
 from matplotlib import pyplot as plt
-import pandas as pd
-import aggregateScoringMLPUtils as utils
-from Bio.PDB import MMCIFParser
 import path
-import proteinLevelDataPartition
-import seaborn as sns
 from sklearn.metrics import auc
 import aggregateScoringMLPUtils as utils
 
@@ -106,3 +91,4 @@ def plotAF2IptmPredictorPlot():
 # selected_keys = select_n_random_indices(200)
 # utils.saveAsPickle(selected_keys, os.path.join(path.AF2_multimerDir, 'selected_keys_200'))
 # createInputFiles(200)
+plotAF2IptmPredictorPlot()
