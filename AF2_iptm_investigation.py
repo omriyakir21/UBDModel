@@ -81,7 +81,7 @@ def plotAF2IptmPredictorPlot():
     labels = np.array([0 if dict_sources[key] in NegativeSources else 1 for key in selected_keys])
     predictions = np.array([get_max_iptm_value(key) for key in selected_keys])
     iptmPredictorDict = {'predictions': predictions, 'labels': labels}
-    utils.saveAsPickle(os.path.join(iptmPredictorDict, path.AF2_multimerDir, 'iptmPredictorLabelsPredictions'))
+    utils.saveAsPickle(iptmPredictorDict, os.path.join(path.AF2_multimerDir, 'iptmPredictorLabelsPredictions'))
     precision, recall, thresholds = utils.precision_recall_curve(labels, predictions)
     sorted_indices = np.argsort(recall)
     sorted_precision = precision[sorted_indices]
