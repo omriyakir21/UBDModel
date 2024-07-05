@@ -23,12 +23,32 @@ def save_as_pickle(obj, file_path):
         pickle.dump(obj, file)
 
 
+def find_path_with_subword(directory, subword):
+    """
+    Searches for a file path containing a specific subword within a given directory.
+
+    Parameters:
+    directory (str): The directory path to search within.
+    subword (str): The subword to look for in the file paths.
+
+    Returns:
+    str: The first file path containing the subword, or None if no match is found.
+    """
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if subword in file:
+                return os.path.join(root, file)
+    return None
+
+
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
 logger = logging.getLogger(__name__)
 
-ref_protein = sys.argv[1]
-mov_protein = sys.argv[2]
+ref_name = sys.argv[1]
+mov_name = sys.argv[2]
+ref_path = sys.argv[3]
+mov_path = sys.argv[4]
 
 
 class DaliAligner():
@@ -67,34 +87,30 @@ class DaliAligner():
                 return np.array(matrices), rmsd, z
         return None, None, None
 
-    def impose_structure(self, ref_protein, mov_protein, temp_dir: str) -> tuple[
+    def impose_structure(self, ref_name, mov_name, ref_path, mov_path, temp_dir: str) -> tuple[
         list[np.ndarray], list[np.ndarray]]:
 
-        # mov_path = os.path.join("ligand_alligner", ligand_dir, 'pdb' + mov_protein._pdb_name + '.ent')
-        mov_path = os.path.join('..', mov_protein + '_non_ligand.ent')
-        ref_path = os.path.join('..', ref_protein + '_non_ligand.ent')
-        # ref_path = os.path.join("ligand_alligner", ligand_dir, 'pdb' + ref_name + '.ent')
         try:
             temp_dir = tempfile.mkdtemp(prefix=os.path.join(path.daliAligments, "temp_dir", temp_dir + '/'))
             # os.makedirs(temp_dir, exist_ok=True)
             os.chdir(temp_dir)
             import_1 = subprocess.run(
-                [self.IMPORT_PATH, '--pdbfile', mov_path, '--pdbid', mov_protein, '--dat', self.DAT_PATH],
+                [self.IMPORT_PATH, '--pdbfile', mov_path, '--pdbid', mov_name, '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
             # print(import_1)
             import_2 = subprocess.run(
-                [self.IMPORT_PATH, '--pdbfile', ref_path, '--pdbid', ref_protein, '--dat', self.DAT_PATH],
+                [self.IMPORT_PATH, '--pdbfile', ref_path, '--pdbid', ref_name, '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
-            allign_log = subprocess.run([self.DALI_PATH, '--cd1', ref_protein, '--cd2', mov_protein,
+            allign_log = subprocess.run([self.DALI_PATH, '--cd1', ref_name, '--cd2', mov_name,
                                          '--dat1', self.DAT_PATH, '--dat2', self.DAT_PATH, '--title',
                                          "output options", '--outfmt', "summary,alignments,equivalences,transrot",
                                          "--clean"
                                          ], capture_output=True, text=True, check=True)
 
-            matrix, rmsd, _ = DaliAligner.extract_matrices_combined(f'{ref_protein}.txt')
+            matrix, rmsd, _ = DaliAligner.extract_matrices_combined(f'{ref_name}.txt')
             try:
-                os.remove(ref_protein + '.dssp')
-                os.remove(mov_protein + '.dssp')
+                os.remove(ref_name + '.dssp')
+                os.remove(mov_name + '.dssp')
                 shutil.rmtree(temp_dir)
 
             except OSError:
@@ -115,9 +131,9 @@ class DaliAligner():
 
 
 resultsDict = {}
-R, t, rmsd, _ = DaliAligner().impose_structure(ref_protein, mov_protein, 'temp_dir')
+R, t, rmsd, _ = DaliAligner().impose_structure(ref_name, mov_name, 'temp_dir')
 resultsDict['R'] = R
 resultsDict['t'] = t
 resultsDict['rmsd'] = rmsd
 
-save_as_pickle(resultsDict, path.daliAligments + ref_protein + '_' + mov_protein + '.pkl')
+save_as_pickle(resultsDict, path.daliAligments + ref_name + '_' + mov_name + '.pkl')
