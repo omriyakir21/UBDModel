@@ -11,6 +11,7 @@ if linux:
                    '/with_evolution_50_plddt_all_organizems_15_4/trainingDicts/')
     ScanNetDB = '/home/iscb/wolfson/omriyakir/UBDModel/ScanNetDB/'
     AF2_multimerDir = '/home/iscb/wolfson/omriyakir/UBDModel/AF2_multimer/'
+    assembliesDir = '/home/iscb/wolfson/omriyakir/UBDModel/assemblies/'
     daliAligments = '/home/iscb/wolfson/omriyakir/UBDModel/daliAligments/'
 
 else:
