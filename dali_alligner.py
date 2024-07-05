@@ -67,35 +67,34 @@ class DaliAligner():
                 return np.array(matrices), rmsd, z
         return None, None, None
 
-    def impose_structure(self, ref_protein, mov_protein, temp_dir: str) -> tuple[list[np.ndarray], list[np.ndarray]]:
+    def impose_structure(self, ref_protein, mov_protein, temp_dir: str) -> tuple[
+        list[np.ndarray], list[np.ndarray]]:
 
-        mov_name, mov_chain = mov_protein._pdb_name, mov_protein._chain_id
-        ref_name, ref_chain = ref_protein._pdb_name, ref_protein._chain_id
         # mov_path = os.path.join("ligand_alligner", ligand_dir, 'pdb' + mov_protein._pdb_name + '.ent')
-        mov_path = os.path.join('..', mov_name + '_non_ligand.ent')
-        ref_path = os.path.join('..', ref_name + '_non_ligand.ent')
+        mov_path = os.path.join('..', mov_protein + '_non_ligand.ent')
+        ref_path = os.path.join('..', ref_protein + '_non_ligand.ent')
         # ref_path = os.path.join("ligand_alligner", ligand_dir, 'pdb' + ref_name + '.ent')
         try:
             temp_dir = tempfile.mkdtemp(prefix=os.path.join(path.daliAligments, "temp_dir", temp_dir + '/'))
             # os.makedirs(temp_dir, exist_ok=True)
             os.chdir(temp_dir)
             import_1 = subprocess.run(
-                [self.IMPORT_PATH, '--pdbfile', mov_path, '--pdbid', mov_name, '--dat', self.DAT_PATH],
+                [self.IMPORT_PATH, '--pdbfile', mov_path, '--pdbid', mov_protein, '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
             # print(import_1)
             import_2 = subprocess.run(
-                [self.IMPORT_PATH, '--pdbfile', ref_path, '--pdbid', ref_name, '--dat', self.DAT_PATH],
+                [self.IMPORT_PATH, '--pdbfile', ref_path, '--pdbid', ref_protein, '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
-            allign_log = subprocess.run([self.DALI_PATH, '--cd1', ref_name + ref_chain, '--cd2', mov_name + mov_chain,
+            allign_log = subprocess.run([self.DALI_PATH, '--cd1', ref_protein, '--cd2', mov_protein,
                                          '--dat1', self.DAT_PATH, '--dat2', self.DAT_PATH, '--title',
                                          "output options", '--outfmt', "summary,alignments,equivalences,transrot",
                                          "--clean"
                                          ], capture_output=True, text=True, check=True)
 
-            matrix, rmsd, _ = DaliAligner.extract_matrices_combined(f'{ref_name}{ref_chain}.txt')
+            matrix, rmsd, _ = DaliAligner.extract_matrices_combined(f'{ref_protein}.txt')
             try:
-                os.remove(ref_name + '.dssp')
-                os.remove(mov_name + '.dssp')
+                os.remove(ref_protein + '.dssp')
+                os.remove(mov_protein + '.dssp')
                 shutil.rmtree(temp_dir)
 
             except OSError:
