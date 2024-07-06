@@ -131,7 +131,7 @@ class DaliAligner():
 
 
 resultsDict = {}
-R, t, rmsd, _ = DaliAligner().impose_structure(ref_name, mov_name, 'temp_dir')
+R, t, rmsd, _ = DaliAligner().impose_structure(ref_name, mov_name,ref_path,mov_path, 'temp_dir')
 resultsDict['R'] = R
 resultsDict['t'] = t
 resultsDict['rmsd'] = rmsd
