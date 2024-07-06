@@ -116,7 +116,7 @@ class DaliAligner():
             except OSError:
                 pass
 
-            os.chdir('/home/iscb/wolfson/omriyakir/ligand_alligner')
+            os.chdir(path.daliAligments)
             if matrix is not None:
                 R = np.linalg.inv(matrix[:, :3])
                 t = matrix[:, 3]
@@ -126,7 +126,7 @@ class DaliAligner():
 
         except Exception as e:
             print(e)
-            os.chdir('/home/iscb/wolfson/omriyakir/ligand_alligner')
+            os.chdir(path.daliAligments)
             return [], [], [], []
 
 
