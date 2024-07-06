@@ -91,7 +91,9 @@ class DaliAligner():
         list[np.ndarray], list[np.ndarray]]:
 
         try:
+            print('start dali')
             temp_dir = tempfile.mkdtemp(prefix=os.path.join(path.daliAligments, temp_dir + '/'))
+            print(temp_dir)
             # os.makedirs(temp_dir, exist_ok=True)
             os.chdir(temp_dir)
             print('start imports')
