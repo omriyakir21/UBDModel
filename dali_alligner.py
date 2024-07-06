@@ -94,7 +94,7 @@ class DaliAligner():
             temp_dir = tempfile.mkdtemp(prefix=os.path.join(path.daliAligments, temp_dir + '/'))
             # os.makedirs(temp_dir, exist_ok=True)
             os.chdir(temp_dir)
-
+            print('start imports')
             import_1 = subprocess.run(
                 [self.IMPORT_PATH, '--pdbfile', mov_path, '--pdbid', mov_name, '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
