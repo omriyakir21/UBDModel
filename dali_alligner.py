@@ -95,7 +95,7 @@ class DaliAligner():
             try:
                 temp_dir = tempfile.mkdtemp(dir=path.daliAligments)
             except Exception as e:
-                print('failed to create temp dir')
+                print(' failed to create temp dir')
                 print(e)
                 raise (e)
             print(temp_dir)
