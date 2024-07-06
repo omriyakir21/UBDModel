@@ -92,7 +92,7 @@ class DaliAligner():
 
         try:
             print('start dali')
-            temp_dir = tempfile.mkdtemp(prefix=os.path.join(path.daliAligments, temp_dir + '/'))
+            temp_dir = tempfile.mkdtemp(dir=path.daliAligments)
             print(temp_dir)
             # os.makedirs(temp_dir, exist_ok=True)
             os.chdir(temp_dir)
