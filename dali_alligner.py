@@ -94,19 +94,21 @@ class DaliAligner():
             temp_dir = tempfile.mkdtemp(prefix=os.path.join(path.daliAligments, "temp_dir", temp_dir + '/'))
             # os.makedirs(temp_dir, exist_ok=True)
             os.chdir(temp_dir)
+
             import_1 = subprocess.run(
                 [self.IMPORT_PATH, '--pdbfile', mov_path, '--pdbid', mov_name, '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
-            # print(import_1)
+            print(import_1)
             import_2 = subprocess.run(
                 [self.IMPORT_PATH, '--pdbfile', ref_path, '--pdbid', ref_name, '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
+            print(import_2)
             allign_log = subprocess.run([self.DALI_PATH, '--cd1', ref_name, '--cd2', mov_name,
                                          '--dat1', self.DAT_PATH, '--dat2', self.DAT_PATH, '--title',
                                          "output options", '--outfmt', "summary,alignments,equivalences,transrot",
                                          "--clean"
                                          ], capture_output=True, text=True, check=True)
-
+            print(allign_log)
             matrix, rmsd, _ = DaliAligner.extract_matrices_combined(f'{ref_name}.txt')
             try:
                 os.remove(ref_name + '.dssp')
