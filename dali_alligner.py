@@ -91,7 +91,7 @@ class DaliAligner():
         list[np.ndarray], list[np.ndarray]]:
 
         try:
-            temp_dir = tempfile.mkdtemp(prefix=os.path.join(path.daliAligments, "temp_dir", temp_dir + '/'))
+            temp_dir = tempfile.mkdtemp(prefix=os.path.join(path.daliAligments, temp_dir + '/'))
             # os.makedirs(temp_dir, exist_ok=True)
             os.chdir(temp_dir)
 
@@ -133,7 +133,7 @@ class DaliAligner():
 
 
 resultsDict = {}
-R, t, rmsd, _ = DaliAligner().impose_structure(ref_name, mov_name,ref_path,mov_path, 'temp_dir')
+R, t, rmsd, _ = DaliAligner().impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
 resultsDict['R'] = R
 resultsDict['t'] = t
 resultsDict['rmsd'] = rmsd
