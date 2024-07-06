@@ -92,7 +92,12 @@ class DaliAligner():
 
         try:
             print('start dali')
-            temp_dir = tempfile.mkdtemp(dir=path.daliAligments)
+            try:
+                temp_dir = tempfile.mkdtemp(dir=path.daliAligments)
+            except Exception as e:
+                print('failed to create temp dir')
+                print(e)
+                raise (e)
             print(temp_dir)
             # os.makedirs(temp_dir, exist_ok=True)
             os.chdir(temp_dir)
