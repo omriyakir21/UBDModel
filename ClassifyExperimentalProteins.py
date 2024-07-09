@@ -29,6 +29,7 @@ def find_pdb_path_with_subword(directory, subword):
     Returns:
     str: The first .pdb file path containing the subword, or None if no match is found.
     """
+    print(f"Searching for {subword} in {directory}")
     for root, dirs, files in os.walk(directory):
         for file in files:
             if file.endswith(".pdb") and subword in file:
