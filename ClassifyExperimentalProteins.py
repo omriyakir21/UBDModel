@@ -71,7 +71,7 @@ def convert_cif_to_pdb_in_directory(assemblies_dir):
 # convert_cif_to_pdb_in_directory(os.path.join(path.experimentsDir, 'listOfProteins'))
 
 dali_alligner_object = dali_alligner.DaliAligner()
-ref_name = ProteinsToExperiment[0][:4] + 'A'
+ref_name = ProteinsToExperiment[0][:4] + 'B'
 mov_name = '1cmxA'
 print(f'ref_name{ref_name}, mov_name{mov_name}')
 
