@@ -18,20 +18,20 @@ def save_as_pickle(obj, file_path):
         pickle.dump(obj, file)
 
 
-def find_path_with_subword(directory, subword):
+def find_pdb_path_with_subword(directory, subword):
     """
-    Searches for a file path containing a specific subword within a given directory.
+    Searches for a .pdb file path containing a specific subword within a given directory.
 
     Parameters:
     directory (str): The directory path to search within.
     subword (str): The subword to look for in the file paths.
 
     Returns:
-    str: The first file path containing the subword, or None if no match is found.
+    str: The first .pdb file path containing the subword, or None if no match is found.
     """
     for root, dirs, files in os.walk(directory):
         for file in files:
-            if subword in file:
+            if file.endswith(".pdb") and subword in file:
                 return os.path.join(root, file)
     return None
 
@@ -65,19 +65,20 @@ def convert_cif_to_pdb_in_directory(assemblies_dir):
     print(f"Total problematic proteins: {problematic_count}")
 
 
-# Example usage
-convert_cif_to_pdb_in_directory(path.assembliesDir)
-convert_cif_to_pdb_in_directory(os.path.join(path.experimentsDir, 'listOfProteins'))
+# convert .cif files to pdb files
+# convert_cif_to_pdb_in_directory(path.assembliesDir)
+# convert_cif_to_pdb_in_directory(os.path.join(path.experimentsDir, 'listOfProteins'))
 
-# ref_name = sys.argv[1]
-# mov_name = sys.argv[2]
-# ref_path = sys.argv[3]
-# mov_path = sys.argv[4]
+
+ref_name = ProteinsToExperiment[0][:4]+'A'
+mov_name = '1cmxA'
+ref_path = find_pdb_path_with_subword(path.assembliesDir, ref_name[:4])
+mov_path = find_pdb_path_with_subword(path.experimentsDir, mov_name[:4])
 #
-# resultsDict = {}
-# R, t, rmsd, _ = dali_alligner.impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
-# resultsDict['R'] = R
-# resultsDict['t'] = t
-# resultsDict['rmsd'] = rmsd
-#
-# save_as_pickle(resultsDict, path.daliAligments + ref_name + '_' + mov_name + '.pkl')
+resultsDict = {}
+R, t, rmsd, _ = dali_alligner.impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
+resultsDict['R'] = R
+resultsDict['t'] = t
+resultsDict['rmsd'] = rmsd
+
+save_as_pickle(resultsDict, path.daliAligments + ref_name + '_' + mov_name + '.pkl')
