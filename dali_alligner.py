@@ -11,44 +11,12 @@ import path
 import pickle
 
 
-def save_as_pickle(obj, file_path):
-    """
-    Saves an object to a file using pickle.
-
-    Parameters:
-    obj (any): The object to be saved.
-    file_path (str): The path to the file where the object should be saved.
-    """
-    with open(file_path, 'wb') as file:
-        pickle.dump(obj, file)
-
-
-def find_path_with_subword(directory, subword):
-    """
-    Searches for a file path containing a specific subword within a given directory.
-
-    Parameters:
-    directory (str): The directory path to search within.
-    subword (str): The subword to look for in the file paths.
-
-    Returns:
-    str: The first file path containing the subword, or None if no match is found.
-    """
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if subword in file:
-                return os.path.join(root, file)
-    return None
 
 
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
 logger = logging.getLogger(__name__)
 
-ref_name = sys.argv[1]
-mov_name = sys.argv[2]
-ref_path = sys.argv[3]
-mov_path = sys.argv[4]
 
 
 class DaliAligner():
@@ -139,10 +107,3 @@ class DaliAligner():
             return [], [], [], []
 
 
-resultsDict = {}
-R, t, rmsd, _ = DaliAligner().impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
-resultsDict['R'] = R
-resultsDict['t'] = t
-resultsDict['rmsd'] = rmsd
-
-save_as_pickle(resultsDict, path.daliAligments + ref_name + '_' + mov_name + '.pkl')
