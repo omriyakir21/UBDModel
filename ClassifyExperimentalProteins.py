@@ -69,14 +69,14 @@ def convert_cif_to_pdb_in_directory(assemblies_dir):
 # convert_cif_to_pdb_in_directory(path.assembliesDir)
 # convert_cif_to_pdb_in_directory(os.path.join(path.experimentsDir, 'listOfProteins'))
 
-
+dali_alligner_object = dali_alligner.DaliAligner()
 ref_name = ProteinsToExperiment[0][:4]+'A'
 mov_name = '1cmxA'
 ref_path = find_pdb_path_with_subword(path.assembliesDir, ref_name[:4])
 mov_path = find_pdb_path_with_subword(path.experimentsDir, mov_name[:4])
 #
 resultsDict = {}
-R, t, rmsd, _ = dali_alligner.impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
+R, t, rmsd, _ = dali_alligner_object.impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
 resultsDict['R'] = R
 resultsDict['t'] = t
 resultsDict['rmsd'] = rmsd
