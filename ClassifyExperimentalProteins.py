@@ -38,21 +38,26 @@ def find_path_with_subword(directory, subword):
 ProteinsToExperiment = ['P53061', 'P07900', 'Q9NQL2', 'Q86VN1', 'Q8IYS0', 'O95793']
 
 def cif_to_pdb(cif_path, pdb_path):
-    # Read the .cif file
-    doc = gemmi.cif.read_file(cif_path)
-    block = doc.sole_block()
-    structure = gemmi.make_structure_from_block(block)
-
-    # Write the structure to a .pdb file
-    structure.write_pdb(pdb_path)
+    try:
+        doc = gemmi.cif.read_file(cif_path)
+        block = doc.sole_block()
+        structure = gemmi.make_structure_from_block(block)
+        structure.write_pdb(pdb_path)
+        return True
+    except Exception as e:  # Replace Exception with the specific exception if known
+        print(f"Problem with {cif_path}: {e}")
+        return False
 
 def convert_cif_to_pdb_in_directory(assemblies_dir):
+    problematic_count = 0
     for filename in os.listdir(assemblies_dir):
         if filename.endswith(".cif"):
             cif_path = os.path.join(assemblies_dir, filename)
             pdb_path = os.path.join(assemblies_dir, filename.replace(".cif", ".pdb"))
-            cif_to_pdb(cif_path, pdb_path)
-            print(f"Converted {filename} to PDB format.")
+            success = cif_to_pdb(cif_path, pdb_path)
+            if not success:
+                problematic_count += 1
+    print(f"Total problematic proteins: {problematic_count}")
 
 # Example usage
 convert_cif_to_pdb_in_directory(path.assembliesDir)
