@@ -71,11 +71,11 @@ class DaliAligner():
             os.chdir(temp_dir)
             print('start imports')
             import_1 = subprocess.run(
-                [self.IMPORT_PATH, '--pdbfile', mov_path, '--pdbid', mov_name, '--dat', self.DAT_PATH],
+                [self.IMPORT_PATH, '--pdbfile', mov_path, '--pdbid', mov_name[:4], '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
             print(import_1)
             import_2 = subprocess.run(
-                [self.IMPORT_PATH, '--pdbfile', ref_path, '--pdbid', ref_name, '--dat', self.DAT_PATH],
+                [self.IMPORT_PATH, '--pdbfile', ref_path, '--pdbid', ref_name[:4], '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
             print(import_2)
             allign_log = subprocess.run([self.DALI_PATH, '--cd1', ref_name, '--cd2', mov_name,
