@@ -32,6 +32,7 @@ def find_pdb_path_with_subword(directory, subword):
     print(f"Searching for {subword} in {directory}")
     for root, dirs, files in os.walk(directory):
         for file in files:
+            print(file)
             if file.endswith(".pdb") and subword in file:
                 return os.path.join(root, file)
     return None
