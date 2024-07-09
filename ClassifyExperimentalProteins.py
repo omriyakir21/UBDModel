@@ -76,7 +76,7 @@ mov_name = '1cmxA'
 print(f'ref_name{ref_name}, mov_name{mov_name}')
 
 ref_path = find_pdb_path_with_subword(path.assembliesDir, ref_name[:4])
-mov_path = find_pdb_path_with_subword(path.experimentsDir, mov_name[:4])
+mov_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir,'listOfProteins'), mov_name[:4])
 print(f'refPath{ref_path}, movPath{mov_path}')
 
 resultsDict = {}
