@@ -46,10 +46,18 @@ def cif_to_pdb(cif_path, pdb_path):
     # Write the structure to a .pdb file
     structure.write_pdb(pdb_path)
 
+def convert_cif_to_pdb_in_directory(assemblies_dir):
+    for filename in os.listdir(assemblies_dir):
+        if filename.endswith(".cif"):
+            cif_path = os.path.join(assemblies_dir, filename)
+            pdb_path = os.path.join(assemblies_dir, filename.replace(".cif", ".pdb"))
+            cif_to_pdb(cif_path, pdb_path)
+            print(f"Converted {filename} to PDB format.")
+
 # Example usage
-cif_path = "/home/iscb/wolfson/omriyakir/UBDModel/assemblies/1cmx-assembly1.cif"
-pdb_path = "/home/iscb/wolfson/omriyakir/UBDModel/assemblies/1cmx-assembly1.pdb"
-cif_to_pdb(cif_path, pdb_path)
+convert_cif_to_pdb_in_directory(path.assembliesDir)
+convert_cif_to_pdb_in_directory(path.experimentsDir)
+
 
 # ref_name = sys.argv[1]
 # mov_name = sys.argv[2]

@@ -14,6 +14,7 @@ if linux:
     AF2_multimerDir = '/home/iscb/wolfson/omriyakir/UBDModel/AF2_multimer/'
     assembliesDir = '/home/iscb/wolfson/omriyakir/UBDModel/assemblies/'
     daliAligments = '/home/iscb/wolfson/omriyakir/UBDModel/daliAligments/'
+    experimentsDir = '/home/iscb/wolfson/omriyakir/UBDModel/experiments/'
 
 else:
 
