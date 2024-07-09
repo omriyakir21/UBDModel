@@ -32,7 +32,6 @@ def find_pdb_path_with_subword(directory, subword):
     print(f"Searching for {subword} in {directory}")
     for root, dirs, files in os.walk(directory):
         for file in files:
-            print(file)
             if file.endswith(".pdb") and subword in file:
                 return os.path.join(root, file)
     return None
@@ -72,12 +71,12 @@ def convert_cif_to_pdb_in_directory(assemblies_dir):
 # convert_cif_to_pdb_in_directory(os.path.join(path.experimentsDir, 'listOfProteins'))
 
 dali_alligner_object = dali_alligner.DaliAligner()
-ref_name = ProteinsToExperiment[0][:4]+'A'
+ref_name = ProteinsToExperiment[0][:4] + 'A'
 mov_name = '1cmxA'
 print(f'ref_name{ref_name}, mov_name{mov_name}')
 
-ref_path = find_pdb_path_with_subword(path.assembliesDir, ref_name[:4])
-mov_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir,'listOfProteins'), mov_name[:4])
+ref_path = find_pdb_path_with_subword(path.assembliesDir, mov_name[:4])
+mov_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir, 'listOfProteins'), ref_name[:4])
 print(f'refPath{ref_path}, movPath{mov_path}')
 
 resultsDict = {}
