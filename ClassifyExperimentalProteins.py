@@ -35,7 +35,9 @@ def find_path_with_subword(directory, subword):
                 return os.path.join(root, file)
     return None
 
+
 ProteinsToExperiment = ['P53061', 'P07900', 'Q9NQL2', 'Q86VN1', 'Q8IYS0', 'O95793']
+
 
 def cif_to_pdb(cif_path, pdb_path):
     try:
@@ -44,25 +46,27 @@ def cif_to_pdb(cif_path, pdb_path):
         structure = gemmi.make_structure_from_block(block)
         structure.write_pdb(pdb_path)
         return True
-    except Exception as e:  # Replace Exception with the specific exception if known
+    except Exception as e:
         print(f"Problem with {cif_path}: {e}")
         return False
 
-def convert_cif_to_pdb_in_directory(assemblies_dir):
+def convert_cif_to_pdb_in_directory(assemblies_dir, problematic_files_path='problematic_files.txt'):
     problematic_count = 0
-    for filename in os.listdir(assemblies_dir):
-        if filename.endswith(".cif"):
-            cif_path = os.path.join(assemblies_dir, filename)
-            pdb_path = os.path.join(assemblies_dir, filename.replace(".cif", ".pdb"))
-            success = cif_to_pdb(cif_path, pdb_path)
-            if not success:
-                problematic_count += 1
+    with open(problematic_files_path, 'w') as problematic_files:
+        for filename in os.listdir(assemblies_dir):
+            if filename.endswith(".cif"):
+                cif_path = os.path.join(assemblies_dir, filename)
+                pdb_path = os.path.join(assemblies_dir, filename.replace(".cif", ".pdb"))
+                success = cif_to_pdb(cif_path, pdb_path)
+                if not success:
+                    problematic_count += 1
+                    problematic_files.write(filename + '\n')
     print(f"Total problematic proteins: {problematic_count}")
+
 
 # Example usage
 convert_cif_to_pdb_in_directory(path.assembliesDir)
-convert_cif_to_pdb_in_directory(path.experimentsDir)
-
+convert_cif_to_pdb_in_directory(os.path.join(path.experimentsDir, 'listOfProteins'))
 
 # ref_name = sys.argv[1]
 # mov_name = sys.argv[2]
@@ -76,4 +80,3 @@ convert_cif_to_pdb_in_directory(path.experimentsDir)
 # resultsDict['rmsd'] = rmsd
 #
 # save_as_pickle(resultsDict, path.daliAligments + ref_name + '_' + mov_name + '.pkl')
-
