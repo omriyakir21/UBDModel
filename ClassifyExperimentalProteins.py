@@ -50,9 +50,10 @@ def cif_to_pdb(cif_path, pdb_path):
         print(f"Problem with {cif_path}: {e}")
         return False
 
-def convert_cif_to_pdb_in_directory(assemblies_dir, problematic_files_path='problematic_files.txt'):
+
+def convert_cif_to_pdb_in_directory(assemblies_dir):
     problematic_count = 0
-    with open(problematic_files_path, 'w') as problematic_files:
+    with open(os.path.join(assemblies_dir, 'problematic files'), 'w') as problematic_files:
         for filename in os.listdir(assemblies_dir):
             if filename.endswith(".cif"):
                 cif_path = os.path.join(assemblies_dir, filename)
