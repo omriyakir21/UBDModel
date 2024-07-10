@@ -62,13 +62,14 @@ class DaliAligner():
             print('start dali')
             try:
                 temp_dir = tempfile.mkdtemp(dir=path.daliAligments)
+                os.makedirs(temp_dir, exist_ok=True)
+                os.chdir(temp_dir)
             except Exception as e:
                 print(' failed to create temp dir')
                 print(e)
                 raise (e)
             print(temp_dir)
             # os.makedirs(temp_dir, exist_ok=True)
-            os.chdir(temp_dir)
             print('start imports')
             import_1 = subprocess.run(
                 [self.IMPORT_PATH, '--pdbfile', mov_path, '--pdbid', mov_name[:4], '--dat', self.DAT_PATH],
@@ -83,8 +84,10 @@ class DaliAligner():
                                          "output options", '--outfmt', "summary,alignments,equivalences,transrot",
                                          "--clean"
                                          ], capture_output=True, text=True, check=True)
-            print(allign_log)
+
             matrix, rmsd, _ = DaliAligner.extract_matrices_combined(f'{ref_name}.txt')
+            print(f'matrix: {matrix} and rmsd: {rmsd}')
+            print(allign_log)
             try:
                 os.remove(ref_name + '.dssp')
                 os.remove(mov_name + '.dssp')
