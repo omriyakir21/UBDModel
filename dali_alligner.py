@@ -74,17 +74,17 @@ class DaliAligner():
             import_1 = subprocess.run(
                 [self.IMPORT_PATH, '--pdbfile', mov_path, '--pdbid', mov_name[:4], '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
-            print(import_1)
+            print('import 1 finished')
             import_2 = subprocess.run(
                 [self.IMPORT_PATH, '--pdbfile', ref_path, '--pdbid', ref_name[:4], '--dat', self.DAT_PATH],
                 capture_output=True, text=True, check=True)
-            print(import_2)
+            print('import 2 finished')
             allign_log = subprocess.run([self.DALI_PATH, '--cd1', ref_name, '--cd2', mov_name,
                                          '--dat1', self.DAT_PATH, '--dat2', self.DAT_PATH, '--title',
                                          "output options", '--outfmt', "summary,alignments,equivalences,transrot",
                                          "--clean"
                                          ], capture_output=True, text=True, check=True)
-
+            print('allign sequences finished')
             matrix, rmsd, _ = DaliAligner.extract_matrices_combined(f'{ref_name}.txt')
             print(f'matrix: {matrix} and rmsd: {rmsd}')
             print(allign_log)
