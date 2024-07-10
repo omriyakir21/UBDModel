@@ -40,6 +40,7 @@ class DaliAligner():
     def extract_matrices_combined(file_path: str) -> tuple[np.ndarray, float, float]:
         matrices = []
         print(f' in extract_matrices_combined with file_path: {file_path}')
+        print(f'The current working directory is: {os.getcwd()}')
         with open(file_path, 'r') as file:
             for i, line in enumerate(file):
                 if i == 3:
