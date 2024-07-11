@@ -72,7 +72,7 @@ def analyze_orientation(file_path):
     df = pd.read_excel(file_path)
     results_dict = {}
     columns_to_check = ['e1', 'e2', 'e3|e4', 'deubiquitylase']
-
+    print(df)
     for index, row in df.iterrows():
         full_receptor_name = row['ReceptorName']  # Correct column name if necessary
         pdb_name = full_receptor_name.split('_')[0]
