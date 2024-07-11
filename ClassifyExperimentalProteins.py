@@ -152,7 +152,7 @@ ref_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir, 'listOfP
 # print(f'refPath{ref_path}, movPath{mov_path}')
 
 resultsDict = {}
-R, t, rmsd, _ = dali_alligner_object.impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
+R, t, rmsd, _ = dali_alligner_object.impose_structure(ref_name, mov_name, ref_path, mov_path)
 resultsDict['R'] = R
 resultsDict['t'] = t
 resultsDict['rmsd'] = rmsd
