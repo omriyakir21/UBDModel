@@ -84,7 +84,7 @@ def analyze_orientation(file_path):
 
             found_true = False
             for col in columns_to_check:
-                if row[col] == 'True':
+                if row[col] is True or row[col] == 'True':
                     results_dict[receptor_key] = col
                     found_true = True
                     break  # Found a TRUE value, no need to check further
