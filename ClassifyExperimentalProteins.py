@@ -69,7 +69,7 @@ def convert_cif_to_pdb_in_directory(assemblies_dir):
 
 
 def analyze_orientation(file_path):
-    df = pd.read_excel(file_path, engine='openpyxl')
+    df = pd.read_excel(file_path)
     results_dict = {}
     columns_to_check = ['e1', 'e2', 'e3|e4', 'deubiquitylase']
 
