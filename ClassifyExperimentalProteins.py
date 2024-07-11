@@ -5,6 +5,7 @@ import os
 import path
 import gemmi
 import pandas as pd
+import openpyxl
 
 
 def save_as_pickle(obj, file_path):
