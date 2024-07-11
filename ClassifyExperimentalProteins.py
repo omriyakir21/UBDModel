@@ -95,15 +95,51 @@ def analyze_orientation(file_path):
     return results_dict  # convert .cif files to pdb files
 
 
+def align_proteins_and_store_results(ProteinsToExperiment, orientationDict, assembliesDir, experimentsDir):
+    resultsDict = {protein: [] for protein in ProteinsToExperiment}
+    for ref_protein in ProteinsToExperiment:
+        ref_name = ref_protein[:4] + 'A'  # Adjust as necessary
+        ref_path = find_pdb_path_with_subword(experimentsDir, ref_name[:4])
+        if not ref_path:
+            print(f"Reference path for {ref_name} not found.")
+            continue
+
+        for mov_key in orientationDict.keys():
+            mov_name = mov_key  # Adjust if necessary
+            mov_path = find_pdb_path_with_subword(assembliesDir, mov_name[:4])
+            if not mov_path:
+                print(f"Moving path for {mov_name} not found.")
+                continue
+
+            try:
+                R, t, rmsd, _ = dali_alligner_object.impose_structure(ref_name, mov_name, ref_path, mov_path)
+                resultsDict[ref_protein].append((mov_name, float(rmsd), R, t))
+            except Exception as e:
+                print(f"Error aligning {ref_protein} and {mov_key}: {e}")
+
+    # Sort each list in the dictionary by RMSD score
+    for key in resultsDict:
+        resultsDict[key].sort(key=lambda x: x[1])
+
+    return resultsDict
+
+
 # convert_cif_to_pdb_in_directory(path.assembliesDir)
 # convert_cif_to_pdb_in_directory(os.path.join(path.experimentsDir, 'listOfProteins'))
 
 orientationDict = analyze_orientation("/home/iscb/wolfson/omriyakir/UBDModel/orientationAnalysis.xlsx")
 print(orientationDict)
 
+aligments_of_exper_proteins_dict = align_proteins_and_store_results(ProteinsToExperiment, orientationDict,
+                                                                    path.assembliesDir,
+                                                                    os.path.join(path.experimentsDir, 'listOfProteins'))
+
 dali_alligner_object = dali_alligner.DaliAligner()
+print(aligments_of_exper_proteins_dict)
+save_as_pickle(aligments_of_exper_proteins_dict, os.path.join(path.daliAligments, 'aligments_of_exper_proteins_dict.pkl'))
+
 # ref_name = ProteinsToExperiment[0][:4]+'B'
-ref_name = '3lcuA'
+# ref_name = '3lcuA'
 # mov_name = '3lbyA'
 
 # ref_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/3lcu.pdb"
@@ -111,11 +147,11 @@ ref_name = '3lcuA'
 # mov_name = '1cmxA'
 # # print(f'ref_name{ref_name}, mov_name{mov_name}')
 
-mov_path = find_pdb_path_with_subword(path.assembliesDir, mov_name[:4])
-ref_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir, 'listOfProteins'), ref_name[:4])
-print(f'refPath{ref_path}, movPath{mov_path}')
+# mov_path = find_pdb_path_with_subword(path.assembliesDir, mov_name[:4])
+# ref_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir, 'listOfProteins'), ref_name[:4])
+# print(f'refPath{ref_path}, movPath{mov_path}')
 
-resultsDict = {}
+# resultsDict = {}
 # R, t, rmsd, _ = dali_alligner_object.impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
 # resultsDict['R'] = R
 # resultsDict['t'] = t
