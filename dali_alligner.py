@@ -57,11 +57,11 @@ class DaliAligner():
                 return np.array(matrices), rmsd, z
         return None, None, None
 
-    def impose_structure(self, ref_name, mov_name, ref_path, mov_path, temp_dir: str) -> tuple[
+    def impose_structure(self, ref_name, mov_name, ref_path, mov_path) -> tuple[
         list[np.ndarray], list[np.ndarray]]:
 
         try:
-            print('start dali')
+            print(f'start dali, ref_name: {ref_name}, mov_name: {mov_name}')
             try:
                 temp_dir = tempfile.mkdtemp(dir=path.daliAligments)
                 os.makedirs(temp_dir, exist_ok=True)
@@ -70,7 +70,7 @@ class DaliAligner():
                 print(' failed to create temp dir')
                 print(e)
                 raise (e)
-            print(temp_dir)
+            # print(temp_dir)
             # os.makedirs(temp_dir, exist_ok=True)
             print('start imports')
             import_1 = subprocess.run(
@@ -86,10 +86,10 @@ class DaliAligner():
                                          "output options", '--outfmt', "summary,alignments,equivalences,transrot",
                                          "--clean"
                                          ], capture_output=True, text=True, check=True)
-            print('allign sequences finished')
+            # print('allign sequences finished')
             matrix, rmsd, _ = DaliAligner.extract_matrices_combined(f'{ref_name}.txt')
             print(f'matrix: {matrix} and rmsd: {rmsd}')
-            print(allign_log)
+            # print(allign_log)
             try:
                 os.remove(ref_name + '.dssp')
                 os.remove(mov_name + '.dssp')
