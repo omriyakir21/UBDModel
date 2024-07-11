@@ -74,12 +74,13 @@ dali_alligner_object = dali_alligner.DaliAligner()
 # ref_name = ProteinsToExperiment[0][:4]+'B'
 ref_name = '3lcuA'
 # mov_name = '3lbyA'
-# mov_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/3lby.pdb"
+
 ref_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/3lcu.pdb"
+mov_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/1cmx.pdb"
 mov_name = '1cmxA'
 # print(f'ref_name{ref_name}, mov_name{mov_name}')
 
-mov_path = find_pdb_path_with_subword(path.assembliesDir, mov_name[:4])
+# mov_path = find_pdb_path_with_subword(path.assembliesDir, mov_name[:4])
 # ref_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir, 'listOfProteins'), ref_name[:4])
 print(f'refPath{ref_path}, movPath{mov_path}')
 
