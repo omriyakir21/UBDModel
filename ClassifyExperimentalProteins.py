@@ -4,6 +4,7 @@ import sys
 import os
 import path
 import gemmi
+import pandas as pd
 
 
 def save_as_pickle(obj, file_path):
@@ -66,28 +67,57 @@ def convert_cif_to_pdb_in_directory(assemblies_dir):
     print(f"Total problematic proteins: {problematic_count}")
 
 
-# convert .cif files to pdb files
+def analyze_orientation(file_path):
+    df = pd.read_excel(file_path, engine='openpyxl')
+    results_dict = {}
+    columns_to_check = ['e1', 'e2', 'e3|e4', 'deubiquitylase']
+
+    for index, row in df.iterrows():
+        full_receptor_name = row['receprot name']  # Correct column name if necessary
+        pdb_name = full_receptor_name.split('_')[0]
+        chain_ids = full_receptor_name.split('+')
+
+        for chain in chain_ids:
+            chain_id = chain.split('-')[-1]
+            receptor_key = f"{pdb_name}{chain_id}"
+
+            found_true = False
+            for col in columns_to_check:
+                if row[col] == 'TRUE':
+                    results_dict[receptor_key] = col
+                    found_true = True
+                    break  # Found a TRUE value, no need to check further
+
+            if not found_true:
+                results_dict[receptor_key] = 'other'  # All columns are FALSE for this receptor
+
+    return results_dict  # convert .cif files to pdb files
+
+
 # convert_cif_to_pdb_in_directory(path.assembliesDir)
 # convert_cif_to_pdb_in_directory(os.path.join(path.experimentsDir, 'listOfProteins'))
+
+orientationDict = analyze_orientation("/home/iscb/wolfson/omriyakir/UBDModel/orientationAnalysis.xlsx")
+print(orientationDict)
 
 dali_alligner_object = dali_alligner.DaliAligner()
 # ref_name = ProteinsToExperiment[0][:4]+'B'
 ref_name = '3lcuA'
 # mov_name = '3lbyA'
 
-ref_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/3lcu.pdb"
-mov_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/1cmx.pdb"
-mov_name = '1cmxA'
-# print(f'ref_name{ref_name}, mov_name{mov_name}')
+# ref_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/3lcu.pdb"
+# mov_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/1cmx.pdb"
+# mov_name = '1cmxA'
+# # print(f'ref_name{ref_name}, mov_name{mov_name}')
 
-# mov_path = find_pdb_path_with_subword(path.assembliesDir, mov_name[:4])
-# ref_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir, 'listOfProteins'), ref_name[:4])
+mov_path = find_pdb_path_with_subword(path.assembliesDir, mov_name[:4])
+ref_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir, 'listOfProteins'), ref_name[:4])
 print(f'refPath{ref_path}, movPath{mov_path}')
 
 resultsDict = {}
-R, t, rmsd, _ = dali_alligner_object.impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
-resultsDict['R'] = R
-resultsDict['t'] = t
-resultsDict['rmsd'] = rmsd
-
-save_as_pickle(resultsDict, path.daliAligments + ref_name + '_' + mov_name + '.pkl')
+# R, t, rmsd, _ = dali_alligner_object.impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
+# resultsDict['R'] = R
+# resultsDict['t'] = t
+# resultsDict['rmsd'] = rmsd
+#
+# save_as_pickle(resultsDict, path.daliAligments + ref_name + '_' + mov_name + '.pkl')
