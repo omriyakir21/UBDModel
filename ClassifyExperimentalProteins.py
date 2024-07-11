@@ -74,7 +74,7 @@ def analyze_orientation(file_path):
     columns_to_check = ['e1', 'e2', 'e3|e4', 'deubiquitylase']
 
     for index, row in df.iterrows():
-        full_receptor_name = row['receprot name']  # Correct column name if necessary
+        full_receptor_name = row['ReceptorName']  # Correct column name if necessary
         pdb_name = full_receptor_name.split('_')[0]
         chain_ids = full_receptor_name.split('+')
 
