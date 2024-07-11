@@ -130,31 +130,31 @@ def align_proteins_and_store_results(ProteinsToExperiment, orientationDict, asse
 
 
 
-aligments_of_exper_proteins_dict = align_proteins_and_store_results(ProteinsToExperiment, orientationDict,
-                                                                    path.assembliesDir,
-                                                                    os.path.join(path.experimentsDir, 'listOfProteins'))
+# aligments_of_exper_proteins_dict = align_proteins_and_store_results(ProteinsToExperiment, orientationDict,
+#                                                                     path.assembliesDir,
+#                                                                     os.path.join(path.experimentsDir, 'listOfProteins'))
 
 
-print(aligments_of_exper_proteins_dict)
-save_as_pickle(aligments_of_exper_proteins_dict, os.path.join(path.daliAligments, 'aligments_of_exper_proteins_dict.pkl'))
+# print(aligments_of_exper_proteins_dict)
+# save_as_pickle(aligments_of_exper_proteins_dict, os.path.join(path.daliAligments, 'aligments_of_exper_proteins_dict.pkl'))
 
-# ref_name = ProteinsToExperiment[0][:4]+'B'
-# ref_name = '3lcuA'
+ref_name = ProteinsToExperiment[0][:4]+'B'
+mov_name = '2dx5A'
 # mov_name = '3lbyA'
 
 # ref_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/3lcu.pdb"
-# mov_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/1cmx.pdb"
+mov_path = "/home/iscb/wolfson/omriyakir/DaliLite.v5/2dx5.pdb"
 # mov_name = '1cmxA'
 # # print(f'ref_name{ref_name}, mov_name{mov_name}')
 
 # mov_path = find_pdb_path_with_subword(path.assembliesDir, mov_name[:4])
-# ref_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir, 'listOfProteins'), ref_name[:4])
+ref_path = find_pdb_path_with_subword(os.path.join(path.experimentsDir, 'listOfProteins'), ref_name[:4])
 # print(f'refPath{ref_path}, movPath{mov_path}')
 
-# resultsDict = {}
-# R, t, rmsd, _ = dali_alligner_object.impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
-# resultsDict['R'] = R
-# resultsDict['t'] = t
-# resultsDict['rmsd'] = rmsd
-#
+resultsDict = {}
+R, t, rmsd, _ = dali_alligner_object.impose_structure(ref_name, mov_name, ref_path, mov_path, 'temp_dir')
+resultsDict['R'] = R
+resultsDict['t'] = t
+resultsDict['rmsd'] = rmsd
+
 # save_as_pickle(resultsDict, path.daliAligments + ref_name + '_' + mov_name + '.pkl')
