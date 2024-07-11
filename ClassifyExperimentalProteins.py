@@ -93,7 +93,8 @@ def analyze_orientation(file_path):
                 results_dict[receptor_key] = 'other'  # All columns are FALSE for this receptor
 
     return results_dict  # convert .cif files to pdb files
-
+orientationDict = analyze_orientation("/home/iscb/wolfson/omriyakir/UBDModel/orientationAnalysis.xlsx")
+print(orientationDict)
 
 def align_proteins_and_store_results(ProteinsToExperiment, orientationDict, assembliesDir, experimentsDir):
     resultsDict = {protein: [] for protein in ProteinsToExperiment}
@@ -127,8 +128,7 @@ def align_proteins_and_store_results(ProteinsToExperiment, orientationDict, asse
 # convert_cif_to_pdb_in_directory(path.assembliesDir)
 # convert_cif_to_pdb_in_directory(os.path.join(path.experimentsDir, 'listOfProteins'))
 
-orientationDict = analyze_orientation("/home/iscb/wolfson/omriyakir/UBDModel/orientationAnalysis.xlsx")
-print(orientationDict)
+
 
 aligments_of_exper_proteins_dict = align_proteins_and_store_results(ProteinsToExperiment, orientationDict,
                                                                     path.assembliesDir,
