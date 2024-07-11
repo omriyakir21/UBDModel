@@ -95,7 +95,7 @@ def analyze_orientation(file_path):
     return results_dict  # convert .cif files to pdb files
 orientationDict = analyze_orientation("/home/iscb/wolfson/omriyakir/UBDModel/orientationAnalysis.xlsx")
 print(orientationDict)
-
+dali_alligner_object = dali_alligner.DaliAligner()
 def align_proteins_and_store_results(ProteinsToExperiment, orientationDict, assembliesDir, experimentsDir):
     resultsDict = {protein: [] for protein in ProteinsToExperiment}
     for ref_protein in ProteinsToExperiment:
@@ -134,7 +134,7 @@ aligments_of_exper_proteins_dict = align_proteins_and_store_results(ProteinsToEx
                                                                     path.assembliesDir,
                                                                     os.path.join(path.experimentsDir, 'listOfProteins'))
 
-dali_alligner_object = dali_alligner.DaliAligner()
+
 print(aligments_of_exper_proteins_dict)
 save_as_pickle(aligments_of_exper_proteins_dict, os.path.join(path.daliAligments, 'aligments_of_exper_proteins_dict.pkl'))
 
