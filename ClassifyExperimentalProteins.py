@@ -3,7 +3,7 @@ import pickle
 import sys
 import os
 import path
-import gemmi
+# import gemmi
 import pandas as pd
 import openpyxl
 
